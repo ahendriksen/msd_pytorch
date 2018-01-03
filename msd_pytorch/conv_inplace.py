@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch as t
 from torch.autograd import (Variable, Function)
 from torch.nn import Parameter
-
+from torch.backends import cudnn
 
 benchmark = False
 # If deterministic is set to True, then torch will always use the
@@ -11,6 +11,48 @@ benchmark = False
 # dilation. If you set the dilation to anything other than 1, the
 # computation will fail. Thus we set deterministic to False.
 deterministic = False
+
+
+def cudnn_convolution_full_forward(input, weight, bias, output_contig,
+                                   padding, stride, dilation):
+    groups = 1
+    if cudnn.version() < 7000:
+        return t._C._cudnn_convolution_full_forward(
+            input, weight, bias, output_contig,
+            padding, stride, dilation,
+            groups, benchmark)
+    else:
+        return t._C._cudnn_convolution_full_forward(
+            input, weight, bias, output_contig,
+            padding, stride, dilation,
+            groups, benchmark, deterministic)
+
+
+def cudnn_convolution_backward_data(grad_output, grad_input, weight, info):
+    if cudnn.version() < 7000:
+        t._C._cudnn_convolution_backward_data(
+            grad_output, grad_input, weight,
+            info, benchmark)
+    else:
+        t._C._cudnn_convolution_backward_data(
+            grad_output, grad_input, weight,
+            info, benchmark, deterministic)
+
+
+def cudnn_convolution_backward_filter(grad_output, input, grad_weight, info):
+    if cudnn.version() < 7000:
+        t._C._cudnn_convolution_backward_filter(
+            grad_output, input, grad_weight,
+            info, benchmark)
+    else:
+        t._C._cudnn_convolution_backward_filter(
+            grad_output, input, grad_weight,
+            info, benchmark, deterministic)
+
+
+def cudnn_convolution_backward_bias(grad_output, grad_bias, info):
+    t._C._cudnn_convolution_backward_bias(grad_output, grad_bias, info)
+
 
 class Conv2dInPlaceFunction(Function):
     @staticmethod
@@ -29,12 +71,8 @@ class Conv2dInPlaceFunction(Function):
         ctx.save_for_backward(input, weight, bias)
         input = input.contiguous()
 
-        groups = 1
-        ctx.info = t._C._cudnn_convolution_full_forward(
-            input, weight, bias, output_contig,
-            padding, stride, dilation,
-            groups, benchmark  # , deterministic
-        )
+        ctx.info = cudnn_convolution_full_forward(
+            input, weight, bias, output_contig, padding, stride, dilation)
 
         if copy_output:
             output.copy_(output_contig)
@@ -54,22 +92,19 @@ class Conv2dInPlaceFunction(Function):
         grad_output = grad_output.contiguous()
 
         grad_input = input.clone()
-        t._C._cudnn_convolution_backward_data(
-            grad_output, grad_input, weight,
-            info, benchmark  # , deterministic
-        )
+        cudnn_convolution_backward_data(
+            grad_output, grad_input, weight, info)
+
         grad_input = Variable(grad_input)
 
         grad_weight = weight.clone()
-        t._C._cudnn_convolution_backward_filter(
-            grad_output, input, grad_weight,
-            info, benchmark  # , deterministic
-        )
+        cudnn_convolution_backward_filter(grad_output, input, grad_weight,
+                                          info)
+
         grad_weight = Variable(grad_weight)
 
         grad_bias = bias.clone()
-        t._C._cudnn_convolution_backward_bias(
-            grad_output, grad_bias, info)
+        cudnn_convolution_backward_bias(grad_output, grad_bias, info)
         grad_bias = Variable(grad_bias)
 
         return grad_input, grad_weight, grad_bias, None, None, None, None
