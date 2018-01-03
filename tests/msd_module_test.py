@@ -15,7 +15,7 @@ class MSDModuleTest(unittest.TestCase):
         x = Variable(t.randn(1, 1, *size)).cuda()
         target = Variable(t.randn(1, 1, *size)).cuda()
 
-        net = MSDModule(10, msd_dilation, False)
+        net = MSDModule(10, msd_dilation, conv3d=False)
         y1 = net(x)
         criterion = nn.L1Loss()
         loss = criterion(y1, target)
@@ -34,7 +34,7 @@ class MSDModuleTest(unittest.TestCase):
         size = (20,) * 3
         x = t.randn(batch_sz, in_channels, *size).cuda()
 
-        net = MSDModule(10, msd_dilation, True)
+        net = MSDModule(10, msd_dilation, conv3d=True)
 
         output = net(Variable(x))
 
