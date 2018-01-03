@@ -3,6 +3,9 @@ import torch as t
 import torch.nn.init as init
 from msd_pytorch.conv_inplace import (Conv2dInPlaceModule, Conv3dInPlaceModule)
 from msd_pytorch.stitch import (stitchLazy, stitchCopy)
+from math import sqrt
+from functools import reduce
+from operator import mul
 
 
 def msd_dilation(i):
@@ -11,6 +14,19 @@ def msd_dilation(i):
 
 def one_dilation(i):
     return 1
+
+
+def product(xs):
+    return reduce(mul, xs, 1)
+
+
+def init_convolution_weights(conv_weight, c_in, c_out, width, depth):
+    # the number of parameters differs between 2d and 3d convolution (and
+    # depends on kernel_size)
+    np = product(conv_weight.shape[2:])
+    nc = np * (c_in + width * (depth - 1)) + c_out
+    std_dev = sqrt(2 / nc)
+    conv_weight.normal_(0, std_dev)
 
 
 class MSDLayerModule(nn.Module):
@@ -28,9 +44,14 @@ class MSDLayerModule(nn.Module):
             self.convolution = Conv2dInPlaceModule(
                 output, i, 1, kernel_size=3,
                 dilation=dilation, padding=dilation)
-        init.xavier_normal(self.convolution.weight)
+
+        # Initialize the weights
+        init_convolution_weights(self.convolution.weight.data,
+                                 1, 1, 1, i)
         self.convolution.bias.data.zero_()
 
+        # Add the relu to get a nice printout for the network from
+        # pytorch.
         self.relu = nn.ReLU(inplace=True)
 
     def forward(self, input):
@@ -81,9 +102,9 @@ class MSDModule(nn.Module):
         return self.net(input)
 
     def clear_buffers(self):
-        # Clear the L and G buffers.
-        # Don't call this function between forward and backward! The
-        # backward pass requires the L and G buffers.
+        # Clear the L and G buffers. Allocates a buffer containing one
+        # item. Don't call this function between forward and
+        # backward! The backward pass requires the L and G buffers.
         L_new, G_new = self.L.new(1), self.G.new(1)
         self.L.set_(L_new)      # This replaces the underlying storage
         self.G.set_(G_new)      # of L and G.

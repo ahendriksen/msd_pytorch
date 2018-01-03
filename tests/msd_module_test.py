@@ -50,7 +50,7 @@ class MSDModuleTest(unittest.TestCase):
                 target = Variable(t.randn(batch_sz, 1, *size)).cuda()
                 self.assertTrue(x.data.is_cuda)
 
-                net = MSDModule(depth, msd_dilation, False)
+                net = MSDModule(depth, msd_dilation, conv3d=False)
 
                 self.assertIsNotNone(net)
 
