@@ -54,7 +54,7 @@ def cudnn_convolution_backward_bias(grad_output, grad_bias, info):
     t._C._cudnn_convolution_backward_bias(grad_output, grad_bias, info)
 
 
-class Conv2dInPlaceFunction(Function):
+class ConvNdInPlaceFunction(Function):
     @staticmethod
     def forward(ctx, input, weight, bias, output, padding, stride, dilation):
         # save_for_backward can only save input or output
@@ -110,7 +110,7 @@ class Conv2dInPlaceFunction(Function):
         return grad_input, grad_weight, grad_bias, None, None, None, None
 
 
-conv2dInPlace = Conv2dInPlaceFunction.apply
+convNdInPlace = ConvNdInPlaceFunction.apply
 
 
 class Conv2dInPlaceModule(nn.Module):
@@ -131,7 +131,7 @@ class Conv2dInPlaceModule(nn.Module):
 
     def forward(self, input):
         assert(self.output.is_cuda)
-        return conv2dInPlace(input, self.weight, self.bias,
+        return convNdInPlace(input, self.weight, self.bias,
                              self.output, self.padding, self.stride,
                              self.dilation)
 
@@ -152,6 +152,6 @@ class Conv3dInPlaceModule(nn.Module):
 
     def forward(self, input):
         assert(self.output.is_cuda)
-        return conv2dInPlace(input, self.weight, self.bias,
+        return convNdInPlace(input, self.weight, self.bias,
                              self.output, self.padding, self.stride,
                              self.dilation)

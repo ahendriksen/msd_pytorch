@@ -3,7 +3,7 @@ import torch as t
 from torch.autograd import Variable
 from torch.autograd import gradcheck
 from itertools import product as cartesianp
-from msd_pytorch.conv_inplace import (conv2dInPlace, Conv2dInPlaceModule,
+from msd_pytorch.conv_inplace import (convNdInPlace, Conv2dInPlaceModule,
                                       Conv3dInPlaceModule)
 import unittest
 
@@ -104,7 +104,7 @@ class TestConv2dInPlace(unittest.TestCase):
         stride = (1, 1)
 
         test_input = (input, weight, bias, output, padding, stride, dilation)
-        test = gradcheck(conv2dInPlace, test_input, eps=1e-4, atol=1e-4)
+        test = gradcheck(convNdInPlace, test_input, eps=1e-4, atol=1e-4)
         self.assertTrue(test)
 
     def test_vs_conv(self):
