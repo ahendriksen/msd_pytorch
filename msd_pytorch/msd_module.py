@@ -104,18 +104,20 @@ class MSDModule(nn.Module):
         self.net = nn.Sequential(*(layers + [self.c_final, final_relu])).cuda()
 
     def forward(self, input):
-        nb, c_in, *shape = input.data.shape
-        #
+        self.init_buffers(input.data.shape)
+        input = stitchCopy(input, self.L, self.G, 0)
+        return self.net(input)
+
+    def init_buffers(self, input_shape):
+        batch_sz, c_in, *shape = input_shape
+
         assert c_in == self.c_in, "Unexpected number of input channels"
         # Ensure that L and G are the correct size
         total_units = units_in_front(self.c_in, self.width, self.depth + 1)
-        new_shape = (nb, total_units, *shape)
+        new_shape = (batch_sz, total_units, *shape)
         self.L.resize_(*new_shape)
         self.G.resize_(*new_shape)
         self.G.zero_()          # clear gradient cache
-
-        input = stitchCopy(input, self.L, self.G, 0)
-        return self.net(input)
 
     def clear_buffers(self):
         # Clear the L and G buffers. Allocates a buffer containing one
