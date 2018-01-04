@@ -12,8 +12,8 @@ class TestMSDModel(unittest.TestCase):
             c_in, c_out, depth, width = 1, 1, 11, 1
             model = MSDModel(c_in, c_out, depth, width, 'L1', 'MSD', conv3d)
             shape = (11, 11, 11) if conv3d else (11, 11)
-            input = t.randn(1, c_in, *shape)
-            target = t.randn(1, c_out, *shape)
+            input = t.randn(c_in, *shape)    # intentionally leave out
+            target = t.randn(c_out, *shape)  # the batch size
             model.set_input(input)
             model.set_target(target)
             ps0 = [p.data.clone() for p in list(model.net.parameters())]
