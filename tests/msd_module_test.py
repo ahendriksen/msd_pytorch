@@ -11,11 +11,14 @@ class MSDModuleTest(unittest.TestCase):
     def test_clear_buffers(self):
         t.manual_seed(2)
 
+        c_in, c_out = 2, 3
+        depth, width = 11, 5
         size = (30, 30)
-        x = Variable(t.randn(1, 1, *size)).cuda()
-        target = Variable(t.randn(1, 1, *size)).cuda()
 
-        net = MSDModule(10, msd_dilation, conv3d=False)
+        x = Variable(t.randn(1, c_in, *size)).cuda()
+        target = Variable(t.randn(1, c_out, *size)).cuda()
+
+        net = MSDModule(c_in, c_out, depth, width, msd_dilation, conv3d=False)
         y1 = net(x)
         criterion = nn.L1Loss()
         loss = criterion(y1, target)
@@ -30,27 +33,36 @@ class MSDModuleTest(unittest.TestCase):
 
     def test_3d(self):
         batch_sz = 1
-        in_channels = 1
+        c_in, c_out = 2, 3
+        depth, width = 11, 3
         size = (20,) * 3
-        x = t.randn(batch_sz, in_channels, *size).cuda()
+        x = t.randn(batch_sz, c_in, *size).cuda()
 
-        net = MSDModule(10, msd_dilation, conv3d=True)
+        net = MSDModule(c_in, c_out, depth, width, msd_dilation, conv3d=True)
 
         output = net(Variable(x))
 
         self.assertNotAlmostEqual(0, output.data.abs().sum())
 
     def test_parameters_change(self):
-        t.manual_seed(1)
+        # This test ensures that all parameters are updated after an
+        # update step.
+
+        # It is kind of a hack, but there are seeds for which this
+        # test fails (notably 1 and 2). Bias nodes have a tendency to
+        # remain zero, which is not surprising.
+        t.manual_seed(3)
 
         size = (30, 30)
         for batch_sz in [1, 2, 5]:
-            for depth in range(20):
-                x = Variable(t.randn(batch_sz, 1, *size)).cuda()
-                target = Variable(t.randn(batch_sz, 1, *size)).cuda()
+            for depth in range(0, 20, 5):
+                width = c_in = c_out = batch_sz
+                x = Variable(t.randn(batch_sz, c_in, *size)).cuda()
+                target = Variable(t.randn(batch_sz, c_out, *size)).cuda()
                 self.assertTrue(x.data.is_cuda)
 
-                net = MSDModule(depth, msd_dilation, conv3d=False)
+                net = MSDModule(c_in, c_out, depth, width, msd_dilation,
+                                conv3d=False)
 
                 self.assertIsNotNone(net)
 

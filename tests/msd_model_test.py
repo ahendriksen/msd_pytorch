@@ -9,11 +9,13 @@ class TestMSDModel(unittest.TestCase):
         t.manual_seed(1)        # make test repeatable
 
         for conv3d in [False, True]:
-            model = MSDModel(11, 'L1', 'MSD', conv3d)
+            c_in, c_out, depth, width = 1, 1, 11, 1
+            model = MSDModel(c_in, c_out, depth, width, 'L1', 'MSD', conv3d)
             shape = (11, 11, 11) if conv3d else (11, 11)
-            input = t.randn(1, 1, *shape)
+            input = t.randn(1, c_in, *shape)
+            target = t.randn(1, c_out, *shape)
             model.set_input(input)
-            model.set_target(input)
+            model.set_target(target)
             ps0 = [p.data.clone() for p in list(model.net.parameters())]
             for i in range(10):
                 model.learn(input, input)

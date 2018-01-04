@@ -22,6 +22,10 @@ dilation_functions = {
 
 @msd_ingredient.config
 def cfg():
+    c_in = 1
+    c_out = 1
+    depth = 30
+    width = 1
     loss_function = "L1"
     dilation = 'MSD'
     save_dir = 'saved_networks'
@@ -30,8 +34,11 @@ def cfg():
 
 class MSDModel():
     @msd_ingredient.capture()
-    def __init__(self, depth, loss_function, dilation, conv3d):
-        self.depth = depth
+    def __init__(self, c_in, c_out, depth, width, loss_function, dilation,
+                 conv3d):
+        self.c_in, self.c_out = c_in, c_out
+        self.depth, self.width = depth, width
+
         self.loss_function = loss_function
         self.conv3d = conv3d
         self.criterion = loss_functions[loss_function]
@@ -40,11 +47,12 @@ class MSDModel():
         self.dilation = dilation
         dilation_function = dilation_functions[dilation]
         assert(dilation_function is not None)
-        self.net = MSDModule(depth, dilation_function, conv3d=conv3d)
+        self.net = MSDModule(c_in, c_out, depth, width, dilation_function,
+                             conv3d=conv3d)
 
         self.optimizer = optim.Adam(self.net.parameters())
 
-    def set_input(self, data):
+    def unsqueeze(self, data):
         assert len(data.shape) >= 2, "Must supply at least 2-dimensional data"
 
         assert len(data.shape) >= 3 or not self.conv3d, \
@@ -60,11 +68,17 @@ class MSDModel():
                 "Size too small: convolutions break because there is not enough\
                 padding"
 
+        return data
+
+    def set_input(self, data):
+        data = self.unsqueeze(data)
+        assert self.c_in == data.shape[1], "Wrong number of input channels"
+
         self.input = Variable(data.cuda())
 
     def set_target(self, data):
-        while len(data.shape) < 4:
-            data = data.unsqueeze(0)
+        data = self.unsqueeze(data)
+        assert self.c_out == data.shape[1], "Wrong number of output channels"
         self.target = Variable(data.cuda())
 
     def forward(self, input=None, target=None):
@@ -138,7 +152,7 @@ class MSDModel():
         #     for j in range(w.shape[1]):
         #         heatmap[j, i] = w[:, j, :, :].abs().sum()
         L = self.net.L.clone()
-        C = self.net.c_out.weight.data
+        C = self.net.c_final.weight.data
 
         for i, c in enumerate(C.squeeze().tolist()):
             L[:, i, :, :].mul_(c)

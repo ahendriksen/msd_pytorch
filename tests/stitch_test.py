@@ -98,7 +98,7 @@ class stitchTest(unittest.TestCase):
         L = t.zeros(1, 3, 1)
         G = t.zeros(1, 3, 1)
 
-        x = Variable(t.Tensor(1, 0, 1).fill_(5), requires_grad=True)
+        x = Variable(t.Tensor(1, 1, 1).fill_(5), requires_grad=True)
 
         l0 = stitchCopy(x, L, G, 0)
 

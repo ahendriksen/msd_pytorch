@@ -65,18 +65,19 @@ stitchSlow = StitchSlowFunction.apply
 class StitchCopyFunction(Function):
     @staticmethod
     def forward(ctx, input, L, G, i):
-        ctx.G, ctx.i = G, i
-        L_input = L.narrow(1, i, 1)
+        width = input.shape[1]
+        ctx.G, ctx.i, ctx.width = G, i, width
+        L_input = L.narrow(1, i, width)
         L_input.copy_(input)
-        L_output = L.narrow(1, 0, i + 1)
+        L_output = L.narrow(1, 0, i + width)
         return L_output
 
     @staticmethod
     def backward(ctx, grad_output):
-        G, i = ctx.G, ctx.i
-        G_output = G.narrow(1, 0, i + 1)
+        G, i, width = ctx.G, ctx.i, ctx.width
+        G_output = G.narrow(1, 0, i + width)
         G_output.add_(grad_output.data)
-        G_input = G.narrow(1, i, 1)
+        G_input = G.narrow(1, i, width)
         return Variable(G_input), None, None, None
 
 
@@ -99,30 +100,31 @@ class StitchLazyFunction(Function):
     # been copied into L. This can be accomplished with Conv2dInPlace,
     # for instance.
     @staticmethod
-    def forward(ctx, input, L, G, i):
-        ctx.G, ctx.i = G, i
-        return L.narrow(1, 0, i + 1)
+    def forward(ctx, input, L, G, i, width):
+        ctx.G, ctx.i, ctx.width = G, i, width
+        return L.narrow(1, 0, i + width)
 
     @staticmethod
     def backward(ctx, grad_output):
-        G, i = ctx.G, ctx.i
+        G, i, width = ctx.G, ctx.i, ctx.width
 
-        G_output = G.narrow(1, 0, i + 1)
+        G_output = G.narrow(1, 0, i + width)
         G_output.add_(grad_output.data)
 
-        G_input = G.narrow(1, i, 1)
-        return Variable(G_input), None, None, None
+        G_input = G.narrow(1, i, width)
+        return Variable(G_input), None, None, None, None
 
 
 stitchLazy = StitchLazyFunction.apply
 
 
 class StitchLazyModule(nn.Module):
-    def __init__(self, L, G, i):
+    def __init__(self, L, G, i, width):
         super(StitchLazyModule, self).__init__()
         self.L = L
         self.G = G
         self.i = i
+        self.width = width
 
     def forward(self, input):
-        return stitchLazy(input, self.L, self.G, self.i)
+        return stitchLazy(input, self.L, self.G, self.i, self.width)
