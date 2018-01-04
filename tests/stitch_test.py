@@ -1,7 +1,7 @@
 import torch.nn as nn
 import torch as t
 from torch.autograd import (Variable)
-from msd_pytorch.stitch import (StitchModule, stitchSlow, stitchCopy)
+from msd_pytorch.stitch import (StitchCopyModule, stitchSlow, stitchCopy)
 import unittest
 
 
@@ -22,7 +22,7 @@ class stitchTest(unittest.TestCase):
         target = Variable(t.randn(batch_sz, 1, *size))
         # Prepare operations
         cs = [nn.Conv2d(i + 1, 1, 1) for i in range(depth)]
-        fs = [StitchModule(L, G, i) for i in range(depth)]
+        fs = [StitchCopyModule(L, G, i) for i in range(depth)]
         # Compute output
         net = nn.Sequential(*[val for pair in zip(fs, cs) for val in pair])
         output = net(input)
@@ -60,7 +60,7 @@ class stitchTest(unittest.TestCase):
                          for i in range(2))
 
         cs = [nn.Conv2d(i + 1, 1, 1) for i in range(depth)]
-        fs = [StitchModule(L, G, i) for i in range(depth)]
+        fs = [StitchCopyModule(L, G, i) for i in range(depth)]
 
         net = nn.Sequential(*[val for pair in zip(fs, cs) for val in pair])
         output = net(input)
@@ -81,7 +81,7 @@ class stitchTest(unittest.TestCase):
                          for i in range(2))
 
         cs = [nn.Conv2d(i + 1, 1, 1) for i in range(depth)]
-        fs = [StitchModule(L, G, i) for i in range(depth)]
+        fs = [StitchCopyModule(L, G, i) for i in range(depth)]
 
         net = nn.Sequential(*[val for pair in zip(fs, cs) for val in pair])
         net.cuda()

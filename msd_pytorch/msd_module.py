@@ -65,7 +65,7 @@ class MSDLayerModule(nn.Module):
         self.convolution.output = self.L.narrow(1, self.in_front, self.width)
         output = self.convolution(input)
         output = self.relu(output)
-        output = stitchLazy(output, self.L, self.G, self.in_front, self.width)
+        output = stitchLazy(output, self.L, self.G, self.in_front)
         return output
 
 

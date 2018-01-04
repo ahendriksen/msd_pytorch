@@ -41,7 +41,7 @@ class StitchSlowFunction(Function):
 stitchSlow = StitchSlowFunction.apply
 
 
-# Normal stitching:
+# Copy stitching:
 # Has buffers L and G for the forward and backward pass.
 #
 # L is a tensor of dim B x C x ?
@@ -84,9 +84,9 @@ class StitchCopyFunction(Function):
 stitchCopy = StitchCopyFunction.apply
 
 
-class StitchModule(nn.Module):
+class StitchCopyModule(nn.Module):
     def __init__(self, L, G, i):
-        super(StitchModule, self).__init__()
+        super(StitchCopyModule, self).__init__()
         self.L, self.G, self.i = L, G, i
 
     def forward(self, input):
@@ -100,7 +100,8 @@ class StitchLazyFunction(Function):
     # been copied into L. This can be accomplished with Conv2dInPlace,
     # for instance.
     @staticmethod
-    def forward(ctx, input, L, G, i, width):
+    def forward(ctx, input, L, G, i):
+        width = input.shape[1]
         ctx.G, ctx.i, ctx.width = G, i, width
         return L.narrow(1, 0, i + width)
 
@@ -112,19 +113,18 @@ class StitchLazyFunction(Function):
         G_output.add_(grad_output.data)
 
         G_input = G.narrow(1, i, width)
-        return Variable(G_input), None, None, None, None
+        return Variable(G_input), None, None, None
 
 
 stitchLazy = StitchLazyFunction.apply
 
 
 class StitchLazyModule(nn.Module):
-    def __init__(self, L, G, i, width):
+    def __init__(self, L, G, i):
         super(StitchLazyModule, self).__init__()
         self.L = L
         self.G = G
         self.i = i
-        self.width = width
 
     def forward(self, input):
-        return stitchLazy(input, self.L, self.G, self.i, self.width)
+        return stitchLazy(input, self.L, self.G, self.i)
