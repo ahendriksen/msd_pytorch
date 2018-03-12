@@ -13,6 +13,7 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [
     # TODO: put package requirements here
+    'sacred>=0.7.2'
 ]
 
 setup_requirements = [
@@ -25,7 +26,7 @@ test_requirements = [
 
 setup(
     name='msd_pytorch',
-    version='0.1.0',
+    version='0.1.1',
     description="A pytorch implementation of the MSD network structure.",
     long_description=readme + '\n\n' + history,
     author="Allard Hendriksen",
