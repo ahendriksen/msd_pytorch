@@ -16,38 +16,22 @@ deterministic = False
 def cudnn_convolution_full_forward(input, weight, bias, output_contig,
                                    padding, stride, dilation):
     groups = 1
-    if cudnn.version() < 7000:
-        return t._C._cudnn_convolution_full_forward(
-            input, weight, bias, output_contig,
-            padding, stride, dilation,
-            groups, benchmark)
-    else:
-        return t._C._cudnn_convolution_full_forward(
-            input, weight, bias, output_contig,
-            padding, stride, dilation,
-            groups, benchmark, deterministic)
+    return t._C._cudnn_convolution_full_forward(
+        input, weight, bias, output_contig,
+        padding, stride, dilation,
+        groups, benchmark, deterministic)
 
 
 def cudnn_convolution_backward_data(grad_output, grad_input, weight, info):
-    if cudnn.version() < 7000:
-        t._C._cudnn_convolution_backward_data(
-            grad_output, grad_input, weight,
-            info, benchmark)
-    else:
-        t._C._cudnn_convolution_backward_data(
-            grad_output, grad_input, weight,
-            info, benchmark, deterministic)
+    t._C._cudnn_convolution_backward_data(
+        grad_output, grad_input, weight,
+        info, benchmark, deterministic)
 
 
 def cudnn_convolution_backward_filter(grad_output, input, grad_weight, info):
-    if cudnn.version() < 7000:
-        t._C._cudnn_convolution_backward_filter(
-            grad_output, input, grad_weight,
-            info, benchmark)
-    else:
-        t._C._cudnn_convolution_backward_filter(
-            grad_output, input, grad_weight,
-            info, benchmark, deterministic)
+    t._C._cudnn_convolution_backward_filter(
+        grad_output, input, grad_weight,
+        info, benchmark, deterministic)
 
 
 def cudnn_convolution_backward_bias(grad_output, grad_bias, info):
