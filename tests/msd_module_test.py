@@ -44,6 +44,25 @@ class MSDModuleTest(unittest.TestCase):
 
         self.assertNotAlmostEqual(0, output.data.abs().sum())
 
+    def test_with_tail(self):
+        batch_sz = 1
+        c_in, c_out = 2, 3
+        depth, width = 11, 3
+        size = (20,) * 3
+        x = t.randn(batch_sz, c_in, *size).cuda()
+        target = Variable(t.randn(batch_sz, 1, *size).cuda())
+
+        net = nn.Sequential(
+            MSDModule(c_in, c_out, depth, width, msd_dilation, conv3d=True),
+            nn.Conv3d(3, 1, 1))
+        net.cuda()
+
+        output = net(Variable(x))
+        loss = nn.MSELoss()(output, target)
+        loss.backward()
+
+        self.assertNotAlmostEqual(0, output.data.abs().sum())
+
     def test_parameters_change(self):
         # This test ensures that all parameters are updated after an
         # update step.
