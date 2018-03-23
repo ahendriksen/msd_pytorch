@@ -34,7 +34,8 @@ def init_convolution_weights(conv_weight, c_in, c_out, width, depth):
 
 
 class MSDLayerModule(nn.Module):
-    def __init__(self, L, G, c_in, c_out, d, width, dilation, conv3d=False):
+    def __init__(self, L, G, c_in, c_out, d, width, dilation, reflect=False,
+                 conv3d=False):
         super(MSDLayerModule, self).__init__()
 
         in_front = units_in_front(c_in, width, d)
@@ -72,6 +73,22 @@ class MSDLayerModule(nn.Module):
 class MSDModule(nn.Module):
     def __init__(self, c_in, c_out, depth, width, dilation_function,
                  conv3d=False):
+        """Create a msd module
+
+        :param c_in: # of input channels
+        :param c_out: # of output channels
+        :param depth: # of layers
+        :param width: # the width of the module
+
+        :param dilation_function: this fuction determines the dilation
+        of the convolution in each layer. Usually, you will want to
+        use `msd_dilation`.
+
+        :param conv3d: Whether or not to use 3d convolutions (bool).
+        :returns:
+        :rtype:
+
+        """
         super(MSDModule, self).__init__()
         #
         self.c_in = c_in
@@ -100,8 +117,8 @@ class MSDModule(nn.Module):
         # TODO: fix weight initialization!
         init.xavier_normal(self.c_final.weight.data)
         self.c_final.bias.data.zero_()
-        final_relu = nn.ReLU(inplace=True)
-        self.net = nn.Sequential(*(layers + [self.c_final, final_relu])).cuda()
+        self.net = nn.Sequential(*(layers + [self.c_final]))
+        self.net.cuda()
 
     def forward(self, input):
         self.init_buffers(input.data.shape)
