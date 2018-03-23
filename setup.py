@@ -13,7 +13,8 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [
     # TODO: put package requirements here
-    'sacred>=0.7.2'
+    'sacred>=0.7.2',
+    'pymongo'
 ]
 
 setup_requirements = [
