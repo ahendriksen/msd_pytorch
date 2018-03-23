@@ -27,12 +27,12 @@ test_requirements = [
 
 setup(
     name='msd_pytorch',
-    version='0.1.1',
+    version='0.1.9',
     description="A pytorch implementation of the MSD network structure.",
     long_description=readme + '\n\n' + history,
     author="Allard Hendriksen",
     author_email='allard.hendriksen@cwi.nl',
-    url='https://github.com/ahendriksen/msd_pytorch',
+    url='https://gitlab.com/tomo-ml/msd_pytorch',
     packages=find_packages(include=['msd_pytorch']),
     include_package_data=True,
     install_requires=requirements,
