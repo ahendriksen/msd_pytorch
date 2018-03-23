@@ -20,6 +20,21 @@ dilation_functions = {
 }
 
 
+def scaling_module(c_in, c_out, conv3d=False):
+    # This part of the network can be used to renormalize the
+    # input data. Its parameters are saved when the network is
+    # saved.
+    if conv3d:
+        c = nn.Conv3d(c_in, c_out, 1)
+    else:
+        c = nn.Conv2d(c_in, c_out, 1)
+    c.bias.requires_grad = False
+    c.bias.data.zero_()
+    c.weight.requires_grad = False
+    c.weight.data.fill_(1)
+    return c
+
+
 @msd_ingredient.config
 def cfg():
     c_in = 1
@@ -32,7 +47,7 @@ def cfg():
     conv3d = False
 
 
-class MSDModel():
+class MSDRegressionModel():
     @msd_ingredient.capture()
     def __init__(self, c_in, c_out, depth, width, loss_function, dilation,
                  conv3d):
@@ -47,37 +62,68 @@ class MSDModel():
         self.dilation = dilation
         dilation_function = dilation_functions[dilation]
         assert(dilation_function is not None)
-        self.net = MSDModule(c_in, c_out, depth, width, dilation_function,
+
+        # This part of the network can be used to renormalize the
+        # input and output data. Its parameters are saved when the
+        # network is saved.
+        self.scale_in = scaling_module(c_in, c_in, conv3d)
+        self.scale_out = scaling_module(c_out, c_out, conv3d)
+
+        self.msd = MSDModule(c_in, c_out, depth, width, dilation_function,
                              conv3d=conv3d)
 
-        self.optimizer = optim.Adam(self.net.parameters())
+        # Train only MSD parameters:
+        net_trained = nn.Sequential(self.msd, nn.ReLU())
+        self.optimizer = optim.Adam(net_trained.parameters())
 
-    def unsqueeze(self, data):
-        assert len(data.shape) >= 2, "Must supply at least 2-dimensional data"
+        # Define the whole network:
+        self.net = nn.Sequential(self.scale_in, net_trained, self.scale_out)
+        self.net.cuda()
 
-        assert len(data.shape) >= 3 or not self.conv3d, \
-            "Must supply at least 3-dimensional data"
+    def set_normalization(self, dataloader):
+        """Normalize input and target data.
 
-        desired_shape_len = 5 if self.conv3d else 4
+           This function goes through all the training data to compute
+           the mean and std of the training data. It modifies the
+           network so that all future invocations of the network first
+           normalize input data and output data. The normalization
+           parameters are saved.
 
-        while len(data.shape) < desired_shape_len:
-            data = data.unsqueeze(0)
+        :param dataloader: The dataloader associated to the training data.
+        :returns:
+        :rtype:
 
-        for shape_dim in data.shape[2:]:
-            assert shape_dim > 10, \
-                "Size too small: convolutions break because there is not enough\
-                padding"
+        """
+        mean_in = square_in = mean_out = square_out = 0
 
-        return data
+        for (data_in, data_out) in dataloader:
+            mean_in += data_in.mean()
+            mean_out += data_out.mean()
+            square_in += data_in.pow(2).mean()
+            square_out += data_out.pow(2).mean()
+
+        mean_in /= len(dataloader)
+        mean_out /= len(dataloader)
+        square_in /= len(dataloader)
+        square_out /= len(dataloader)
+
+        std_in = square_in - mean_in ** 2
+        std_out = square_out - mean_out ** 2
+
+        # The input data should be roughly normally distributed after
+        # passing through net_fixed.
+        self.scale_in.bias.data.fill_(- mean_in)
+        self.scale_in.weight.data.fill_(1 / std_in)
+        # The scale_out layer should rather 'denormalize' the network
+        # output.
+        self.scale_out.bias.data.fill_(mean_in)
+        self.scale_out.weight.data.fill_(std_out)
 
     def set_input(self, data):
-        data = self.unsqueeze(data)
         assert self.c_in == data.shape[1], "Wrong number of input channels"
-
         self.input = Variable(data.cuda())
 
     def set_target(self, data):
-        data = self.unsqueeze(data)
         assert self.c_out == data.shape[1], "Wrong number of output channels"
         self.target = Variable(data.cuda())
 
@@ -96,11 +142,18 @@ class MSDModel():
         self.loss.backward()
         self.optimizer.step()
 
-    def grow(self, add_depth=1):
-        new = MSDModel(self.depth + add_depth, self.loss_function,
-                       self.dilation, self.conv3d)
-        new.net = self.net.grow(add_depth)
-        return new
+    def train(self, dataloader, num_epochs):
+        for epoch in range(num_epochs):
+            for (input, target) in dataloader:
+                self.learn(input, target)
+
+    def validate(self, dataloader):
+        validation_loss = 0
+        for (input, target) in dataloader:
+            self.forward(input, target)
+            validation_loss += self.get_loss()
+
+        return validation_loss
 
     def print(self):
         print(self.net)
@@ -116,7 +169,7 @@ class MSDModel():
         save_path = os.path.join(save_dir, filename)
         os.makedirs(save_dir, exist_ok=True)
         # Clear the L and G buffers before saving:
-        self.net.clear_buffers()
+        self.msd.clear_buffers()
 
         t.save(self.net.state_dict(), save_path)
         return save_path
@@ -151,8 +204,8 @@ class MSDModel():
         # for i, w in enumerate(conv_ws):
         #     for j in range(w.shape[1]):
         #         heatmap[j, i] = w[:, j, :, :].abs().sum()
-        L = self.net.L.clone()
-        C = self.net.c_final.weight.data
+        L = self.msd.L.clone()
+        C = self.msd.c_final.weight.data
 
         for i, c in enumerate(C.squeeze().tolist()):
             L[:, i, :, :].mul_(c)
@@ -162,6 +215,6 @@ class MSDModel():
                        nrow=10)
 
     def save_g(self, filename):
-        tvu.save_image(self.net.G[:, 1:, :, :].transpose(0, 1),
+        tvu.save_image(self.msd.G[:, 1:, :, :].transpose(0, 1),
                        filename,
                        nrow=10)
