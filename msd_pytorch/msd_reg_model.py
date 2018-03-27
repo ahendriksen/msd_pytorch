@@ -43,14 +43,15 @@ def cfg():
     width = 1
     loss_function = "L1"
     dilation = 'MSD'
+    reflect = True
     save_dir = 'saved_networks'
     conv3d = False
 
 
 class MSDRegressionModel():
     @msd_ingredient.capture()
-    def __init__(self, c_in, c_out, depth, width, loss_function, dilation,
-                 conv3d):
+    def __init__(self, c_in, c_out, depth, width, loss_function,
+                 dilation, reflect, conv3d):
         self.c_in, self.c_out = c_in, c_out
         self.depth, self.width = depth, width
 
@@ -63,13 +64,16 @@ class MSDRegressionModel():
         dilation_function = dilation_functions[dilation]
         assert(dilation_function is not None)
 
+        self.reflect = reflect
+
         # This part of the network can be used to renormalize the
         # input and output data. Its parameters are saved when the
         # network is saved.
         self.scale_in = scaling_module(c_in, c_in, conv3d)
         self.scale_out = scaling_module(c_out, c_out, conv3d)
 
-        self.msd = MSDModule(c_in, c_out, depth, width, dilation_function,
+        self.msd = MSDModule(c_in, c_out, depth, width,
+                             dilation_function, reflect,
                              conv3d=conv3d)
 
         # Train only MSD parameters:

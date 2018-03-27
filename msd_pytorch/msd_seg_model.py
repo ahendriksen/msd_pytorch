@@ -28,6 +28,7 @@ def cfg():
     width = 1
     loss_function = "L1"
     dilation = 'MSD'
+    reflect = True
     save_dir = 'saved_networks'
     conv3d = False
 
@@ -35,7 +36,7 @@ def cfg():
 class MSDSegmentationModel():
     @msd_ingredient.capture()
     def __init__(self, c_in, num_labels, depth, width, dilation,
-                 conv3d):
+                 reflect, conv3d):
         self.c_in, self.num_labels = c_in, num_labels
         self.depth, self.width = depth, width
 
@@ -50,6 +51,8 @@ class MSDSegmentationModel():
         dilation_function = dilation_functions[dilation]
         assert(dilation_function is not None)
 
+        self.reflect = reflect
+
         # This part of the network can be used to renormalize the
         # input data. Its parameters are saved when the network is
         # saved.
@@ -63,7 +66,7 @@ class MSDSegmentationModel():
         # The rest of the network has parameters that are updated
         # during training.
         self.msd = MSDModule(c_in, num_labels, depth, width,
-                             dilation_function)
+                             dilation_function, reflect)
 
         net_trained = nn.Sequential(
             self.msd,

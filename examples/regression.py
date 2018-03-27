@@ -15,6 +15,7 @@ in_channels = 1                 # number of input channels
 out_channels = 1                # Number of output channels
 depth = 30                      # Depth of the MSD network
 width = 1                       # Width of the MSD network
+reflect = True                  # Use reflection padding
 epochs = 1                      # The number of epochs to train for
 batch_size = 1                  # The mini-batch size
                                 # (1 is strongly recommended for msd_pytorch)
@@ -39,7 +40,7 @@ val_dl = DataLoader(val_ds, batch_size, shuffle=True)
 
 # Create model:
 model = MSDRegressionModel(in_channels, out_channels, depth, width,
-                           "L2", "MSD", conv3d=False)
+                           "L2", "MSD", reflect, conv3d=False)
 
 # The network works best if the input data has mean zero and has a
 # standard deviation of 1. To achieve this, we get a rough estimate of

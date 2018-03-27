@@ -17,6 +17,7 @@ in_channels = 1                 # number of input channels
 num_labels = 5                  # Number of target labels
 depth = 30                      # Depth of the MSD network
 width = 1                       # Width of the MSD network
+reflect = True                  # Use reflection padding
 epochs = 1                      # The number of epochs to train for
 batch_size = 1                  # The mini-batch size
                                 # (1 is strongly recommended for msd_pytorch)
@@ -41,7 +42,8 @@ val_dl = DataLoader(val_ds, batch_size, shuffle=True)
 
 # Create model:
 model = MSDSegmentationModel(in_channels, num_labels, depth, width,
-                             "MSD", conv3d=False)
+                             "MSD", reflect, conv3d=False)
+
 
 # The network works best if the input data has mean zero and has a
 # standard deviation of 1. To achieve this, we get a rough estimate of

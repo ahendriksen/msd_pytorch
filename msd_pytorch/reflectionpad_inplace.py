@@ -1,3 +1,4 @@
+import torch as t
 import torch.nn as nn
 from torch.autograd import (Variable, Function)
 from torch.nn.modules.utils import (_ntuple)
@@ -67,3 +68,52 @@ class ReflectionPad2DInplaceModule(nn.Module):
 
     def forward(self, input):
         return reflectionPad2DInplace(input, self.padding)
+
+
+class crop2dFunction(Function):
+    @staticmethod
+    def forward(ctx, input, crop_by=1):
+        ctx.crop_by = crop_by
+
+        output = input.clone()
+        storage = output.storage()
+
+        shape = output.shape
+
+        storage_offset = crop_by * (1 + shape[3])
+        stride = output.stride()
+        size = shape[:2] + tuple(shape[i] - 2 * crop_by for i in [2, 3])
+
+        output.set_(storage, storage_offset=storage_offset, size=size,
+                    stride=stride)
+        return output
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        crop_by = ctx.crop_by
+
+        shape = grad_output.data.shape
+        size = shape[:2] + tuple(shape[i] + 2 * crop_by for i in [2, 3])
+
+        grad_input = grad_output.data.new(*size).zero_()
+        storage_offset = crop_by * (1 + size[3])
+        stride = grad_input.stride()
+
+        cropped = grad_input.new()
+        cropped.set_(grad_input.storage(),
+                     storage_offset=storage_offset, size=shape, stride=stride)
+        cropped.copy_(grad_output.data)
+
+        return Variable(grad_input), None
+
+
+crop2d = crop2dFunction.apply
+
+
+class Crop2DModule(nn.Module):
+    def __init__(self, crop_by):
+        super(Crop2DModule, self).__init__()
+        self.crop_by = crop_by
+
+    def forward(self, input):
+        return crop2d(input, self.crop_by)

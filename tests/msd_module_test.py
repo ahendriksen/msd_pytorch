@@ -44,6 +44,27 @@ class MSDModuleTest(unittest.TestCase):
 
         self.assertNotAlmostEqual(0, output.data.abs().sum())
 
+    def test_reflect(self):
+        batch_sz = 1
+        c_in, c_out = 2, 3
+        depth, width = 11, 3
+        size = (20,) * 2
+        x = t.randn(batch_sz, c_in, *size).cuda()
+        target = t.randn(batch_sz, c_out, *size).cuda()
+
+        net = MSDModule(c_in, c_out, depth, width, msd_dilation,
+                        reflect=True, conv3d=False)
+
+        output = net(Variable(x))
+
+        self.assertEqual(target.shape, output.data.shape)
+
+        loss = nn.MSELoss()(output, Variable(target))
+        loss.backward()
+
+        self.assertNotAlmostEqual(0, output.data.abs().sum())
+
+
     def test_with_tail(self):
         batch_sz = 1
         c_in, c_out = 2, 3

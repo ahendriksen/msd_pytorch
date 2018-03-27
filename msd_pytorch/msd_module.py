@@ -2,11 +2,13 @@ import torch.nn as nn
 import torch as t
 import torch.nn.init as init
 from msd_pytorch.conv_inplace import (Conv2dInPlaceModule, Conv3dInPlaceModule)
-from msd_pytorch.stitch import (stitchLazy, stitchCopy)
+from msd_pytorch.reflectionpad_inplace import (ReflectionPad2DInplaceModule, Crop2DModule)
+from msd_pytorch.stitch import (stitchLazy, stitchCopy, StitchCopyModule)
 from math import sqrt
 from functools import reduce
 from operator import mul
 
+max_dilation = 10
 
 def msd_dilation(i):
     return i % 10 + 1
@@ -43,6 +45,17 @@ class MSDLayerModule(nn.Module):
 
         output = None
 
+        if max_dilation < dilation:
+            raise(RuntimeError("max_dilation (10) exceeded. " +
+                               "Contact me to increase it manually."))
+
+        if reflect and conv3d:
+            raise(RuntimeError("3d Reflection padding not yet supported."))
+        elif reflect and not conv3d:
+            self.reflect = ReflectionPad2DInplaceModule(dilation)
+        else:
+            self.reflect = None
+
         if conv3d:
             self.convolution = Conv3dInPlaceModule(
                 output, in_front, width, kernel_size=3,
@@ -65,6 +78,8 @@ class MSDLayerModule(nn.Module):
         # Set output
         self.convolution.output = self.L.narrow(1, self.in_front, self.width)
         output = self.convolution(input)
+        if self.reflect is not None:
+            output = self.reflect(output)
         output = self.relu(output)
         output = stitchLazy(output, self.L, self.G, self.in_front)
         return output
@@ -72,13 +87,16 @@ class MSDLayerModule(nn.Module):
 
 class MSDModule(nn.Module):
     def __init__(self, c_in, c_out, depth, width, dilation_function,
-                 conv3d=False):
+                 reflect=False, conv3d=False):
         """Create a msd module
 
         :param c_in: # of input channels
         :param c_out: # of output channels
         :param depth: # of layers
         :param width: # the width of the module
+        :param dilation_function:
+        :param reflect: Whether or not to use reflection padding instead of zero padding.
+        :param conv3d:
 
         :param dilation_function: this fuction determines the dilation
         of the convolution in each layer. Usually, you will want to
@@ -97,16 +115,24 @@ class MSDModule(nn.Module):
         self.width = width
         self.dilation_function = dilation_function
         self.conv3d = conv3d
+        self.reflect = reflect
         #
         L = t.Tensor(1).cuda()
         G = L.clone().zero_()
         self.register_buffer('L', L)
         self.register_buffer('G', G)
 
-        layers = [MSDLayerModule(self.L, self.G, c_in, c_out, d, width,
-                                 dilation_function(d),
-                                 conv3d=conv3d)
-                  for d in range(1, depth + 1)]
+        # Add margins to the layers:
+        if reflect:
+            layers = [nn.ReflectionPad2d(max_dilation),
+                      StitchCopyModule(L, G, 0)]
+        else:
+            layers = [StitchCopyModule(L, G, 0)]
+
+        layers += [MSDLayerModule(self.L, self.G, c_in, c_out, d, width,
+                                  dilation_function(d),
+                                  conv3d=conv3d)
+                   for d in range(1, depth + 1)]
 
         in_front = units_in_front(c_in, width, depth + 1)
         if conv3d:
@@ -118,15 +144,22 @@ class MSDModule(nn.Module):
         init.xavier_normal(self.c_final.weight.data)
         self.c_final.bias.data.zero_()
         self.net = nn.Sequential(*(layers + [self.c_final]))
+
+        # Remove the margins at the end:
+        if reflect:
+            self.net = nn.Sequential(self.net, Crop2DModule(max_dilation))
         self.net.cuda()
 
     def forward(self, input):
         self.init_buffers(input.data.shape)
-        input = stitchCopy(input, self.L, self.G, 0)
         return self.net(input)
 
     def init_buffers(self, input_shape):
         batch_sz, c_in, *shape = input_shape
+        # If reflection padding is active, the intermediate buffers
+        # must be bigger too.
+        if self.reflect:
+            shape = [s + 2 * max_dilation for s in shape]
 
         assert c_in == self.c_in, "Unexpected number of input channels"
         # Ensure that L and G are the correct size
