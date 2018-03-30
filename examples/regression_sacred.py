@@ -80,6 +80,7 @@ def main(in_channels, out_channels, epochs, batch_size, dataset_dir,
     # train for some epochs:
     print("Training...")
     best_validation_error = model.validate(val_dl)
+    print("Initial validation error: {}".format(best_validation_error))
 
     for epoch in range(epochs):
         start = timer()
