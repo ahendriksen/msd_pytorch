@@ -146,7 +146,7 @@ class MSDSegmentationModel():
             self.forward(input, target)
             validation_loss += self.get_loss()
 
-        return validation_loss
+        return validation_loss / len(dataloader)
 
     def print(self):
         print(self.net)
@@ -157,9 +157,13 @@ class MSDSegmentationModel():
     def get_output(self):
         return self.output
 
-    def save_network(self, save_dir, name, label):
+    def get_network_path(self, save_dir, name, label):
         filename = "{}_{}.pytorch".format(name, label)
         save_path = os.path.join(save_dir, filename)
+        return save_path
+
+    def save_network(self, save_dir, name, label):
+        save_path = self.get_network_path(save_dir, name, label)
         os.makedirs(save_dir, exist_ok=True)
         # Clear the L and G buffers before saving:
         self.msd.clear_buffers()
@@ -168,8 +172,7 @@ class MSDSegmentationModel():
         return save_path
 
     def load_network(self, save_dir, name, label):
-        filename = "{}_{}.pytorch".format(name, label)
-        save_path = os.path.join(save_dir, filename)
+        save_path = self.get_network_path(save_dir, name, label)
         self.net.load_state_dict(t.load(save_path))
         self.net.cuda()
 
