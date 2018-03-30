@@ -77,7 +77,7 @@ class MSDRegressionModel():
                              conv3d=conv3d)
 
         # Train only MSD parameters:
-        net_trained = nn.Sequential(self.msd, nn.ReLU())
+        net_trained = nn.Sequential(self.msd, nn.Sigmoid())
         self.optimizer = optim.Adam(net_trained.parameters())
 
         # Define the whole network:
