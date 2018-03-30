@@ -2,7 +2,7 @@
    in a database through sacred (if available).
 """
 
-from msd_pytorch.msd_model import (MSDModel, msd_ingredient)
+from msd_pytorch.msd_reg_model import (MSDRegressionModel, msd_ingredient)
 from os import environ
 from sacred import Experiment
 from sacred.observers import MongoObserver
@@ -33,19 +33,17 @@ def cfg():
     batch_sz = 1
     c_in = 1
     c_out = 1
-    depth = 50
-    width = 1
     iterations = 2
     do_backward = True
     conv3d = False
 
 
 @ex.automain
-def profile(img_sz, batch_sz, c_in, c_out, depth, width, iterations,
+def profile(img_sz, batch_sz, c_in, c_out, iterations,
             do_backward, conv3d):
     size = (img_sz,) * (3 if conv3d else 2)
 
-    model = MSDModel(c_in, c_out, depth, width, 'L1', 'MSD', conv3d=conv3d)
+    model = MSDRegressionModel(c_in, c_out, conv3d=conv3d)
     input = t.randn(batch_sz, c_in, *size).cuda()
     target = t.randn(batch_sz, c_out, *size).cuda()
 
