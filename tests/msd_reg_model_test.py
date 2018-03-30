@@ -11,7 +11,7 @@ class TestMSDRegressionModel(unittest.TestCase):
         for conv3d in [False, True]:
             c_in, c_out, depth, width = 1, 1, 11, 1
             model = MSDRegressionModel(c_in, c_out, depth, width,
-                                       'L1', 'MSD', conv3d)
+                                       'L1', 'MSD', False, conv3d)
             shape = (11, 11, 11) if conv3d else (11, 11)
             input = t.randn(1, c_in, *shape)    # batch size is one.
             target = t.randn(1, c_out, *shape)  #

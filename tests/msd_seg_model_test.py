@@ -13,7 +13,7 @@ class TestMSDSegmentationModel(unittest.TestCase):
         for conv3d in [False]:
             c_in, num_labels, depth, width = 1, 2, 11, 2
             model = MSDSegmentationModel(c_in, num_labels, depth, width,
-                                         'MSD', conv3d)
+                                         'MSD', False, conv3d)
             shape = (11, 11, 11) if conv3d else (11, 11)
             input = t.randn(1, c_in, *shape)   # batch size is one.
             target = t.rand(1, 1, *shape).bernoulli()
