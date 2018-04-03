@@ -1,12 +1,13 @@
-import torch.nn as nn
-import torch as t
-import torch.optim as optim
-import torchvision.utils as tvu
+from msd_pytorch.msd_module import (MSDModule, msd_dilation, one_dilation)
 from sacred import Ingredient
 from torch.autograd import Variable
-from msd_pytorch.msd_module import (MSDModule, msd_dilation, one_dilation)
+import numpy as np
 import os
 import os.path
+import torch as t
+import torch.nn as nn
+import torch.optim as optim
+import torchvision.utils as tvu
 
 msd_ingredient = Ingredient('msd')
 
@@ -77,7 +78,7 @@ class MSDRegressionModel():
                              conv3d=conv3d)
 
         # Train only MSD parameters:
-        net_trained = nn.Sequential(self.msd, nn.Sigmoid())
+        net_trained = nn.Sequential(self.msd)
         self.optimizer = optim.Adam(net_trained.parameters())
 
         # Define the whole network:
@@ -111,8 +112,8 @@ class MSDRegressionModel():
         square_in /= len(dataloader)
         square_out /= len(dataloader)
 
-        std_in = square_in - mean_in ** 2
-        std_out = square_out - mean_out ** 2
+        std_in = np.sqrt(square_in - mean_in ** 2)
+        std_out = np.sqrt(square_out - mean_out ** 2)
 
         # The input data should be roughly normally distributed after
         # passing through net_fixed.
