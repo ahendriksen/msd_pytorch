@@ -172,9 +172,21 @@ class MSDSegmentationModel():
         t.save(self.net.state_dict(), save_path)
         return save_path
 
-    def load_network(self, save_dir, name, label):
-        save_path = self.get_network_path(save_dir, name, label)
-        self.net.load_state_dict(t.load(save_path))
+    def load_network(self, save_dir='.', name='MSD', label='0',
+                     save_file=None):
+        """Load network parameters from storage.
+
+        :param save_dir: directory to save files in.
+        :param name: name of the network.
+        :param label: a label (such as current epoch) to add to the filename.
+        :param save_file: a file path or stream-like object that overrides the default filename structure.
+        :returns:
+        :rtype:
+
+        """
+        if save_file is None:
+            save_file = self.get_network_path(save_dir, name, label)
+        self.net.load_state_dict(t.load(save_file))
         self.net.cuda()
 
     def save_output(self, filename):
