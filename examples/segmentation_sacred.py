@@ -1,10 +1,10 @@
 """This example shows how to construct a Sacred experiment with the
-   MSD network for regression.
+   MSD network for segmentation.
 """
 
 
 from msd_pytorch.TiffDataset import TiffDataset
-from msd_pytorch.msd_reg_model import (MSDRegressionModel, msd_ingredient)
+from msd_pytorch.msd_seg_model import (MSDSegmentationModel, msd_ingredient)
 from os import environ
 from sacred import Experiment
 from sacred.observers import MongoObserver
@@ -28,8 +28,15 @@ mongo_url = 'mongodb://{0}:{1}@{2}:27017/sacred?authMechanism=SCRAM-SHA-1'.forma
 
 ex.observers.append(MongoObserver.create(url=mongo_url, db_name='sacred'))
 
+# The default dataset has 5 labels. Make sure that this example can be
+# run without extra command line parameters.
+@msd_ingredient.config
+def update_msd_config():
+    c_in = 1
+    num_labels = 5
+
 @ex.config
-def config():
+def config(msd):
     # Set parameters
     epochs = 1                      # The number of epochs to train for
     batch_size = 1                  # The mini-batch size
@@ -38,14 +45,16 @@ def config():
     dataset_dir = "~/datasets/"     # Dataset directory (may contain a '~')
     train_dir = "MLTestData/train/" # Training directory (relative to dataset directory)
     val_dir = "MLTestData/val/"     # Validation directory (relative to dataset directory)
-    train_inp_glob = "noisy/*.tiff" # Glob for input images (relative to training directory)
-    train_tgt_glob = "image/*.tiff" # Glob for target images (relative to training directory)
-    val_inp_glob = "noisy/*.tiff"   # Glob for input images (relative to validation directory)
-    val_tgt_glob = "image/*.tiff"   # Glob for target images (relative to validation directory)
+    train_inp_glob = "image/*.tiff" # Glob for input images (relative to training directory)
+    train_tgt_glob = "label/*.tiff" # Glob for target images (relative to training directory)
+    val_inp_glob = "image/*.tiff"   # Glob for input images (relative to validation directory)
+    val_tgt_glob = "label/*.tiff"   # Glob for target images (relative to validation directory)
+
 
 @ex.automain
-def main(msd, epochs, batch_size, dataset_dir, train_dir, val_dir,
-         train_inp_glob, train_tgt_glob, val_inp_glob, val_tgt_glob):
+def main(msd, epochs, batch_size, dataset_dir,
+         train_dir, val_dir, train_inp_glob, train_tgt_glob, val_inp_glob,
+         val_tgt_glob):
     # Training dataset
     dataset_dir = os.path.expanduser(dataset_dir)
     train_dir = os.path.join(dataset_dir, train_dir)
@@ -65,7 +74,7 @@ def main(msd, epochs, batch_size, dataset_dir, train_dir, val_dir,
     val_dl = DataLoader(val_ds, batch_size, shuffle=True)
 
     # Create model:
-    model = MSDRegressionModel()
+    model = MSDSegmentationModel(msd['c_in'], msd['num_labels'])
 
     # The network works best if the input data has mean zero and has a
     # standard deviation of 1. To achieve this, we get a rough estimate of
@@ -92,8 +101,8 @@ def main(msd, epochs, batch_size, dataset_dir, train_dir, val_dir,
         # Save network if worthwile
         if validation_error < best_validation_error:
             best_validation_error = validation_error
-            model.save_network('.', 'regnet', epoch)
-            ex.add_artifact(model.get_network_path('.', 'regnet', epoch))
+            model.save_network('.', 'segnet', epoch)
+            ex.add_artifact(model.get_network_path('.', 'segnet', epoch))
 
         end = timer()
         ex.log_scalar("Iteration time", end - start)
