@@ -31,9 +31,14 @@ class MSDSegmentationModel(MSDModel):
                  reflect, conv3d):
         # We don't support 3d segmentation yet.
         assert not conv3d, "3d segmentation is not yet supported"
+        # Allow supplying a list of labels instead of just the number
+        # of labels.
+        if isinstance(num_labels, list):
+            c_out = len(num_labels)
+            self.labels = num_labels
 
         # Initialize msd network.
-        super().__init__(c_in, num_labels, depth, width, dilation,
+        super().__init__(c_in, c_out, depth, width, dilation,
                          reflect, conv3d)
 
         # TODO: implement NLLLoss3d.
@@ -44,7 +49,7 @@ class MSDSegmentationModel(MSDModel):
         # Initialize network
         net_trained = nn.Sequential(
             self.msd,
-            nn.Conv2d(num_labels, num_labels, 1),
+            nn.Conv2d(c_out, c_out, 1),
             nn.LogSoftmax(dim=1))
         self.net = nn.Sequential(self.scale_in,
                                  net_trained)
@@ -82,6 +87,11 @@ class MSDSegmentationModel(MSDModel):
         self.scale_in.weight.data.fill_(1 / std)
 
     def set_target(self, data):
+        # relabel if necessary:
+        if self.labels:
+            for i, label in enumerate(self.labels):
+                data[data == label] = i
+
         # The class labels must be of long data type
         data = data.long()
         # The NLLLoss does not accept a channel dimension. So we
