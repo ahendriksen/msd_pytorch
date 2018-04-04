@@ -23,7 +23,12 @@ def get_image_names(dir, allowed_extensions):
 
 def to_tensor(img_path):
     pic = Image.open(img_path)
-    tensor = t.from_numpy(np.array(pic))
+    npa = np.array(pic)
+    # uint16 is not supported by pytorch. We must cast the array to
+    # float32.
+    if npa.dtype == np.dtype('uint16'):
+        npa = npa.astype(np.float32, copy=False)
+    tensor = t.from_numpy(npa)
     if len(tensor.shape) < 3:
         tensor = tensor.unsqueeze(0)
 
