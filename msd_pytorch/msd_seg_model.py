@@ -36,6 +36,8 @@ class MSDSegmentationModel(MSDModel):
         if isinstance(num_labels, list):
             c_out = len(num_labels)
             self.labels = num_labels
+        else:
+            c_out = num_labels
 
         # Initialize msd network.
         super().__init__(c_in, c_out, depth, width, dilation,
