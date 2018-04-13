@@ -37,6 +37,7 @@ class MSDSegmentationModel(MSDModel):
             c_out = len(num_labels)
             self.labels = num_labels
         else:
+            self.labels = range(num_labels)
             c_out = num_labels
 
         # Initialize msd network.
