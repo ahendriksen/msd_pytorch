@@ -51,7 +51,6 @@ class MSDSegmentationModel(MSDModel):
         # Initialize network
         net_trained = nn.Sequential(
             self.msd,
-            nn.Conv2d(c_out, c_out, 1),
             nn.LogSoftmax(dim=1))
         self.net = nn.Sequential(self.scale_in,
                                  net_trained)
