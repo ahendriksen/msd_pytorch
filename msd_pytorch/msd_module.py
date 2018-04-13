@@ -140,8 +140,7 @@ class MSDModule(nn.Module):
         else:
             self.c_final = nn.Conv2d(in_front, c_out, kernel_size=1)
 
-        # TODO: fix weight initialization!
-        init.xavier_normal(self.c_final.weight.data)
+        self.c_final.weight.data.zero_()
         self.c_final.bias.data.zero_()
         self.net = nn.Sequential(*(layers + [self.c_final]))
 

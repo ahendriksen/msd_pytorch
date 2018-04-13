@@ -42,7 +42,9 @@ class MSDModuleTest(unittest.TestCase):
 
         output = net(Variable(x))
 
-        self.assertNotAlmostEqual(0, output.data.abs().sum())
+        # The final 1x1 convolution has weight initialized to zero, so
+        # output should be zero.
+        self.assertAlmostEqual(0, output.data.abs().sum())
 
     def test_reflect(self):
         batch_sz = 1
@@ -62,7 +64,7 @@ class MSDModuleTest(unittest.TestCase):
         loss = nn.MSELoss()(output, Variable(target))
         loss.backward()
 
-        self.assertNotAlmostEqual(0, output.data.abs().sum())
+        self.assertAlmostEqual(0, output.data.abs().sum())
 
 
     def test_with_tail(self):
@@ -106,17 +108,22 @@ class MSDModuleTest(unittest.TestCase):
 
                 self.assertIsNotNone(net)
 
-                y = net(x)
-                self.assertIsNotNone(y)
-                criterion = nn.L1Loss()
-                loss = criterion(y, target)
-                optimizer = optim.Adam(net.parameters())
-                optimizer.zero_grad()
-
                 params0 = [p.data.clone() for p in net.parameters()]
-                loss.backward()
-                optimizer.step()
-                params1 = [p.data for p in net.parameters()]
+                # Train for two iterations. The convolution weights in
+                # the MSD layers are not updated after the first
+                # training step because the final 1x1 convolution
+                # weights are zero.
+                for i in [1, 2]:
+                    y = net(x)
+                    self.assertIsNotNone(y)
+                    criterion = nn.L1Loss()
+                    loss = criterion(y, target)
+                    optimizer = optim.Adam(net.parameters())
+                    optimizer.zero_grad()
+
+                    loss.backward()
+                    optimizer.step()
+                    params1 = [p.data for p in net.parameters()]
 
                 diff = [t.abs(p - q).sum() for p, q in zip(params0, params1)]
 
