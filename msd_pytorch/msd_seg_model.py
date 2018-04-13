@@ -89,15 +89,16 @@ class MSDSegmentationModel(MSDModel):
 
     def set_target(self, data):
         # relabel if necessary:
+        target = data.clone()
         if self.labels:
             for i, label in enumerate(self.labels):
-                data[data == label] = i
+                target[data == label] = i
 
         # The class labels must be of long data type
-        data = data.long()
+        target = target.long()
         # The NLLLoss does not accept a channel dimension. So we
         # squeeze the target.
-        data = data.squeeze(1)
+        target = target.squeeze(1)
         # The class labels must reside on the GPU
-        data = data.cuda()
-        self.target = Variable(data)
+        target = target.cuda()
+        self.target = Variable(target)
