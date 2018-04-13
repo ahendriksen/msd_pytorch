@@ -89,13 +89,14 @@ class MSDModel():
         std_out = np.sqrt(square_out - mean_out ** 2)
 
         # The input data should be roughly normally distributed after
-        # passing through scale_in
-        self.scale_in.bias.data.fill_(- mean_in)
+        # passing through scale_in. Note that the input is first
+        # scaled and then recentered.
         self.scale_in.weight.data.fill_(1 / std_in)
+        self.scale_in.bias.data.fill_(- mean_in / std_in)
         # The scale_out layer should rather 'denormalize' the network
         # output.
-        self.scale_out.bias.data.fill_(mean_in)
         self.scale_out.weight.data.fill_(std_out)
+        self.scale_out.bias.data.fill_(mean_out)
 
     def set_input(self, data):
         assert self.c_in == data.shape[1], "Wrong number of input channels"

@@ -85,7 +85,7 @@ class MSDSegmentationModel(MSDModel):
 
         # The input data should be roughly normally distributed after
         # passing through net_fixed.
-        self.scale_in.bias.data.fill_(- mean)
+        self.scale_in.bias.data.fill_(- mean / std)
         self.scale_in.weight.data.fill_(1 / std)
 
     def set_target(self, data):
