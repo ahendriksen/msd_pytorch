@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader
 import glob
 import os.path
 
-ex = Experiment('MSD_pytorch regression example', ingredients=[msd_ingredient])
+ex = Experiment('MSD_pytorch segmentation example', ingredients=[msd_ingredient])
 
 mongo_user = environ.get('MONGO_SACRED_USER')
 mongo_pass = environ.get('MONGO_SACRED_PASS')
@@ -51,27 +51,26 @@ def config(msd):
     val_tgt_glob = "label/*.tiff"   # Glob for target images (relative to validation directory)
 
 
+def load_dataset(dataset_dir, sub_dir, input_glob, target_glob):
+    dataset_dir = os.path.expanduser(dataset_dir)
+    sub_dir = os.path.join(dataset_dir, sub_dir)
+    inp_imgs = sorted(glob.glob(sub_dir + input_glob))
+    tgt_imgs = sorted(glob.glob(sub_dir + target_glob))
+
+    return TiffDataset('', '', input_imgs=inp_imgs, target_imgs=tgt_imgs)
+
+
 @ex.automain
 def main(msd, epochs, batch_size, dataset_dir,
          train_dir, val_dir, train_inp_glob, train_tgt_glob, val_inp_glob,
          val_tgt_glob):
-    # Training dataset
-    dataset_dir = os.path.expanduser(dataset_dir)
-    train_dir = os.path.join(dataset_dir, train_dir)
-
-    inp_imgs = sorted(glob.glob(train_dir + train_inp_glob))
-    tgt_imgs = sorted(glob.glob(train_dir + train_tgt_glob))
-    train_ds = TiffDataset('', '', input_imgs=inp_imgs, target_imgs=tgt_imgs)
-
-    # Validation dataset
-    val_dir = os.path.join(dataset_dir, val_dir)
-    inp_imgs = sorted(glob.glob(val_dir + val_inp_glob))
-    tgt_imgs = sorted(glob.glob(val_dir + val_tgt_glob))
-    val_ds = TiffDataset('', '', input_imgs=inp_imgs, target_imgs=tgt_imgs)
+    # Load datasets
+    train_ds = load_dataset(dataset_dir, train_dir, train_inp_glob, train_tgt_glob)
+    val_ds = load_dataset(dataset_dir, val_dir, val_inp_glob, val_tgt_glob)
 
     # Create dataloaders, which batch and shuffle the data:
     train_dl = DataLoader(train_ds, batch_size, shuffle=True)
-    val_dl = DataLoader(val_ds, batch_size, shuffle=True)
+    val_dl = DataLoader(val_ds, batch_size, shuffle=False)
 
     # Create model:
     model = MSDSegmentationModel(msd['c_in'], msd['num_labels'])
@@ -106,3 +105,35 @@ def main(msd, epochs, batch_size, dataset_dir,
 
         end = timer()
         ex.log_scalar("Iteration time", end - start)
+
+@ex.command
+@ex.capture()
+def stats(batch_size, dataset_dir, train_dir, val_dir, train_inp_glob,
+          train_tgt_glob, val_inp_glob, val_tgt_glob, msd):
+    # Load datasets
+    train_ds = load_dataset(dataset_dir, train_dir, train_inp_glob, train_tgt_glob)
+    val_ds = load_dataset(dataset_dir, val_dir, val_inp_glob, val_tgt_glob)
+
+    # Create dataloaders, which batch and shuffle the data:
+    train_dl = DataLoader(train_ds, batch_size, shuffle=True)
+    val_dl = DataLoader(val_ds, batch_size, shuffle=False)
+
+    print('Statistics for training dataset')
+    print("  Sample size: {}".format(len(train_ds)))
+    print("  Label statistics: ")
+    labels = msd['num_labels'] if isinstance(msd['num_labels'], list) else range(msd['num_labels'])
+    for label in labels:
+        density = 0
+        for (_, target) in train_dl:
+            density += (target == label).sum() / target.numel()
+        density /= len(train_ds)
+        print("    {:03}: {:02.2f}%".format(label, density * 100))
+    print("  Input statistics: ")
+    for (input, _) in train_dl:
+        mean_in += input.mean()
+        square_in += input.pow(2).mean()
+    mean_in /= len(train_dl)
+    square_in /= len(train_dl)
+    std_in = np.sqrt(square_in - mean_in ** 2)
+    print("    mean:    {}".format(mean_in))
+    print("    std dev: {}".format(std_in))

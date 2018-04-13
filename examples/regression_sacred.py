@@ -43,22 +43,20 @@ def config():
     val_inp_glob = "noisy/*.tiff"   # Glob for input images (relative to validation directory)
     val_tgt_glob = "image/*.tiff"   # Glob for target images (relative to validation directory)
 
+def load_dataset(dataset_dir, sub_dir, input_glob, target_glob):
+    dataset_dir = os.path.expanduser(dataset_dir)
+    sub_dir = os.path.join(dataset_dir, sub_dir)
+    inp_imgs = sorted(glob.glob(sub_dir + input_glob))
+    tgt_imgs = sorted(glob.glob(sub_dir + target_glob))
+
+    return TiffDataset('', '', input_imgs=inp_imgs, target_imgs=tgt_imgs)
+
 @ex.automain
 def main(msd, epochs, batch_size, dataset_dir, train_dir, val_dir,
          train_inp_glob, train_tgt_glob, val_inp_glob, val_tgt_glob):
-    # Training dataset
-    dataset_dir = os.path.expanduser(dataset_dir)
-    train_dir = os.path.join(dataset_dir, train_dir)
-
-    inp_imgs = sorted(glob.glob(train_dir + train_inp_glob))
-    tgt_imgs = sorted(glob.glob(train_dir + train_tgt_glob))
-    train_ds = TiffDataset('', '', input_imgs=inp_imgs, target_imgs=tgt_imgs)
-
-    # Validation dataset
-    val_dir = os.path.join(dataset_dir, val_dir)
-    inp_imgs = sorted(glob.glob(val_dir + val_inp_glob))
-    tgt_imgs = sorted(glob.glob(val_dir + val_tgt_glob))
-    val_ds = TiffDataset('', '', input_imgs=inp_imgs, target_imgs=tgt_imgs)
+    # Load datasets
+    train_ds = load_dataset(dataset_dir, train_dir, train_inp_glob, train_tgt_glob)
+    val_ds = load_dataset(dataset_dir, val_dir, val_inp_glob, val_tgt_glob)
 
     # Create dataloaders, which batch and shuffle the data:
     train_dl = DataLoader(train_ds, batch_size, shuffle=True)
