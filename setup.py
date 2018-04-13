@@ -27,7 +27,7 @@ test_requirements = [
 
 setup(
     name='msd_pytorch',
-    version='0.1.10',
+    version='0.2.0',
     description="A pytorch implementation of the MSD network structure.",
     long_description=readme + '\n\n' + history,
     author="Allard Hendriksen",
