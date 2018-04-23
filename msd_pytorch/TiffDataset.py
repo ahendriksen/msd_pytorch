@@ -26,7 +26,7 @@ def to_tensor(img_path):
     npa = np.array(pic)
     # uint16 is not supported by pytorch. We must cast the array to
     # float32.
-    if npa.dtype == np.dtype('uint16'):
+    if npa.dtype in [np.dtype('uint16'), np.dtype('>u2')]:
         npa = npa.astype(np.float32, copy=False)
     tensor = t.from_numpy(npa)
     if len(tensor.shape) < 3:
