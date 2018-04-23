@@ -95,3 +95,7 @@ def main(msd, epochs, batch_size, dataset_dir, train_dir, val_dir,
 
         end = timer()
         ex.log_scalar("Iteration time", end - start)
+
+    # Always save final network parameters
+    model.save_network('.', 'regnet', epoch)
+    ex.add_artifact(model.get_network_path('.', 'regnet', epoch))
