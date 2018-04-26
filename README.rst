@@ -45,7 +45,7 @@ Install PyTorch:
 
 .. code:: bash
 
-    conda install pytorch=0.3.1 torchvision -c pytorch
+    conda install pytorch=0.4.0 torchvision -c pytorch
 
 Now install `msd_pytorch`:
 
