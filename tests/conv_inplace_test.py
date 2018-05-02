@@ -1,4 +1,6 @@
 import torch.nn as nn
+import torch.nn.functional as F
+
 import torch as t
 from torch.autograd import Variable
 from torch.autograd import gradcheck
@@ -47,6 +49,50 @@ class TestConv2dInPlace(unittest.TestCase):
                 y.sum().backward()
 
                 t.cuda.synchronize()
+
+    def test_same(self):
+        batch_sz = 1
+        in_channels, out_channels = [1,2,5], [1,2,5]
+        shapes = [11, 20, 50]
+
+        do3d = [False, True]
+
+        for c_in, c_out, shape, conv3d in cartesianp(in_channels, out_channels, shapes, do3d):
+
+            conv = F.conv3d if conv3d else F.conv2d
+            ndim = 3 if conv3d else 2
+            shape = (shape,) * ndim
+            weight_shape = (3,) * ndim
+            # conv_ip = Conv3dInPlaceModule() if conv3d else Conv2dInPlaceModule()
+
+            input1 = t.randn(batch_sz, c_in, *shape).cuda()
+            input2 = input1.data.clone()
+            output2 = t.zeros(batch_sz, c_out, *shape).cuda()
+            weight1 = t.randn(c_out, c_in, *weight_shape).cuda()
+            weight2 = weight1.data.clone()
+            bias1 = t.randn(c_out).cuda()
+            bias2 = bias1.data.clone()
+            grad_output = t.randn_like(output2)
+
+            input1.requires_grad, input2.requires_grad = True, True
+            weight1.requires_grad, weight2.requires_grad = True, True
+            bias1.requires_grad, bias2.requires_grad = True, True
+
+            dilation = padding = stride = (1, 1, 1) if conv3d else (1, 1)
+            groups = 1
+
+            output1 = conv(input1, weight1, bias1, stride, padding, dilation, groups)
+            output2 = convNdInPlace(input2, weight2, bias2, output2, padding, stride, dilation)
+
+            self.assertAlmostEqual(0, (output1 - output2).abs().sum())
+
+            # Test backward step
+            output1.backward(grad_output)
+            output2.backward(grad_output)
+
+            self.assertAlmostEqual(0, (weight1.grad - weight2.grad).abs().sum().item(), delta=1e-2)
+            self.assertAlmostEqual(0, (bias1.grad - bias2.grad).abs().sum().item(), delta=1e-5)
+            self.assertAlmostEqual(0, (input1.grad - input2.grad).abs().sum().item() / input1.numel(), delta=1e-5)
 
     def test_3d(self):
         batch_sz = 5
@@ -110,8 +156,9 @@ class TestConv2dInPlace(unittest.TestCase):
     def test_vs_conv(self):
 
         t.manual_seed(1)
+        # Batch sizes other than 1 are not supported any more.
         for batch_sz, n_channels, dil in cartesianp(
-                [1, 2, 3, 5], [1, 2, 5], [1, 2, 10]):
+                [1], [1, 2, 5], [1, 2, 10]):
 
             size = (20,) * 2
             L = t.ones(batch_sz, n_channels + 1, *size).cuda()

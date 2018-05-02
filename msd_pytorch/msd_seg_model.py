@@ -29,8 +29,6 @@ class MSDSegmentationModel(MSDModel):
     @msd_ingredient.capture()
     def __init__(self, c_in, num_labels, depth, width, dilation,
                  reflect, conv3d):
-        # We don't support 3d segmentation yet.
-        assert not conv3d, "3d segmentation is not yet supported"
         # Allow supplying a list of labels instead of just the number
         # of labels.
         if isinstance(num_labels, list):
@@ -44,10 +42,7 @@ class MSDSegmentationModel(MSDModel):
         super().__init__(c_in, c_out, depth, width, dilation,
                          reflect, conv3d)
 
-        # TODO: implement NLLLoss3d.
-        # LogSoftmax + NLLLoss is equivalent to a Softmax activation
-        # with Cross-entropy loss.
-        self.criterion = nn.NLLLoss2d()
+        self.criterion = nn.NLLLoss()
 
         # Initialize network
         net_trained = nn.Sequential(

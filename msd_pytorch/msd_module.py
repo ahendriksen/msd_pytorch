@@ -4,6 +4,7 @@ import torch.nn.init as init
 from msd_pytorch.conv_inplace import (Conv2dInPlaceModule, Conv3dInPlaceModule)
 from msd_pytorch.reflectionpad_inplace import (ReflectionPad2DInplaceModule, Crop2DModule)
 from msd_pytorch.stitch import (stitchLazy, stitchCopy, StitchCopyModule)
+from msd_pytorch.relu_inplace import (ReLUInplaceModule)
 from math import sqrt
 from functools import reduce
 from operator import mul
@@ -72,7 +73,7 @@ class MSDLayerModule(nn.Module):
 
         # Add the relu to get a nice printout for the network from
         # pytorch.
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = ReLUInplaceModule()
 
     def forward(self, input):
         # Set output

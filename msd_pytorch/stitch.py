@@ -67,9 +67,10 @@ class StitchCopyFunction(Function):
     def forward(ctx, input, L, G, i):
         width = input.shape[1]
         ctx.G, ctx.i, ctx.width = G, i, width
-        L_input = L.narrow(1, i, width)
+        # Decouple L as a variable from the input
+        L_input = L.data.narrow(1, i, width)
         L_input.copy_(input)
-        L_output = L.narrow(1, 0, i + width)
+        L_output = L.data.narrow(1, 0, i + width)
         return L_output
 
     @staticmethod
@@ -78,7 +79,7 @@ class StitchCopyFunction(Function):
         G_output = G.narrow(1, 0, i + width)
         G_output.add_(grad_output.data)
         G_input = G.narrow(1, i, width)
-        return Variable(G_input), None, None, None
+        return G_input, None, None, None
 
 
 stitchCopy = StitchCopyFunction.apply

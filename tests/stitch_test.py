@@ -2,6 +2,9 @@ import torch.nn as nn
 import torch as t
 from torch.autograd import (Variable)
 from msd_pytorch.stitch import (StitchCopyModule, stitchSlow, stitchCopy)
+from msd_pytorch.conv_inplace import (Conv2dInPlaceModule)
+from msd_pytorch.relu_inplace import (ReLUInplaceModule)
+import msd_pytorch.stitch as stitch
 import unittest
 
 
@@ -140,12 +143,85 @@ class stitchTest(unittest.TestCase):
         output = x
         outputs = [x]
         for i in range(d - 1):
+            # print(i, output.grad_fn, output._version)
             output = stitchCopy(output, L, G, i)
+            # print(i, output.grad_fn, output._version)
             output = cs[i](output)
+            # print(i, output.grad_fn, output._version)
             outputs.append(output)
 
         output = output.sum()
         output.backward()
+
+    def test_lazy_stitch(self):
+        d = 3
+        input_size = (20, 20)
+        # Prepare layer and gradient storage
+        L = t.zeros(1, d + 1, *input_size).cuda()
+        G = t.zeros(1, d + 1, *input_size).cuda()
+
+        x = t.Tensor(1, 1, *input_size).fill_(2).cuda()
+        x.requires_grad=True
+
+        cs = [Conv2dInPlaceModule(None, i + 1, 1, kernel_size=3, dilation=1, padding=1) for i in range(d)]
+        relu = ReLUInplaceModule()
+
+        for i, c in enumerate(cs):
+            c.weight.data.fill_(i + 1)
+            c.bias.data.fill_(i % 2)
+
+        output = x
+        outputs = [x]
+        output = stitch.stitchCopy(output, L, G, 0)
+        for i in range(d):
+            conv = cs[i]
+            conv.output = L.narrow(1, i + 1, 1)
+            output = conv(output)
+            output = relu(output)
+            output = stitch.stitchLazy(output, L, G, i + 1)
+
+            outputs.append(output)
+
+        output.backward(t.ones_like(output))
+
+    def test_conv_relu(self):
+        d = 3
+        input_size = (20, 20)
+        # Prepare layer and gradient storage
+        L = t.zeros(1, d + 1, *input_size).cuda()
+        G = t.zeros(1, d + 1, *input_size).cuda()
+
+        x = t.Tensor(1, 1, *input_size).fill_(2).cuda()
+        x.requires_grad=True
+
+        cs = [Conv2dInPlaceModule(None, i + 1, 1, kernel_size=3, dilation=1, padding=1) for i in range(d)]
+        relu = ReLUInplaceModule()
+
+        for i, c in enumerate(cs):
+            c.weight.data.fill_(i + 1)
+            c.bias.data.fill_(i % 2)
+
+
+
+        conv = Conv2dInPlaceModule(None, 1, 1, kernel_size=3, dilation=1, padding=1)
+        conv.output = L.narrow(1, 0, 1)
+        output = conv(x)
+        output = relu(output)
+        output = stitch.stitchLazy(output, L, G, 0)
+
+        conv = cs[0]
+        conv.output = L.narrow(1, 1, 1)
+        output = conv(output)
+        output = relu(output)
+        output = stitch.stitchLazy(output, L, G, 1)
+
+        conv = cs[1]
+        conv.output = L.narrow(1, 2, 1)
+        output = conv(output)
+        output = relu(output)
+        output = stitch.stitchLazy(output, L, G, 2)
+
+        output.backward(t.ones_like(output))
 
 
 if __name__ == '__main__':

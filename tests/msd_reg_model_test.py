@@ -54,8 +54,8 @@ class TestMSDRegressionModel(unittest.TestCase):
 
                 # Check output layer scaling
                 l1 = model.scale_out(l0)
-                self.assertAlmostEqual(l1.data.mean(), target.mean(), delta=1e-2)
-                self.assertAlmostEqual(l1.data.std(), target.std(), delta=1e-2)
+                self.assertAlmostEqual(l1.data.mean(), target.cuda().mean(), delta=1e-2)
+                self.assertAlmostEqual(l1.data.std(), target.cuda().std(), delta=1e-2)
 
 if __name__ == '__main__':
     unittest.main()

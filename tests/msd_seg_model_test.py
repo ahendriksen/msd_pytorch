@@ -11,11 +11,11 @@ class TestMSDSegmentationModel(unittest.TestCase):
         t.manual_seed(1)        # make test repeatable
 
 
-        # 3d convolution is not yet supported:
-        for conv3d in [False]:
+        for conv3d in [True, False]:
             c_in, num_labels, depth, width = 1, 2, 11, 2
             model = MSDSegmentationModel(c_in, num_labels, depth, width,
-                                         'MSD', False, conv3d)
+                                         'MSD', reflect=False,
+                                         conv3d=conv3d)
             shape = (11, 11, 11) if conv3d else (11, 11)
             input = t.randn(1, c_in, *shape)   # batch size is one.
             target = t.rand(1, 1, *shape).bernoulli()

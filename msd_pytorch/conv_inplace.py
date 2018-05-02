@@ -1,42 +1,21 @@
 import torch.nn as nn
+import torch.utils.cpp_extension as cppe
 import torch as t
 from torch.autograd import (Variable, Function)
 from torch.nn import Parameter
 from torch.backends import cudnn
 
-benchmark = False
-# If deterministic is set to True, then torch will always use the
-# CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM
-# algorithm. Unfortunately, this algorithm does not support
-# dilation. If you set the dilation to anything other than 1, the
-# computation will fail. Thus we set deterministic to False.
-deterministic = False
 
+_C = cppe.load('conv_inplace',
+               sources=['msd_pytorch/conv_inplace.cpp'],
+               extra_cflags=['-Wall', '-Werror', '-Wfatal-errors', '-Wextra'],
+               extra_include_paths=cppe.include_paths(cuda=True),
+               verbose = True)
 
-def cudnn_convolution_full_forward(input, weight, bias, output_contig,
-                                   padding, stride, dilation):
-    groups = 1
-    return t._C._cudnn_convolution_full_forward(
-        input, weight, bias, output_contig,
-        padding, stride, dilation,
-        groups, benchmark, deterministic)
-
-
-def cudnn_convolution_backward_data(grad_output, grad_input, weight, info):
-    t._C._cudnn_convolution_backward_data(
-        grad_output, grad_input, weight,
-        info, benchmark, deterministic)
-
-
-def cudnn_convolution_backward_filter(grad_output, input, grad_weight, info):
-    t._C._cudnn_convolution_backward_filter(
-        grad_output, input, grad_weight,
-        info, benchmark, deterministic)
-
-
-def cudnn_convolution_backward_bias(grad_output, grad_bias, info):
-    t._C._cudnn_convolution_backward_bias(grad_output, grad_bias, info)
-
+cudnn_forward = _C.cudnn_convolution_full_forward
+cudnn_backward_data_ = _C.cudnn_convolution_backward_data_
+cudnn_backward_weight_ = _C.cudnn_convolution_backward_weight_
+cudnn_backward_bias = _C.cudnn_convolution_backward_bias
 
 class ConvNdInPlaceFunction(Function):
     @staticmethod
@@ -47,49 +26,32 @@ class ConvNdInPlaceFunction(Function):
         # contiguous version of input, so we save the (possibly)
         # non-contiguous version.
 
-        # if not (output.is_contiguous() and input.is_contiguous()):
-        #     print("Warning input or output non-contiguous")
+        assert (output.is_contiguous() and input.is_contiguous()), \
+            "non-contiguous input or output not supported (ConvNdInPlaceFunction)"
 
-        copy_output = not output.is_contiguous()
-        output_contig = output.contiguous()
         ctx.save_for_backward(input, weight, bias)
-        input = input.contiguous()
+        ctx.padding, ctx.stride, ctx.dilation = padding, stride, dilation
 
-        ctx.info = cudnn_convolution_full_forward(
-            input, weight, bias, output_contig, padding, stride, dilation)
-
-        if copy_output:
-            output.copy_(output_contig)
-
+        cudnn_forward(input, weight, bias, output.data, padding, stride, dilation)
         return output
 
     @staticmethod
     def backward(ctx, grad_output):
         # restore variables
         input, weight, bias = ctx.saved_tensors
-        info = ctx.info
-        grad_output = grad_output.data
+        padding, stride, dilation = ctx.padding, ctx.stride, ctx.dilation
 
-        # make input contiguous (again)
-        input = input.contiguous()
         # ensure that grad_output is contiguous
         grad_output = grad_output.contiguous()
 
+        # Input
         grad_input = input.clone()
-        cudnn_convolution_backward_data(
-            grad_output, grad_input, weight, info)
-
-        grad_input = Variable(grad_input)
-
+        cudnn_backward_data_(grad_output, grad_input, weight, padding, stride, dilation)
+        # Weight
         grad_weight = weight.clone()
-        cudnn_convolution_backward_filter(grad_output, input, grad_weight,
-                                          info)
-
-        grad_weight = Variable(grad_weight)
-
-        grad_bias = bias.clone()
-        cudnn_convolution_backward_bias(grad_output, grad_bias, info)
-        grad_bias = Variable(grad_bias)
+        cudnn_backward_weight_(grad_output, input, grad_weight, padding, stride, dilation)
+        # Bias
+        grad_bias = cudnn_backward_bias(grad_output)
 
         return grad_input, grad_weight, grad_bias, None, None, None, None
 
