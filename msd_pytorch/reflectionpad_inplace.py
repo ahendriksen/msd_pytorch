@@ -7,6 +7,7 @@ import os
 # This is a hack for CWI workstation, which have a too recent version
 # of GCC installed.
 os.environ['PATH'] = '/opt/sw/gcc-5.4.0/bin:' + os.environ['PATH']
+os.environ['PATH'] = '/opt/gcc-5.4.0/bin:' + os.environ['PATH']
 
 
 def recompile():

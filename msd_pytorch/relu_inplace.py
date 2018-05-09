@@ -7,6 +7,7 @@ from timeit import default_timer as timer
 import os
 
 os.environ['PATH'] = '/opt/sw/gcc-5.4.0/bin:' + os.environ['PATH']
+os.environ['PATH'] = '/opt/gcc-5.4.0/bin:' + os.environ['PATH']
 
 
 relu_inplace = cppe.load('relu_inplace',
