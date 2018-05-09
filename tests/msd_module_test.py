@@ -125,6 +125,7 @@ class MSDModuleTest(unittest.TestCase):
         conv.output = L.narrow(1, 1, 1) # narrow(L, 1, 1, 1)
         dbg_print("C", L._version, output._version, output.grad_fn)
         output = conv(x)
+        output = reflect(output)
         dbg_print("D", L._version, output._version, output.grad_fn)
         output = relu(output)
         dbg_print("E", L._version, output._version, output.grad_fn)
@@ -135,6 +136,7 @@ class MSDModuleTest(unittest.TestCase):
         conv.output = L.narrow(1, 2, 1) # narrow(L, 1, 2, 1)
         dbg_print("G", L._version, output._version, output.grad_fn)
         output = conv(output)
+        output = reflect(output)
         dbg_print("H", L._version, output._version, output.grad_fn)
         output = relu(output)
         dbg_print("I", L._version, output._version, output.grad_fn)
@@ -146,6 +148,7 @@ class MSDModuleTest(unittest.TestCase):
         conv.output = L.narrow(1, 3, 1) #
         dbg_print("L", L._version, output._version, output.grad_fn)
         output = conv(output)
+        output = reflect(output)
         dbg_print("M", L._version, output._version, output.grad_fn)
         output = relu(output)
         dbg_print("N", L._version, output._version, output.grad_fn)

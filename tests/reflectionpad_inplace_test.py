@@ -28,11 +28,14 @@ class reflectionpadTest(unittest.TestCase):
         padding = 5
         padL, padR, padT, padB = _ntuple(4)(padding)
 
-        x = Variable(t.randn(2, 3, *size), requires_grad=True)
+        type = t.float64
+        x = t.randn(2, 3, *size, dtype=type).cuda()
+        x.requires_grad = True
         # Create a zero padded big X
-        X = Variable(x.data.clone())
+        X = x.data.clone()
         X = nn.ConstantPad2d(padding, 0)(x)
-        X = Variable(X.data, requires_grad=True)  # Retain gradient
+        X = X.data
+        X.requires_grad = True
 
         # Apply reflection padding to x and inplace reflection padding
         # to X.
@@ -47,7 +50,7 @@ class reflectionpadTest(unittest.TestCase):
         self.assertAlmostEqual(0, (y - Y).data.abs().sum())
 
         # Test backwards.
-        g = y.data.clone().normal_()
+        g = t.randn_like(y)
         y.backward(g)
         Y.backward(g)
 
@@ -57,6 +60,7 @@ class reflectionpadTest(unittest.TestCase):
         # Resize X.grad and compare with x.grad.
         X_g = X.grad.data[:, :, padL:(-padR), padT:-padB]
         self.assertEqual(x.grad.data.shape, X_g.shape)
+        self.assertAlmostEqual(0, (X_g - x.grad).abs().sum().item());
 
     def test_crop2d(self):
         # Test forward and backward.

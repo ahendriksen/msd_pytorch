@@ -1,61 +1,45 @@
-import torch as t
 import torch.nn as nn
 from torch.autograd import (Variable, Function)
-from torch.nn.modules.utils import (_ntuple)
+import torch.utils.cpp_extension as cppe
+import os
+
+
+# This is a hack for CWI workstation, which have a too recent version
+# of GCC installed.
+os.environ['PATH'] = '/opt/sw/gcc-5.4.0/bin:' + os.environ['PATH']
+
+
+def recompile():
+    ref_inplace = cppe.load('reflectionpad_inplace',
+                            sources=['msd_pytorch/reflectionpad_inplace.cpp',
+                                     'msd_pytorch/reflectionpad_inplace_cuda.cu'],
+                            extra_cflags=['-Werror', '-Wfatal-errors', '-Wextra'],
+                            # extra_cuda_cflags=[ '-Werror', '-Wfatal-errors', '-Wextra'],
+                            extra_include_paths=cppe.include_paths(cuda=True),
+                            verbose=True)
+    return ref_inplace
+
+
+reflectionpad_inplace = recompile()
 
 
 class ReflectionPad2DInplaceFunction(Function):
     @staticmethod
     def forward(ctx, input, padding):
         ctx.padding = padding
-        padL, padR, padT, padB = padding
 
-        assert padT + padB + max(padT, padB) < input.shape[2], \
+        assert 3 * padding < input.shape[2], \
             "Too much padding for height"
-        assert padL + padR + max(padL, padR) < input.shape[3], \
+        assert 3 * padding < input.shape[3], \
             "Too much padding for width"
 
-        for i in range(padT):
-            input[:, :, i, :] = input[:, :, 2 * padT - i, :]
-
-        for i in range(padB):
-            input[:, :, -(i + 1), :] = input[:, :, -(2 * padB - i + 1), :]
-
-        for i in range(padL):
-            input[:, :, :, i] = input[:, :, :, 2 * padL - i]
-
-        for i in range(padR):
-            input[:, :, :, -(i + 1)] = input[:, :, :, -(2 * padR - i + 1)]
-
-        # This is necessary to convince pytorch that input was used in
-        # the calculation. It notices that we output the same tensor
-        # as was put in.
-        ctx.mark_dirty(input)
-
-        return input
+        output = reflectionpad_inplace.forward(input, padding)
+        return output
 
     @staticmethod
     def backward(ctx, gradOutput):
-        padL, padR, padT, padB = ctx.padding
-
-        g = gradOutput.data.clone()
-        for i in range(padT):
-            g[:, :, 2 * padT - i, :] += g[:, :, i, :]
-            g[:, :, i, :].fill_(0)
-
-        for i in range(padB):
-            g[:, :, -(2 * padB - i + 1), :] += g[:, :, -(i + 1), :]
-            g[:, :, -(i + 1), :].fill_(0)
-
-        for i in range(padL):
-            g[:, :, :, 2 * padL - i] += g[:, :, :, i]
-            g[:, :, :, i].fill_(0)
-
-        for i in range(padR):
-            g[:, :, :, -(2 * padR - i + 1)] += g[:, :, :, -(i + 1)]
-            g[:, :, :, -(i + 1)].fill_(0)
-
-        return Variable(g), None
+        padding = ctx.padding
+        return reflectionpad_inplace.backward(gradOutput, padding), None
 
 
 reflectionPad2DInplace = ReflectionPad2DInplaceFunction.apply
@@ -64,7 +48,7 @@ reflectionPad2DInplace = ReflectionPad2DInplaceFunction.apply
 class ReflectionPad2DInplaceModule(nn.Module):
     def __init__(self, padding):
         super(ReflectionPad2DInplaceModule, self).__init__()
-        self.padding = _ntuple(4)(padding)
+        self.padding = padding
 
     def forward(self, input):
         return reflectionPad2DInplace(input, self.padding)
