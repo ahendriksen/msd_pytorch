@@ -25,7 +25,7 @@ class ReflectionPad2DInplaceFunction(Function):
             input[:, :, :, i] = input[:, :, :, 2 * padL - i]
 
         for i in range(padR):
-            input[:, :, :, -(i + 1)] = input[:, :, :, -(2 * padB - i + 1)]
+            input[:, :, :, -(i + 1)] = input[:, :, :, -(2 * padR - i + 1)]
 
         # This is necessary to convince pytorch that input was used in
         # the calculation. It notices that we output the same tensor
@@ -52,7 +52,7 @@ class ReflectionPad2DInplaceFunction(Function):
             g[:, :, :, i].fill_(0)
 
         for i in range(padR):
-            g[:, :, :, -(2 * padB - i + 1)] = g[:, :, :, -(i + 1)]
+            g[:, :, :, -(2 * padR - i + 1)] += g[:, :, :, -(i + 1)]
             g[:, :, :, -(i + 1)].fill_(0)
 
         return Variable(g), None
