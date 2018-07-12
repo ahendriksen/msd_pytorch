@@ -1,4 +1,4 @@
-.PHONY: clean clean-test clean-pyc clean-build docs help
+.PHONY: clean clean-test clean-pyc clean-build docs help install_requirements
 .DEFAULT_GOAL := help
 define BROWSER_PYSCRIPT
 import os, webbrowser, sys
@@ -51,7 +51,7 @@ lint: ## check style with flake8
 	flake8 msd_pytorch tests
 
 test: ## run tests quickly with the default Python
-	
+
 		python setup.py test
 
 test-all: ## run tests on every Python version with tox
@@ -85,3 +85,11 @@ dist: clean ## builds source and wheel package
 
 install: clean ## install the package to the active Python's site-packages
 	python setup.py install
+
+install_requirements:
+	pip install -r requirements_dev.txt
+
+bump_version:
+	git status
+	bumpversion --config-file setup.cfg patch
+	git log --oneline -n 10
