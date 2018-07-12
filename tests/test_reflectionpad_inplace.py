@@ -1,7 +1,8 @@
 import torch.nn as nn
 import torch as t
 from torch.autograd import (Variable, Function)
-from msd_pytorch.reflectionpad_inplace import (ReflectionPad2DInplaceModule, crop2d)
+from msd_pytorch.reflectionpad_inplace import (
+    ReflectionPad2DInplaceModule, crop2d, ReflectionPad3DInplaceModule)
 from torch.nn.modules.utils import (_ntuple)
 import unittest
 
@@ -86,6 +87,41 @@ class reflectionpadTest(unittest.TestCase):
             testdiff = abs((x.grad.data - x_grad).sum())
 
             self.assertAlmostEqual(testdiff, 0)
+
+    def test_reflection_inplace3d(self):
+        t.manual_seed(1)
+
+        size = (10, 9, 9)
+        padding = 5
+        padL, padR, padT, padB, pad0, pad1 = _ntuple(6)(padding)
+
+        # We take some 3D data x0 and want to check that 3d inplace
+        # padding works.
+        x0 = t.randn(2, 3, *size)
+        x1 = Variable(x0.clone(), requires_grad=True)
+        x2 = nn.ConstantPad3d(padding, 1)(x1)
+        x3 = ReflectionPad3DInplaceModule(padding)(x2)
+
+        # Test backwards.
+        g = x3.data.clone().normal_()
+        x3.backward(g)
+        self.assertIsNotNone(x1.grad)
+
+        # Pytorch does not have a 3d reflection pad. So we have
+        # to make do with the 2d version. We check for every 'row' if
+        # the pytorch 2d pad and our 3d reflection pad coincide. We do
+        # the same for the gradient.
+        for i in range(size[0]):
+            y0 = x0[:, :, i, :, :].clone()
+            y1 = Variable(y0.clone(), requires_grad=True)
+            y2 = nn.ReflectionPad2d(padding)(y1)
+            # Test forward equal
+            self.assertAlmostEqual(
+                0, (y2 - x3[:, :, i + 5, :, :]).data.abs().sum())
+            # Test grad
+            y2.backward(g[:, :, i + 5, :, :])
+            self.assertIsNotNone(y1.grad)
+            # self.assertAlmostEqual(0, (y1.grad - x1.grad[:, :, i, :, :]).data.abs().sum())
 
 
 if __name__ == '__main__':

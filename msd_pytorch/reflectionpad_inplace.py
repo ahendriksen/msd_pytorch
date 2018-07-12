@@ -117,3 +117,86 @@ class Crop2DModule(nn.Module):
 
     def forward(self, input):
         return crop2d(input, self.crop_by)
+
+
+class ReflectionPad3DInplaceFunction(Function):
+    @staticmethod
+    def forward(ctx, input, padding):
+        ctx.padding = padding
+        # pad0 and pad1 are front and back respectively.
+        padL, padR, padT, padB, pad0, pad1 = padding
+
+        assert padT + padB + max(padT, padB) < input.shape[2], \
+            "Too much padding for height"
+        assert padL + padR + max(padL, padR) < input.shape[3], \
+            "Too much padding for width"
+        assert pad0 + pad1 + max(pad0, pad1) < input.shape[4], \
+            "Too much padding for depth"
+
+        for i in range(padT):
+            input[:, :, i, :, :] = input[:, :, 2 * padT - i, :, :]
+
+        for i in range(padB):
+            input[:, :, -(i + 1), :, :] = input[:, :, -(2 * padB - i + 1), :, :]
+
+        for i in range(padL):
+            input[:, :, :, i, :] = input[:, :, :, 2 * padL - i, :]
+
+        for i in range(padR):
+            input[:, :, :, -(i + 1), :] = input[:, :, :, -(2 * padR - i + 1), :]
+
+        for i in range(pad0):
+            input[:, :, :, :, i] = input[:, :, :, :, 2 * pad0 - i]
+
+        for i in range(pad1):
+            input[:, :, :, :, -(i + 1)] = input[:, :, :, :, -(2 * pad1 - i + 1)]
+
+        # This is necessary to convince pytorch that input was used in
+        # the calculation. It notices that we output the same tensor
+        # as was put in.
+        ctx.mark_dirty(input)
+
+        return input
+
+    @staticmethod
+    def backward(ctx, gradOutput):
+        padL, padR, padT, padB, pad0, pad1 = ctx.padding
+
+        g = gradOutput.data.clone()
+        for i in range(padT):
+            g[:, :, 2 * padT - i, :, :] += g[:, :, i, :, :]
+            g[:, :, i, :, :].fill_(0)
+
+        for i in range(padB):
+            g[:, :, -(2 * padB - i + 1), :, :] += g[:, :, -(i + 1), :, :]
+            g[:, :, -(i + 1), :, :].fill_(0)
+
+        for i in range(padL):
+            g[:, :, :, 2 * padL - i, :] += g[:, :, :, i, :]
+            g[:, :, :, i, :].fill_(0)
+
+        for i in range(padR):
+            g[:, :, :, -(2 * padR - i + 1), :] = g[:, :, :, -(i + 1), :]
+            g[:, :, :, -(i + 1), :].fill_(0)
+
+        for i in range(pad0):
+            g[:, :, :, :, 2 * padL - i] += g[:, :, :, :, i]
+            g[:, :, :, i, :].fill_(0)
+
+        for i in range(pad1):
+            g[:, :, :, :, -(2 * padR - i + 1)] = g[:, :, :, :, -(i + 1)]
+            g[:, :, :, :, -(i + 1)].fill_(0)
+
+        return Variable(g), None
+
+
+reflectionPad3DInplace = ReflectionPad3DInplaceFunction.apply
+
+
+class ReflectionPad3DInplaceModule(nn.Module):
+    def __init__(self, padding):
+        super(ReflectionPad3DInplaceModule, self).__init__()
+        self.padding = _ntuple(6)(padding)
+
+    def forward(self, input):
+        return reflectionPad3DInplace(input, self.padding)
