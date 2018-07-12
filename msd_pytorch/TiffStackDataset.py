@@ -76,8 +76,7 @@ class TiffStackDataset(Dataset):
         self.input_volumes = None
         self.target_volumes = None
         self._sort_volumes()
-        
-        
+
     def _initialize_paths(self):
         if self.input_imgs is not None:
             assert len(self.input_imgs) == len(self.target_imgs), \
@@ -106,7 +105,7 @@ class TiffStackDataset(Dataset):
             msg = 'Could not find any images in "{}" or "{}".'
             msg = msg.format(self.input_dir, self.target_dir)
             raise(RuntimeError(msg))
-            
+
     def _sort_volumes(self):
         # Sort out volumes by same basename + number
         inp_split = []
@@ -115,26 +114,26 @@ class TiffStackDataset(Dataset):
             inp_split.append(re.split('(\d+\..*$)', f)[:-1])
         for f in self.target_imgs:
             tgt_split.append(re.split('(\d+\..*$)', f)[:-1])
-        
+
         inp_split = np.asarray(inp_split)
         tgt_split = np.asarray(tgt_split)
 
         self.input_volumes = []
-        for vol_name in np.unique(inp_split[:,0]):
+        for vol_name in np.unique(inp_split[:, 0]):
             subvol = []
-            #print(vol_name)
-            for slc in inp_split[inp_split[:,0] == vol_name][:,1]:
+            # print(vol_name)
+            for slc in inp_split[inp_split[:, 0] == vol_name][:, 1]:
                 subvol.append(vol_name + slc)
             self.input_volumes.append(subvol)
-       
+
         self.target_volumes = []
-        for vol_name in np.unique(tgt_split[:,0]):
+        for vol_name in np.unique(tgt_split[:, 0]):
             subvol = []
-            #print(vol_name)
-            for slc in tgt_split[tgt_split[:,0] == vol_name][:,1]:
+            # print(vol_name)
+            for slc in tgt_split[tgt_split[:, 0] == vol_name][:, 1]:
                 subvol.append(vol_name + slc)
             self.target_volumes.append(subvol)
-    
+
     def __getitem__(self, index):
         input_f = self.input_volumes[index]
         target_f = self.target_volumes[index]
@@ -146,4 +145,3 @@ class TiffStackDataset(Dataset):
 
     def __len__(self):
         return len(self.input_volumes)
-
