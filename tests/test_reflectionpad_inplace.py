@@ -2,7 +2,10 @@ import torch.nn as nn
 import torch as t
 from torch.autograd import (Variable, Function)
 from msd_pytorch.reflectionpad_inplace import (
-    ReflectionPad2DInplaceModule, crop2d, ReflectionPad3DInplaceModule)
+    ReflectionPad2DInplaceModule, crop2d,
+    reflectionPad3DInplace,
+    reflectionPad2DInplace,
+    ReflectionPad3DInplaceModule)
 from torch.nn.modules.utils import (_ntuple)
 import unittest
 
@@ -88,19 +91,56 @@ class reflectionpadTest(unittest.TestCase):
 
             self.assertAlmostEqual(testdiff, 0)
 
-    def test_reflection_inplace3d(self):
+
+    def test_reflection_inplace2d(self):
         t.manual_seed(1)
 
-        size = (10, 9, 9)
-        padding = 5
-        padL, padR, padT, padB, pad0, pad1 = _ntuple(6)(padding)
+        size = (9, 9)
+        padding2d = (2, 3, 4, 1)
 
         # We take some 3D data x0 and want to check that 3d inplace
         # padding works.
         x0 = t.randn(2, 3, *size)
         x1 = Variable(x0.clone(), requires_grad=True)
-        x2 = nn.ConstantPad3d(padding, 1)(x1)
-        x3 = ReflectionPad3DInplaceModule(padding)(x2)
+        x2 = nn.ReflectionPad2d(padding2d)(x1)
+        x3 = reflectionPad2DInplace(x2, padding2d)
+
+        self.assertAlmostEqual(0, (x2 - x3).data.abs().sum())
+        # Test backwards.
+        g = x3.data.clone().normal_()
+
+        x3.backward(g)
+        self.assertIsNotNone(x1.grad)
+
+        y0 = x0.clone()
+        y1 = Variable(y0.clone(), requires_grad=True)
+        y2 = nn.ReflectionPad2d(padding2d)(y1)
+        # Test forward equal
+        self.assertEqual(y2.shape, x3.shape)
+        self.assertAlmostEqual(0, (y2 - x3).data.abs().sum())
+        # Test grad
+        y2.backward(g)
+
+        self.assertIsNotNone(y1.grad)
+        self.assertEqual(y1.grad.shape, x1.grad.shape)
+        self.assertAlmostEqual(0, (y1.grad - x1.grad).data.abs().sum(),
+                               places=4)
+
+
+    def test_reflection_inplace3d_depthwise(self):
+        t.manual_seed(1)
+
+        size = (10, 9, 9)
+        padding3d = (1, 2, 3, 4, 0, 0)
+        padding2d = (1, 2, 3, 4)
+        # padL, padR, padT, padB, pad0, pad1 = _ntuple(6)(padding)
+
+        # We take some 3D data x0 and want to check that 3d inplace
+        # padding works.
+        x0 = t.randn(2, 3, *size)
+        x1 = Variable(x0.clone(), requires_grad=True)
+        x2 = nn.ConstantPad3d(padding3d, 1)(x1)
+        x3 = reflectionPad3DInplace(x2, padding3d)
 
         # Test backwards.
         g = x3.data.clone().normal_()
@@ -114,14 +154,100 @@ class reflectionpadTest(unittest.TestCase):
         for i in range(size[0]):
             y0 = x0[:, :, i, :, :].clone()
             y1 = Variable(y0.clone(), requires_grad=True)
-            y2 = nn.ReflectionPad2d(padding)(y1)
+            y2 = nn.ReflectionPad2d(padding2d)(y1)
             # Test forward equal
+            self.assertEqual(y2.shape, x3[:, :, i, :, :].shape)
             self.assertAlmostEqual(
-                0, (y2 - x3[:, :, i + 5, :, :]).data.abs().sum())
+                0, (y2 - x3[:, :, i, :, :]).data.abs().sum())
             # Test grad
-            y2.backward(g[:, :, i + 5, :, :])
+            y2.backward(g[:, :, i, :, :])
             self.assertIsNotNone(y1.grad)
-            # self.assertAlmostEqual(0, (y1.grad - x1.grad[:, :, i, :, :]).data.abs().sum())
+            self.assertEqual(y1.grad.shape, x1.grad[:, :, i, :, :].shape)
+            self.assertAlmostEqual(0,
+                                   (y1.grad - x1.grad[:, :, i, :, :])
+                                   .data.abs().sum(),
+                                   places=4)
+
+    def test_reflection_inplace3d_heightwise(self):
+        t.manual_seed(1)
+
+        size = (10, 9, 9)
+        padding3d = (1, 2, 0, 0, 3, 4)
+        padding2d = (1, 2, 3, 4)
+
+        # We take some 3D data x0 and want to check that 3d inplace
+        # padding works.
+        x0 = t.randn(2, 3, *size)
+        x1 = Variable(x0.clone(), requires_grad=True)
+        x2 = nn.ConstantPad3d(padding3d, 1)(x1)
+        x3 = reflectionPad3DInplace(x2, padding3d)
+
+        # Test backwards.
+        g = x3.data.clone().normal_()
+        x3.backward(g)
+        self.assertIsNotNone(x1.grad)
+
+        # Pytorch does not have a 3d reflection pad. So we have
+        # to make do with the 2d version. We check for every 'row' if
+        # the pytorch 2d pad and our 3d reflection pad coincide. We do
+        # the same for the gradient.
+        for i in range(size[1]):
+            y0 = x0[:, :, :, i, :].clone()
+            y1 = Variable(y0.clone(), requires_grad=True)
+            y2 = nn.ReflectionPad2d(padding2d)(y1)
+            # Test forward equal
+            self.assertEqual(y2.shape, x3[:, :, :, i, :].shape)
+            self.assertAlmostEqual(
+                0, (y2 - x3[:, :, :, i, :]).data.abs().sum())
+            # Test grad
+            y2.backward(g[:, :, :, i, :])
+            self.assertIsNotNone(y1.grad)
+            self.assertEqual(y1.grad.shape, x1.grad[:, :, :, i, :].shape)
+            self.assertAlmostEqual(0,
+                                   (y1.grad - x1.grad[:, :, :, i, :])
+                                   .data.abs().sum(),
+                                   places=4)
+
+
+    def test_reflection_inplace3d_widthwise(self):
+        t.manual_seed(1)
+
+        size = (10, 9, 9)
+        padding3d = (0, 0, 1, 2, 3, 4)
+        padding2d = (1, 2, 3, 4)
+
+        # We take some 3D data x0 and want to check that 3d inplace
+        # padding works.
+        x0 = t.randn(2, 3, *size)
+        x1 = Variable(x0.clone(), requires_grad=True)
+        x2 = nn.ConstantPad3d(padding3d, 1)(x1)
+        x3 = reflectionPad3DInplace(x2, padding3d)
+
+        # Test backwards.
+        g = x3.data.clone().normal_()
+        x3.backward(g)
+        self.assertIsNotNone(x1.grad)
+
+        # Pytorch does not have a 3d reflection pad. So we have
+        # to make do with the 2d version. We check for every 'row' if
+        # the pytorch 2d pad and our 3d reflection pad coincide. We do
+        # the same for the gradient.
+        for i in range(size[2]):
+            y0 = x0[:, :, :, :, i].clone()
+            y1 = Variable(y0.clone(), requires_grad=True)
+            y2 = nn.ReflectionPad2d(padding2d)(y1)
+            # Test forward equal
+            self.assertEqual(y2.shape, x3[:, :, :, :, i].shape)
+            self.assertAlmostEqual(
+                0, (y2 - x3[:, :, :, :, i]).data.abs().sum())
+            # Test grad
+            y2.backward(g[:, :, :, :, i])
+            self.assertIsNotNone(y1.grad)
+            self.assertEqual(y1.grad.shape, x1.grad[:, :, :, :, i].shape)
+            self.assertAlmostEqual(0,
+                                   (y1.grad - x1.grad[:, :, :, :, i])
+                                   .data.abs().sum(),
+                                   places=4)
 
 
 if __name__ == '__main__':

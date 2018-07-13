@@ -52,7 +52,7 @@ class ReflectionPad2DInplaceFunction(Function):
             g[:, :, :, i].fill_(0)
 
         for i in range(padR):
-            g[:, :, :, -(2 * padR - i + 1)] = g[:, :, :, -(i + 1)]
+            g[:, :, :, -(2 * padR - i + 1)] += g[:, :, :, -(i + 1)]
             g[:, :, :, -(i + 1)].fill_(0)
 
         return Variable(g), None
@@ -126,30 +126,30 @@ class ReflectionPad3DInplaceFunction(Function):
         # pad0 and pad1 are front and back respectively.
         padL, padR, padT, padB, pad0, pad1 = padding
 
-        assert padT + padB + max(padT, padB) < input.shape[2], \
-            "Too much padding for height"
-        assert padL + padR + max(padL, padR) < input.shape[3], \
-            "Too much padding for width"
-        assert pad0 + pad1 + max(pad0, pad1) < input.shape[4], \
+        assert pad0 + pad1 + max(pad0, pad1) < input.shape[2], \
             "Too much padding for depth"
-
-        for i in range(padT):
-            input[:, :, i, :, :] = input[:, :, 2 * padT - i, :, :]
-
-        for i in range(padB):
-            input[:, :, -(i + 1), :, :] = input[:, :, -(2 * padB - i + 1), :, :]
-
-        for i in range(padL):
-            input[:, :, :, i, :] = input[:, :, :, 2 * padL - i, :]
-
-        for i in range(padR):
-            input[:, :, :, -(i + 1), :] = input[:, :, :, -(2 * padR - i + 1), :]
+        assert padT + padB + max(padT, padB) < input.shape[3], \
+            "Too much padding for height"
+        assert padL + padR + max(padL, padR) < input.shape[4], \
+            "Too much padding for width"
 
         for i in range(pad0):
-            input[:, :, :, :, i] = input[:, :, :, :, 2 * pad0 - i]
+            input[:, :, i, :, :] = input[:, :, 2 * pad0 - i, :, :]
 
         for i in range(pad1):
-            input[:, :, :, :, -(i + 1)] = input[:, :, :, :, -(2 * pad1 - i + 1)]
+            input[:, :, -(i + 1), :, :] = input[:, :, -(2 * pad1 - i + 1), :, :]
+
+        for i in range(padT):
+            input[:, :, :, i, :] = input[:, :, :, 2 * padT - i, :]
+
+        for i in range(padB):
+            input[:, :, :, -(i + 1), :] = input[:, :, :, -(2 * padB - i + 1), :]
+
+        for i in range(padL):
+            input[:, :, :, :, i] = input[:, :, :, :, 2 * padL - i]
+
+        for i in range(padR):
+            input[:, :, :, :, -(i + 1)] = input[:, :, :, :, -(2 * padR - i + 1)]
 
         # This is necessary to convince pytorch that input was used in
         # the calculation. It notices that we output the same tensor
@@ -163,28 +163,28 @@ class ReflectionPad3DInplaceFunction(Function):
         padL, padR, padT, padB, pad0, pad1 = ctx.padding
 
         g = gradOutput.data.clone()
-        for i in range(padT):
-            g[:, :, 2 * padT - i, :, :] += g[:, :, i, :, :]
+        for i in range(pad0):
+            g[:, :, 2 * pad0 - i, :, :] += g[:, :, i, :, :]
             g[:, :, i, :, :].fill_(0)
 
-        for i in range(padB):
-            g[:, :, -(2 * padB - i + 1), :, :] += g[:, :, -(i + 1), :, :]
+        for i in range(pad1):
+            g[:, :, -(2 * pad1 - i + 1), :, :] += g[:, :, -(i + 1), :, :]
             g[:, :, -(i + 1), :, :].fill_(0)
 
-        for i in range(padL):
-            g[:, :, :, 2 * padL - i, :] += g[:, :, :, i, :]
+        for i in range(padT):
+            g[:, :, :, 2 * padT - i, :] += g[:, :, :, i, :]
             g[:, :, :, i, :].fill_(0)
 
-        for i in range(padR):
-            g[:, :, :, -(2 * padR - i + 1), :] = g[:, :, :, -(i + 1), :]
+        for i in range(padB):
+            g[:, :, :, -(2 * padB - i + 1), :] += g[:, :, :, -(i + 1), :]
             g[:, :, :, -(i + 1), :].fill_(0)
 
-        for i in range(pad0):
+        for i in range(padL):
             g[:, :, :, :, 2 * padL - i] += g[:, :, :, :, i]
-            g[:, :, :, i, :].fill_(0)
+            g[:, :, :, :, i].fill_(0)
 
-        for i in range(pad1):
-            g[:, :, :, :, -(2 * padR - i + 1)] = g[:, :, :, :, -(i + 1)]
+        for i in range(padR):
+            g[:, :, :, :, -(2 * padR - i + 1)] += g[:, :, :, :, -(i + 1)]
             g[:, :, :, :, -(i + 1)].fill_(0)
 
         return Variable(g), None
