@@ -59,7 +59,8 @@ class TiffDataset(Dataset):
     def __init__(self, input_dir, target_dir,
                  allowed_extensions=['.tiff', '.tif'],
                  input_imgs=None,
-                 target_imgs=None):
+                 target_imgs=None,
+                 transform=None):
         super(TiffDataset, self).__init__()
         self.input_dir = input_dir
         self.target_dir = target_dir
@@ -67,6 +68,7 @@ class TiffDataset(Dataset):
 
         self.input_imgs = input_imgs
         self.target_imgs = target_imgs
+        self.transform = transform
 
         self._initialize_paths()
 
@@ -106,7 +108,10 @@ class TiffDataset(Dataset):
         input = to_tensor(input_f)
         target = to_tensor(target_f)
 
-        return (input, target)
+        if self.transform:
+            return self.transform(input, target)
+        else:
+            return (input, target)
 
     def __len__(self):
         return len(self.input_imgs)
