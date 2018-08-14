@@ -164,7 +164,9 @@ class MSDModel():
         :param save_dir: directory to save files in.
         :param name: name of the network.
         :param label: a label (such as current epoch) to add to the filename.
-        :param save_file: a file path or stream-like object that overrides the default filename structure.
+        :param save_file:
+            A file path or stream-like object that overrides the default
+            filename structure.
         :returns:
         :rtype:
 

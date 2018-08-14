@@ -161,9 +161,11 @@ class stitchTest(unittest.TestCase):
         G = t.zeros(1, d + 1, *input_size).cuda()
 
         x = t.Tensor(1, 1, *input_size).fill_(2).cuda()
-        x.requires_grad=True
+        x.requires_grad = True
 
-        cs = [Conv2dInPlaceModule(None, i + 1, 1, kernel_size=3, dilation=1, padding=1) for i in range(d)]
+        cs = [Conv2dInPlaceModule(None, i + 1, 1, kernel_size=3,
+                                  dilation=1, padding=1)
+              for i in range(d)]
         relu = ReLUInplaceModule()
 
         for i, c in enumerate(cs):
@@ -192,18 +194,19 @@ class stitchTest(unittest.TestCase):
         G = t.zeros(1, d + 1, *input_size).cuda()
 
         x = t.Tensor(1, 1, *input_size).fill_(2).cuda()
-        x.requires_grad=True
+        x.requires_grad = True
 
-        cs = [Conv2dInPlaceModule(None, i + 1, 1, kernel_size=3, dilation=1, padding=1) for i in range(d)]
+        cs = [Conv2dInPlaceModule(None, i + 1, 1, kernel_size=3,
+                                  dilation=1, padding=1)
+              for i in range(d)]
         relu = ReLUInplaceModule()
 
         for i, c in enumerate(cs):
             c.weight.data.fill_(i + 1)
             c.bias.data.fill_(i % 2)
 
-
-
-        conv = Conv2dInPlaceModule(None, 1, 1, kernel_size=3, dilation=1, padding=1)
+        conv = Conv2dInPlaceModule(
+            None, 1, 1, kernel_size=3, dilation=1, padding=1)
         conv.output = L.narrow(1, 0, 1)
         output = conv(x)
         output = relu(output)

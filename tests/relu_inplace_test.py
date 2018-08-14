@@ -1,20 +1,15 @@
 from itertools import product as cartesianp
-from torch.autograd import (Variable, Function)
-from torch.nn import Parameter
-import os
 import torch as t
 import torch.nn as nn
-import torch.nn.functional as F
-import torch.utils.cpp_extension as cppe
 import unittest
-from msd_pytorch.relu_inplace import (ReLUInplaceFunction, ReLUInplaceModule)
+from msd_pytorch.relu_inplace import (ReLUInplaceModule)
 
 
 class TestReLUInPlace(unittest.TestCase):
 
     def test_out_of_bounds_writes(self):
         batch_sz = 3
-        channels = [1,2,5]
+        channels = [1, 2, 5]
         shapes = [11, 20, 253]
 
         do3d = [False, True]
@@ -32,7 +27,6 @@ class TestReLUInPlace(unittest.TestCase):
             self.assertAlmostEqual(0, (orig1 - orig2).abs().sum().item())
             input1 = orig1[1:2, ...]
             input2 = orig2[1:2, ...]
-            grad_output = t.randn_like(input1)
 
             output1 = relu1(input1)
             output2 = relu2(input2)

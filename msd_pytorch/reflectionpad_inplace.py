@@ -12,10 +12,10 @@ os.environ['PATH'] = '/opt/gcc-7.3.0/bin:' + os.environ['PATH']
 
 def recompile():
     ref_inplace = cppe.load('reflectionpad_inplace',
-                            sources=['msd_pytorch/reflectionpad_inplace.cpp',
-                                     'msd_pytorch/reflectionpad_inplace_cuda.cu'],
-                            extra_cflags=['-Werror', '-Wfatal-errors', '-Wextra'],
-                            # extra_cuda_cflags=[ '-Werror', '-Wfatal-errors', '-Wextra'],
+                            sources=[
+                                'msd_pytorch/reflectionpad_inplace.cpp',
+                                'msd_pytorch/reflectionpad_inplace_cuda.cu'
+                            ],
                             extra_include_paths=cppe.include_paths(cuda=True),
                             verbose=True)
     return ref_inplace

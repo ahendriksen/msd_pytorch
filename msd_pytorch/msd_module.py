@@ -1,9 +1,8 @@
 import torch.nn as nn
 import torch as t
-import torch.nn.init as init
 from msd_pytorch.trp_conv_inplace import (
     Conv2dInPlaceModule, Conv3dInPlaceModule)
-from msd_pytorch.stitch import (stitchLazy, stitchCopy, StitchCopyModule)
+from msd_pytorch.stitch import (stitchLazy, StitchCopyModule)
 from msd_pytorch.relu_inplace import (ReLUInplaceModule)
 from math import sqrt
 from functools import reduce
@@ -93,7 +92,8 @@ class MSDModule(nn.Module):
         :param depth: # of layers
         :param width: # the width of the module
         :param dilation_function:
-        :param reflect: Whether or not to use reflection padding instead of zero padding.
+        :param reflect:
+            Whether or not to use reflection padding instead of zero padding.
         :param conv3d:
 
         :param dilation_function: this fuction determines the dilation

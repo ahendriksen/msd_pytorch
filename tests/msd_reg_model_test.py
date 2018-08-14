@@ -44,8 +44,8 @@ class TestMSDRegressionModel(unittest.TestCase):
                                            'L1', 'MSD', False, conv3d=False)
                 model.set_normalization(dl)
 
-                (input, target), *_=  dl
-                output = model.forward(input, target)
+                (input, target), *_ = dl
+                model.forward(input, target)
 
                 # Check input layer scaling
                 l0 = model.scale_in(Variable(input).cuda())
@@ -54,8 +54,11 @@ class TestMSDRegressionModel(unittest.TestCase):
 
                 # Check output layer scaling
                 l1 = model.scale_out(l0)
-                self.assertAlmostEqual(l1.data.mean(), target.cuda().mean(), delta=1e-2)
-                self.assertAlmostEqual(l1.data.std(), target.cuda().std(), delta=1e-2)
+                self.assertAlmostEqual(
+                    l1.data.mean(), target.cuda().mean(), delta=1e-2)
+                self.assertAlmostEqual(
+                    l1.data.std(), target.cuda().std(), delta=1e-2)
+
 
 if __name__ == '__main__':
     unittest.main()

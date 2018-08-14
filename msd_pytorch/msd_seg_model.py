@@ -16,13 +16,13 @@ dilation_functions = {
 
 @msd_ingredient.config
 def cfg():
-    c_in = 1
-    num_labels = 2
-    depth = 30
-    width = 1
-    dilation = 'MSD'
-    reflect = True
-    conv3d = False
+    c_in = 1                    # noqa
+    num_labels = 2              # noqa
+    depth = 30                  # noqa
+    width = 1                   # noqa
+    dilation = 'MSD'            # noqa
+    reflect = True              # noqa
+    conv3d = False              # noqa
 
 
 class MSDSegmentationModel(MSDModel):

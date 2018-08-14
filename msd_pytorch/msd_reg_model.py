@@ -17,14 +17,14 @@ dilation_functions = {
 
 @msd_ingredient.config
 def cfg():
-    c_in = 1
-    c_out = 1
-    depth = 30
-    width = 1
-    loss_function = "L1"
-    dilation = 'MSD'
-    reflect = True
-    conv3d = False
+    c_in = 1                    # noqa
+    c_out = 1                   # noqa
+    depth = 30                  # noqa
+    width = 1                   # noqa
+    loss_function = "L1"        # noqa
+    dilation = 'MSD'            # noqa
+    reflect = True              # noqa
+    conv3d = False              # noqa
 
 
 class MSDRegressionModel(MSDModel):

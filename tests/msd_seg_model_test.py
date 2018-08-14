@@ -10,7 +10,6 @@ class TestMSDSegmentationModel(unittest.TestCase):
         # Make sure that learning updates all parameters.
         t.manual_seed(1)        # make test repeatable
 
-
         for conv3d in [True, False]:
             c_in, num_labels, depth, width = 1, 2, 11, 2
             model = MSDSegmentationModel(c_in, num_labels, depth, width,
@@ -23,7 +22,6 @@ class TestMSDSegmentationModel(unittest.TestCase):
             model.set_target(target)
             for i in range(10):
                 model.learn(input, target)
-
 
     def test_normalization(self):
         means = [-1, 0, 1]
@@ -47,13 +45,14 @@ class TestMSDSegmentationModel(unittest.TestCase):
                                              'MSD', False, conv3d=False)
                 model.set_normalization(dl)
 
-                (input, target), *_=  dl
-                output = model.forward(input, target)
+                (input, target), *_ = dl
+                model.forward(input, target)
 
                 # Check input layer scaling
                 l0 = model.scale_in(Variable(input).cuda())
                 self.assertAlmostEqual(l0.data.mean(), 0, delta=1e-2)
                 self.assertAlmostEqual(l0.data.std(), 1, delta=1e-2)
+
 
 if __name__ == '__main__':
     unittest.main()
