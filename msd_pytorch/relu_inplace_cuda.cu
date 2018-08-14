@@ -3,14 +3,13 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-#include <vector>
 
 
 template <typename scalar_t>
 __global__ void relu_inplace_cuda_forward_kernel(scalar_t* __restrict__ input, size_t size) {
     size_t start = blockIdx.x * blockDim.x + threadIdx.x;
     for (size_t i = start; i < size; i += blockDim.x * gridDim.x) {
-	input[i] = fmax(0.0, input[i]);
+	input[i] = max(0.0, input[i]);
     }
 }
 

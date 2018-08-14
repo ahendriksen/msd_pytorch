@@ -10,9 +10,9 @@ at::Tensor reflectionpad_inplace_cuda_forward(at::Tensor input, int padL,
 at::Tensor reflectionpad_inplace_cuda_backward(at::Tensor grad_output, int padL,
                                                int padR, int padT, int padB);
 
-#define CHECK_CUDA(x) AT_ASSERT(x.type().is_cuda(), #x " must be a CUDA tensor")
+#define CHECK_CUDA(x) AT_ASSERTM(x.type().is_cuda(), #x " must be a CUDA tensor")
 #define CHECK_CONTIGUOUS(x)                                                    \
-  AT_ASSERT(x.is_contiguous(), #x " must be contiguous")
+  AT_ASSERTM(x.is_contiguous(), #x " must be contiguous")
 #define CHECK_INPUT(x)                                                         \
   CHECK_CUDA(x);                                                               \
   CHECK_CONTIGUOUS(x)

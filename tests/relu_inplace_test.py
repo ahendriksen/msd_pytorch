@@ -42,9 +42,9 @@ class TestReLUInPlace(unittest.TestCase):
 
     def test_backward(self):
         batch_sz = 3
-        channels = [1,2,5]
-        shapes = [11, 20, 255]
-
+        channels = [1, 2, 5]
+        shapes = [11, 20, 63]
+        dtype = t.double
         do3d = [False, True]
 
         for chan, shape, conv3d in cartesianp(channels, shapes, do3d):
@@ -55,7 +55,7 @@ class TestReLUInPlace(unittest.TestCase):
             ndim = 3 if conv3d else 2
             shape = (shape,) * ndim
 
-            orig1 = t.randn(batch_sz, chan, *shape).cuda()
+            orig1 = t.randn(batch_sz, chan, *shape, dtype=dtype).cuda()
             orig2 = orig1.data.clone()
             input1 = orig1[1:2, ...]
             input2 = orig2[1:2, ...]
@@ -72,4 +72,5 @@ class TestReLUInPlace(unittest.TestCase):
             output1.backward(grad_output)
             output2.backward(grad_output)
 
-            self.assertAlmostEqual(0, (input1.grad - input2.grad).abs().sum().item() / input1.numel(), delta=1e-5)
+            grad_diff = (input1.grad - input2.grad).abs().sum().item()
+            self.assertAlmostEqual(0, grad_diff)

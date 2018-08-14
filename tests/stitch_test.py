@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch as t
 from torch.autograd import (Variable)
 from msd_pytorch.stitch import (StitchCopyModule, stitchSlow, stitchCopy)
-from msd_pytorch.conv_inplace import (Conv2dInPlaceModule)
+from msd_pytorch.trp_conv_inplace import (Conv2dInPlaceModule)
 from msd_pytorch.relu_inplace import (ReLUInplaceModule)
 import msd_pytorch.stitch as stitch
 import unittest

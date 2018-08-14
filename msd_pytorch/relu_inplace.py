@@ -1,20 +1,17 @@
 import torch.nn as nn
 import torch.utils.cpp_extension as cppe
-import torch as t
-from torch.autograd import (Variable, Function)
-from torch.nn import Parameter
-from timeit import default_timer as timer
+from torch.autograd import Function
 import os
 
-os.environ['PATH'] = '/opt/sw/gcc-5.4.0/bin:' + os.environ['PATH']
-os.environ['PATH'] = '/opt/gcc-5.4.0/bin:' + os.environ['PATH']
+os.environ['PATH'] = '/opt/sw/gcc-7.3.0/bin:' + os.environ['PATH']
+os.environ['PATH'] = '/opt/gcc-7.3.0/bin:' + os.environ['PATH']
 
 
 relu_inplace = cppe.load('relu_inplace',
-               sources=['msd_pytorch/relu_inplace.cpp', 'msd_pytorch/relu_inplace_cuda.cu'],
-               extra_cflags=['-Wall', '-Werror', '-Wfatal-errors', '-Wextra'],
-               extra_include_paths=cppe.include_paths(cuda=True),
-               verbose = True)
+                         sources=['msd_pytorch/relu_inplace.cpp',
+                                  'msd_pytorch/relu_inplace_cuda.cu'],
+                         extra_include_paths=cppe.include_paths(cuda=True),
+                         verbose=True)
 
 
 class ReLUInplaceFunction(Function):
@@ -34,7 +31,6 @@ class ReLUInplaceFunction(Function):
     def backward(ctx, grad_output):
         output = ctx.saved_tensors[0]
         return relu_inplace.backward(output, grad_output)
-
 
 
 class ReLUInplaceModule(nn.Module):
