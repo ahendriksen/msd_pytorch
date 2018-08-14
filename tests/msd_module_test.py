@@ -1,8 +1,7 @@
-from msd_pytorch.conv_inplace import (Conv2dInPlaceModule)
+from msd_pytorch.trp_conv_inplace import (Conv2dInPlaceModule)
 from msd_pytorch.msd_module import (MSDModule, msd_dilation)
-from msd_pytorch.reflectionpad_inplace import (ReflectionPad2DInplaceModule, Crop2DModule)
 from msd_pytorch.relu_inplace import (ReLUInplaceFunction)
-from msd_pytorch.stitch import (StitchCopyModule, stitchSlow, stitchCopy)
+from msd_pytorch.stitch import (stitchCopy)
 from torch.autograd import (Variable)
 import msd_pytorch.stitch as stitch
 import torch as t
@@ -71,7 +70,6 @@ class MSDModuleTest(unittest.TestCase):
 
         self.assertAlmostEqual(0, output.data.abs().sum())
 
-
     def test_with_tail(self):
         batch_sz = 1
         c_in, c_out = 2, 3
@@ -93,6 +91,7 @@ class MSDModuleTest(unittest.TestCase):
 
     def test_backward(self):
         dbg = False
+
         def dbg_print(*args):
             if (dbg):
                 print(*args)
@@ -103,29 +102,26 @@ class MSDModuleTest(unittest.TestCase):
         L = t.zeros(1, d + 1, *input_size).cuda()
         G = t.zeros(1, d + 1, *input_size).cuda()
 
-
-        cs = [Conv2dInPlaceModule(None, i + 1, 1, kernel_size=3, dilation=1, padding=1) for i in range(d)]
+        cs = [Conv2dInPlaceModule(None, i + 1, 1, kernel_size=3, dilation=1)
+              for i in range(d)]
         relu = nn.ReLU(inplace=True)
         relu = ReLUInplaceFunction.apply
-        reflect = ReflectionPad2DInplaceModule(1)
 
         for i, c in enumerate(cs):
             c.weight.data.fill_(i + 1)
             c.bias.data.fill_(i % 2)
 
-
         x = t.Tensor(1, 1, *input_size).fill_(2).cuda()
-        x.requires_grad=True
+        x.requires_grad = True
 
         dbg_print("A", L._version)
         output = stitchCopy(x, L, G, 0)
         dbg_print("B", L._version, output._version, output.grad_fn)
 
         conv = cs[0]
-        conv.output = L.narrow(1, 1, 1) # narrow(L, 1, 1, 1)
+        conv.output = L.narrow(1, 1, 1)  # narrow(L, 1, 1, 1)
         dbg_print("C", L._version, output._version, output.grad_fn)
         output = conv(x)
-        output = reflect(output)
         dbg_print("D", L._version, output._version, output.grad_fn)
         output = relu(output)
         dbg_print("E", L._version, output._version, output.grad_fn)
@@ -133,10 +129,9 @@ class MSDModuleTest(unittest.TestCase):
         dbg_print("F", L._version, output._version, output.grad_fn)
 
         conv = cs[1]
-        conv.output = L.narrow(1, 2, 1) # narrow(L, 1, 2, 1)
+        conv.output = L.narrow(1, 2, 1)  # narrow(L, 1, 2, 1)
         dbg_print("G", L._version, output._version, output.grad_fn)
         output = conv(output)
-        output = reflect(output)
         dbg_print("H", L._version, output._version, output.grad_fn)
         output = relu(output)
         dbg_print("I", L._version, output._version, output.grad_fn)
@@ -145,10 +140,9 @@ class MSDModuleTest(unittest.TestCase):
 
         conv = cs[2]
         dbg_print("K", L._version, output._version, output.grad_fn)
-        conv.output = L.narrow(1, 3, 1) #
+        conv.output = L.narrow(1, 3, 1)  #
         dbg_print("L", L._version, output._version, output.grad_fn)
         output = conv(output)
-        output = reflect(output)
         dbg_print("M", L._version, output._version, output.grad_fn)
         output = relu(output)
         dbg_print("N", L._version, output._version, output.grad_fn)

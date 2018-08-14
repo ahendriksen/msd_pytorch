@@ -1,15 +1,17 @@
 import torch.nn as nn
 import torch as t
 import torch.nn.init as init
-from msd_pytorch.conv_inplace import (Conv2dInPlaceModule, Conv3dInPlaceModule)
-from msd_pytorch.reflectionpad_inplace import (ReflectionPad2DInplaceModule, Crop2DModule)
+from msd_pytorch.trp_conv_inplace import (
+    Conv2dInPlaceModule, Conv3dInPlaceModule)
 from msd_pytorch.stitch import (stitchLazy, stitchCopy, StitchCopyModule)
 from msd_pytorch.relu_inplace import (ReLUInplaceModule)
 from math import sqrt
 from functools import reduce
 from operator import mul
+import warnings
 
 max_dilation = 10
+
 
 def msd_dilation(i):
     return i % 10 + 1
@@ -46,16 +48,13 @@ class MSDLayerModule(nn.Module):
 
         output = None
 
-        if max_dilation < dilation:
-            raise(RuntimeError("max_dilation (10) exceeded. " +
-                               "Contact me to increase it manually."))
+        if not reflect:
+            warnings.warn("Zero-padding is not supported anymore. "
+                          "Using reflection-padding instead.")
+        self.reflect = None
 
-        if reflect and conv3d:
-            raise(RuntimeError("3d Reflection padding not yet supported."))
-        elif reflect and not conv3d:
-            self.reflect = ReflectionPad2DInplaceModule(dilation)
-        else:
-            self.reflect = None
+        assert not conv3d, \
+            "3D Convolution is not yet supported."
 
         if conv3d:
             self.convolution = Conv3dInPlaceModule(
@@ -79,8 +78,6 @@ class MSDLayerModule(nn.Module):
         # Set output
         self.convolution.output = self.L.narrow(1, self.in_front, self.width)
         output = self.convolution(input)
-        if self.reflect is not None:
-            output = self.reflect(output)
         output = self.relu(output)
         output = stitchLazy(output, self.L, self.G, self.in_front)
         return output
@@ -123,12 +120,8 @@ class MSDModule(nn.Module):
         self.register_buffer('L', L)
         self.register_buffer('G', G)
 
-        # Add margins to the layers:
-        if reflect:
-            layers = [nn.ReflectionPad2d(max_dilation),
-                      StitchCopyModule(L, G, 0)]
-        else:
-            layers = [StitchCopyModule(L, G, 0)]
+        # The first layer copies input into the L buffer
+        layers = [StitchCopyModule(L, G, 0)]
 
         layers += [MSDLayerModule(self.L, self.G, c_in, c_out, d, width,
                                   dilation_function(d),
@@ -136,6 +129,9 @@ class MSDModule(nn.Module):
                    for d in range(1, depth + 1)]
 
         in_front = units_in_front(c_in, width, depth + 1)
+        # TODO: Perhaps implement this myself? The backward might be
+        # really slow.
+        # TODO: Implement 3d version for sure.
         if conv3d:
             self.c_final = nn.Conv3d(in_front, c_out, kernel_size=1)
         else:
@@ -145,9 +141,6 @@ class MSDModule(nn.Module):
         self.c_final.bias.data.zero_()
         self.net = nn.Sequential(*(layers + [self.c_final]))
 
-        # Remove the margins at the end:
-        if reflect:
-            self.net = nn.Sequential(self.net, Crop2DModule(max_dilation))
         self.net.cuda()
 
     def forward(self, input):
@@ -156,10 +149,6 @@ class MSDModule(nn.Module):
 
     def init_buffers(self, input_shape):
         batch_sz, c_in, *shape = input_shape
-        # If reflection padding is active, the intermediate buffers
-        # must be bigger too.
-        if self.reflect:
-            shape = [s + 2 * max_dilation for s in shape]
 
         assert c_in == self.c_in, "Unexpected number of input channels"
         # Ensure that L and G are the correct size
