@@ -31,7 +31,7 @@ class MSDModuleTest(unittest.TestCase):
 
         input = t.randn(batch_size, c_in, *shape, dtype=dtype, device=device)
         bias = t.randn(c_out, dtype=dtype, device=device)
-        weight = t.randn(c_out, c_in, dtype=dtype, device=device)
+        weight = t.randn(c_out, c_in, 1, dtype=dtype, device=device)
 
         msd_final = MSDFinalLayer(c_in, c_out)
         msd_final.linear.bias.data = bias

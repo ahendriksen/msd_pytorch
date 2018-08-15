@@ -89,17 +89,20 @@ class MSDFinalLayer(nn.Module):
     """
     def __init__(self, c_in, c_out):
         super(MSDFinalLayer, self).__init__()
-        self.linear = nn.Linear(c_in, c_out, bias=True)
+        self.c_in = c_in
+        self.c_out = c_out
+        self.linear = nn.Conv1d(c_in, c_out, 1)
         self.linear.weight.data.zero_()
         self.linear.bias.data.zero_()
 
     def forward(self, input):
-        last_dim = len(input.shape) - 1
+        b, c_in, *size = input.shape
+        tmp_size = input[0, 0, ...].numel()
+
         # Put channels in last place in input shape
-        output = input
-        output = output.transpose(1, last_dim)
+        output = input.view(b, c_in, tmp_size)
         output = self.linear(output)
-        output = output.transpose(1, last_dim)
+        output = output.view(b, self.c_out, *size)
         return output
 
 
