@@ -3,20 +3,14 @@ import torch as t
 from torch.autograd import Function
 from torch.nn import Parameter
 import conv_cuda
+import conv3d_cuda
 
 
-class ConvNdInPlaceFunction(Function):
+class Conv2dInPlaceFunction(Function):
     @staticmethod
     def forward(ctx, input, weight, bias, output, stride, dilation):
-        # save_for_backward can only save input or output
-        # tensors. Since we require the output to be contiguous, we
-        # save the contiguous version of output. We cannot save the
-        # contiguous version of input, so we save the (possibly)
-        # non-contiguous version.
-
         ctx.save_for_backward(input, weight, bias)
         ctx.dilation = dilation
-
         conv_cuda.conv_forward(input, weight, bias, output.data, dilation)
         return output
 
@@ -42,7 +36,38 @@ class ConvNdInPlaceFunction(Function):
         return grad_input, grad_weight, grad_bias, None, None, None, None
 
 
-convNdInPlace = ConvNdInPlaceFunction.apply
+class Conv3dInPlaceFunction(Function):
+    @staticmethod
+    def forward(ctx, input, weight, bias, output, stride, dilation):
+        ctx.save_for_backward(input, weight, bias)
+        ctx.dilation = dilation
+        conv3d_cuda.conv_forward(input, weight, bias, output.data, dilation)
+        return output
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        # restore variables
+        input, weight, bias = ctx.saved_tensors
+        dilation = ctx.dilation
+
+        # ensure that grad_output is contiguous
+        grad_output = grad_output.contiguous()
+
+        # Input
+        grad_input = t.zeros_like(input)
+        conv3d_cuda.conv_backward_x(grad_output, weight, grad_input, dilation)
+        # Weight
+        grad_weight = t.zeros_like(weight)
+        conv3d_cuda.conv_backward_k(grad_output, input, grad_weight, dilation)
+        # Bias
+        grad_bias = t.zeros_like(bias)
+        conv3d_cuda.conv_backward_bias(grad_output, grad_bias)
+
+        return grad_input, grad_weight, grad_bias, None, None, None, None
+
+
+conv2dInPlace = Conv2dInPlaceFunction.apply
+conv3dInPlace = Conv3dInPlaceFunction.apply
 
 
 class Conv2dInPlaceModule(nn.Module):
@@ -62,7 +87,7 @@ class Conv2dInPlaceModule(nn.Module):
 
     def forward(self, input):
         assert(self.output.is_cuda)
-        return convNdInPlace(input, self.weight, self.bias,
+        return conv2dInPlace(input, self.weight, self.bias,
                              self.output, self.stride, self.dilation)
 
 
@@ -81,5 +106,5 @@ class Conv3dInPlaceModule(nn.Module):
 
     def forward(self, input):
         assert(self.output.is_cuda)
-        return convNdInPlace(input, self.weight, self.bias,
+        return conv3dInPlace(input, self.weight, self.bias,
                              self.output, self.stride, self.dilation)

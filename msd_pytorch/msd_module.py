@@ -52,9 +52,6 @@ class MSDLayerModule(nn.Module):
                           "Using reflection-padding instead.")
         self.reflect = None
 
-        assert not conv3d, \
-            "3D Convolution is not yet supported."
-
         if conv3d:
             self.convolution = Conv3dInPlaceModule(
                 output, in_front, width, kernel_size=3,
@@ -79,6 +76,30 @@ class MSDLayerModule(nn.Module):
         output = self.convolution(input)
         output = self.relu(output)
         output = stitchLazy(output, self.L, self.G, self.in_front)
+        return output
+
+
+class MSDFinalLayer(nn.Module):
+    """Documentation for MSDFinalLayer
+
+    Implements the final 1x1 multiplication and bias addition for all
+    intermediate layers to get to the output layer.
+
+    Initializes the weight and bias to zero.
+    """
+    def __init__(self, c_in, c_out):
+        super(MSDFinalLayer, self).__init__()
+        self.linear = nn.Linear(c_in, c_out, bias=True)
+        self.linear.weight.data.zero_()
+        self.linear.bias.data.zero_()
+
+    def forward(self, input):
+        last_dim = len(input.shape) - 1
+        # Put channels in last place in input shape
+        output = input
+        output = output.transpose(1, last_dim)
+        output = self.linear(output)
+        output = output.transpose(1, last_dim)
         return output
 
 
@@ -129,16 +150,8 @@ class MSDModule(nn.Module):
                    for d in range(1, depth + 1)]
 
         in_front = units_in_front(c_in, width, depth + 1)
-        # TODO: Perhaps implement this myself? The backward might be
-        # really slow.
-        # TODO: Implement 3d version for sure.
-        if conv3d:
-            self.c_final = nn.Conv3d(in_front, c_out, kernel_size=1)
-        else:
-            self.c_final = nn.Conv2d(in_front, c_out, kernel_size=1)
+        self.c_final = MSDFinalLayer(in_front, c_out)
 
-        self.c_final.weight.data.zero_()
-        self.c_final.bias.data.zero_()
         self.net = nn.Sequential(*(layers + [self.c_final]))
 
         self.net.cuda()

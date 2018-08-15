@@ -1,5 +1,5 @@
 from msd_pytorch.trp_conv_inplace import (Conv2dInPlaceModule)
-from msd_pytorch.msd_module import (MSDModule, msd_dilation)
+from msd_pytorch.msd_module import (MSDModule, msd_dilation, MSDFinalLayer)
 from msd_pytorch.relu_inplace import (ReLUInplaceFunction)
 from msd_pytorch.stitch import (stitchCopy)
 from torch.autograd import (Variable)
@@ -11,6 +11,46 @@ import unittest
 
 
 class MSDModuleTest(unittest.TestCase):
+
+    def test_final_layer(self):
+        """Test MSDFinalLayer module
+
+        We check that the msd_final module does exactly the same as a
+        1x1 convolution.
+
+        """
+        conv3d = True
+        shape = (25, ) * (3 if conv3d else 2)
+        k_shape = (1,) * (3 if conv3d else 2)
+        device = t.device("cuda:0")
+        dtype = t.double
+
+        batch_size = 3
+        c_in = 10
+        c_out = 2
+
+        input = t.randn(batch_size, c_in, *shape, dtype=dtype, device=device)
+        bias = t.randn(c_out, dtype=dtype, device=device)
+        weight = t.randn(c_out, c_in, dtype=dtype, device=device)
+
+        msd_final = MSDFinalLayer(c_in, c_out)
+        msd_final.linear.bias.data = bias
+        msd_final.linear.weight.data = weight
+
+        if conv3d:
+            conv = nn.Conv3d(c_in, c_out, 1)
+        else:
+            conv = nn.Conv2d(c_in, c_out, 1)
+        conv.bias.data = bias
+        conv.weight.data = weight.view(c_out, c_in, *k_shape)
+
+        # Check that outputs have the same shape
+        output1 = conv(input)
+        output2 = msd_final(input)
+        self.assertEqual(output1.shape, output2.shape)
+        # And have the same values.
+        diff = (output1 - output2).abs().sum().item()
+        self.assertAlmostEqual(diff, 0)
 
     def test_clear_buffers(self):
         t.manual_seed(2)
