@@ -165,26 +165,3 @@ class MSDModule(nn.Module):
         L_new, G_new = self.L.new(1), self.G.new(1)
         self.L.set_(L_new)      # This replaces the underlying storage
         self.G.set_(G_new)      # of L and G.
-
-    def grow(self, add_depth=1):
-        new = MSDModule(self.c_in, self.c_out, self.depth + add_depth,
-                        self.width, self.dilation_function, self.conv3d)
-
-        cur_params = self.net.state_dict()
-        new_params = new.net.state_dict()
-
-        for k, cur_p in cur_params.items():
-            new_p = new_params.get(k)
-            if new_p is not None:
-                new_p.copy_(cur_p)
-
-        # Reinitialize the final convolution
-        cur_w = self.c_final.weight.data
-        new_w = new.c_final.weight.data
-        new_w[:, :(cur_w.shape[1]), :, :].copy_(cur_w)
-        cur_b = self.c_final.bias.data
-        new_b = new.c_final.bias.data
-        new_b.zero_()
-        new_b[:(self.depth + 1)].copy_(cur_b)
-
-        return new

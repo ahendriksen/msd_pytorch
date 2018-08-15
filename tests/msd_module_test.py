@@ -24,14 +24,7 @@ class MSDModuleTest(unittest.TestCase):
 
         net = MSDModule(c_in, c_out, depth, width, msd_dilation, conv3d=False)
         y1 = net(x)
-        criterion = nn.L1Loss()
-        loss = criterion(y1, target)
-        optimizer = optim.Adam(net.parameters())
-        optimizer.zero_grad()
-        loss.backward()
-
-        net_new = net.grow(1)
-        net_new.clear_buffers()
+        net.clear_buffers()
         y2 = net(x)
         self.assertAlmostEqual(0, (y1 - y2).abs().data.sum())
 
