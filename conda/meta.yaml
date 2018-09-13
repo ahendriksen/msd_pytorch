@@ -1,0 +1,35 @@
+package:
+    name: msd_pytorch
+    version: "0.4.0"
+
+source:
+    path: ../
+    # git_url: https://gitlab.com/tomo-ml/msd_pytorch
+    # git_rev: pytorch0.4.0  # development
+
+build:
+    number: 0
+
+requirements:
+    build:
+        - python {{ python }}
+        - setuptools
+        - trp_convolutions=0.1.0
+        - pytorch=0.4
+        - torchvision
+
+    run:
+        - python
+        - trp_convolutions=0.1.0
+        - pytorch=0.4
+        - torchvision
+
+about:
+    home: https://gitlab.com/tomo-ml/msd_pytorch
+    # license: MIT
+    # license_file: LICENSE
+    summary: "A pytorch implementation of mixed scale dense networks."
+
+extra:
+    maintainers:
+        - Allard Hendriksen
