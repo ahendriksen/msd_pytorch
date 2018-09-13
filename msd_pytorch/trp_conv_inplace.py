@@ -41,7 +41,8 @@ class Conv3dInPlaceFunction(Function):
     def forward(ctx, input, weight, bias, output, stride, dilation):
         ctx.save_for_backward(input, weight, bias)
         ctx.dilation = dilation
-        conv3d_cuda.conv_forward(input, weight, bias, output.data, dilation)
+        ctx.stride =stride
+        conv3d_cuda.conv_forward(input, weight, bias, output.data, stride, dilation)
         return output
 
     @staticmethod
@@ -49,16 +50,17 @@ class Conv3dInPlaceFunction(Function):
         # restore variables
         input, weight, bias = ctx.saved_tensors
         dilation = ctx.dilation
+        stride = ctx.stride
 
         # ensure that grad_output is contiguous
         grad_output = grad_output.contiguous()
 
         # Input
         grad_input = t.zeros_like(input)
-        conv3d_cuda.conv_backward_x(grad_output, weight, grad_input, dilation)
+        conv3d_cuda.conv_backward_x(grad_output, weight, grad_input, stride, dilation)
         # Weight
         grad_weight = t.zeros_like(weight)
-        conv3d_cuda.conv_backward_k(grad_output, input, grad_weight, dilation)
+        conv3d_cuda.conv_backward_k(grad_output, input, grad_weight, stride, dilation)
         # Bias
         grad_bias = t.zeros_like(bias)
         conv3d_cuda.conv_backward_bias(grad_output, grad_bias)
