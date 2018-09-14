@@ -14,13 +14,13 @@ requirements:
     build:
         - python {{ python }}
         - setuptools
-        - trp_convolutions=0.1.0
+        - trp_convolutions=0.2.0
         - pytorch=0.4
         - torchvision
 
     run:
         - python
-        - trp_convolutions=0.1.0
+        - trp_convolutions=0.2.0
         - pytorch=0.4
         - torchvision
 
