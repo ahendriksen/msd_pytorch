@@ -1,6 +1,6 @@
 package:
     name: msd_pytorch
-    version: "0.4.2"
+    version: "0.5.0"
 
 source:
     path: ../
