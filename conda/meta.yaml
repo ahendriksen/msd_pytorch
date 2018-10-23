@@ -1,6 +1,6 @@
 package:
     name: msd_pytorch
-    version: "0.5.0"
+    version: "0.5.1"
 
 source:
     path: ../
@@ -14,13 +14,13 @@ requirements:
     build:
         - python {{ python }}
         - setuptools
-        - trp_convolutions=0.2.0
+        - trp_convolutions=0.2.1
         - pytorch=0.4
         - torchvision
 
     run:
         - python
-        - trp_convolutions=0.2.0
+        - trp_convolutions=0.2.1
         - pytorch=0.4
         - torchvision
 
