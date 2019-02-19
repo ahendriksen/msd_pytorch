@@ -1,0 +1,1747 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>msd_pytorch package &mdash; Mixed-scale Dense Networks for PyTorch  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Changelog" href="CHANGELOG.html" />
+    <link rel="prev" title="msd_pytorch" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Mixed-scale Dense Networks for PyTorch
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="README.html">Mixed-scale Dense Networks for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">msd_pytorch</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">msd_pytorch package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-msd_pytorch.conv">msd_pytorch.conv module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-msd_pytorch.errors">msd_pytorch.errors module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-msd_pytorch.image_dataset">msd_pytorch.image_dataset module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-msd_pytorch.main">msd_pytorch.main module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-msd_pytorch.msd_model">msd_pytorch.msd_model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-msd_pytorch.msd_module">msd_pytorch.msd_module module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-msd_pytorch.msd_regression_model">msd_pytorch.msd_regression_model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-msd_pytorch.msd_segmentation_model">msd_pytorch.msd_segmentation_model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-msd_pytorch.relu_inplace">msd_pytorch.relu_inplace module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-msd_pytorch.stitch">msd_pytorch.stitch module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-msd_pytorch">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="CHANGELOG.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Mixed-scale Dense Networks for PyTorch</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="modules.html">msd_pytorch</a> &raquo;</li>
+        
+      <li>msd_pytorch package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/msd_pytorch.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="msd-pytorch-package">
+<h1>msd_pytorch package<a class="headerlink" href="#msd-pytorch-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-msd_pytorch.conv">
+<span id="msd-pytorch-conv-module"></span><h2>msd_pytorch.conv module<a class="headerlink" href="#module-msd_pytorch.conv" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="msd_pytorch.conv.Conv2dInPlaceFunction">
+<em class="property">class </em><code class="descclassname">msd_pytorch.conv.</code><code class="descname">Conv2dInPlaceFunction</code><a class="reference internal" href="_modules/msd_pytorch/conv.html#Conv2dInPlaceFunction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.conv.Conv2dInPlaceFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.autograd.function.Function</span></code></p>
+<dl class="staticmethod">
+<dt id="msd_pytorch.conv.Conv2dInPlaceFunction.backward">
+<em class="property">static </em><code class="descname">backward</code><span class="sig-paren">(</span><em>ctx</em>, <em>grad_output</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/conv.html#Conv2dInPlaceFunction.backward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.conv.Conv2dInPlaceFunction.backward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines a formula for differentiating the operation.</p>
+<p>This function is to be overridden by all subclasses.</p>
+<p>It must accept a context <code class="xref py py-attr docutils literal notranslate"><span class="pre">ctx</span></code> as the first argument, followed by
+as many outputs did <a class="reference internal" href="#msd_pytorch.conv.Conv2dInPlaceFunction.forward" title="msd_pytorch.conv.Conv2dInPlaceFunction.forward"><code class="xref py py-func docutils literal notranslate"><span class="pre">forward()</span></code></a> return, and it should return as many
+tensors, as there were inputs to <a class="reference internal" href="#msd_pytorch.conv.Conv2dInPlaceFunction.forward" title="msd_pytorch.conv.Conv2dInPlaceFunction.forward"><code class="xref py py-func docutils literal notranslate"><span class="pre">forward()</span></code></a>. Each argument is the
+gradient w.r.t the given output, and each returned value should be the
+gradient w.r.t. the corresponding input.</p>
+<p>The context can be used to retrieve tensors saved during the forward
+pass. It also has an attribute <code class="xref py py-attr docutils literal notranslate"><span class="pre">ctx.needs_input_grad</span></code> as a tuple
+of booleans representing whether each input needs gradient. E.g.,
+<a class="reference internal" href="#msd_pytorch.conv.Conv2dInPlaceFunction.backward" title="msd_pytorch.conv.Conv2dInPlaceFunction.backward"><code class="xref py py-func docutils literal notranslate"><span class="pre">backward()</span></code></a> will have <code class="docutils literal notranslate"><span class="pre">ctx.needs_input_grad[0]</span> <span class="pre">=</span> <span class="pre">True</span></code> if the
+first input to <a class="reference internal" href="#msd_pytorch.conv.Conv2dInPlaceFunction.forward" title="msd_pytorch.conv.Conv2dInPlaceFunction.forward"><code class="xref py py-func docutils literal notranslate"><span class="pre">forward()</span></code></a> needs gradient computated w.r.t. the
+output.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="msd_pytorch.conv.Conv2dInPlaceFunction.forward">
+<em class="property">static </em><code class="descname">forward</code><span class="sig-paren">(</span><em>ctx</em>, <em>input</em>, <em>weight</em>, <em>bias</em>, <em>output</em>, <em>stride</em>, <em>dilation</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/conv.html#Conv2dInPlaceFunction.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.conv.Conv2dInPlaceFunction.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs the operation.</p>
+<p>This function is to be overridden by all subclasses.</p>
+<p>It must accept a context ctx as the first argument, followed by any
+number of arguments (tensors or other types).</p>
+<p>The context can be used to store tensors that can be then retrieved
+during the backward pass.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="msd_pytorch.conv.Conv2dInPlaceModule">
+<em class="property">class </em><code class="descclassname">msd_pytorch.conv.</code><code class="descname">Conv2dInPlaceModule</code><span class="sig-paren">(</span><em>output</em>, <em>in_channels</em>, <em>out_channels</em>, <em>kernel_size=3</em>, <em>dilation=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/conv.html#Conv2dInPlaceModule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.conv.Conv2dInPlaceModule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<dl class="method">
+<dt id="msd_pytorch.conv.Conv2dInPlaceModule.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>output</em>, <em>in_channels</em>, <em>out_channels</em>, <em>kernel_size=3</em>, <em>dilation=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/conv.html#Conv2dInPlaceModule.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.conv.Conv2dInPlaceModule.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.conv.Conv2dInPlaceModule.forward">
+<code class="descname">forward</code><span class="sig-paren">(</span><em>input</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/conv.html#Conv2dInPlaceModule.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.conv.Conv2dInPlaceModule.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="msd_pytorch.conv.conv2dInPlace">
+<code class="descclassname">msd_pytorch.conv.</code><code class="descname">conv2dInPlace</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#msd_pytorch.conv.conv2dInPlace" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-msd_pytorch.errors">
+<span id="msd-pytorch-errors-module"></span><h2>msd_pytorch.errors module<a class="headerlink" href="#module-msd_pytorch.errors" title="Permalink to this headline">¶</a></h2>
+<dl class="exception">
+<dt id="msd_pytorch.errors.Error">
+<em class="property">exception </em><code class="descclassname">msd_pytorch.errors.</code><code class="descname">Error</code><a class="reference internal" href="_modules/msd_pytorch/errors.html#Error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.errors.Error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Base class for exceptions in msd_pytorch.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="msd_pytorch.errors.InputError">
+<em class="property">exception </em><code class="descclassname">msd_pytorch.errors.</code><code class="descname">InputError</code><span class="sig-paren">(</span><em>message</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/errors.html#InputError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.errors.InputError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#msd_pytorch.errors.Error" title="msd_pytorch.errors.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">msd_pytorch.errors.Error</span></code></a></p>
+<p>Exception raised for errors in the input.</p>
+<dl class="docutils">
+<dt>Attributes:</dt>
+<dd>message – explanation of the error</dd>
+</dl>
+<dl class="method">
+<dt id="msd_pytorch.errors.InputError.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>message</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/errors.html#InputError.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.errors.InputError.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-msd_pytorch.image_dataset">
+<span id="msd-pytorch-image-dataset-module"></span><h2>msd_pytorch.image_dataset module<a class="headerlink" href="#module-msd_pytorch.image_dataset" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="msd_pytorch.image_dataset.ImageDataset">
+<em class="property">class </em><code class="descclassname">msd_pytorch.image_dataset.</code><code class="descname">ImageDataset</code><span class="sig-paren">(</span><em>input_path_specifier</em>, <em>target_path_specifier</em>, <em>*</em>, <em>collapse_channels=False</em>, <em>labels=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/image_dataset.html#ImageDataset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.image_dataset.ImageDataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.utils.data.dataset.Dataset</span></code></p>
+<p>A dataset for images stored on disk.</p>
+<dl class="method">
+<dt id="msd_pytorch.image_dataset.ImageDataset.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>input_path_specifier</em>, <em>target_path_specifier</em>, <em>*</em>, <em>collapse_channels=False</em>, <em>labels=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/image_dataset.html#ImageDataset.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.image_dataset.ImageDataset.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new image dataset.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>input_path_specifier</strong> – <cite>string</cite></td>
+</tr>
+</tbody>
+</table>
+<p>A path with optional glob pattern describing the image
+file paths. Tildes and other HOME directory specifications
+are expanded with <cite>expanduser</cite> and symlinks are resolved.</p>
+<p>If the path points to a directory, then all files in the
+directory are included in the image stack.</p>
+<p>If the path points to file, then that single file is
+included in the image stack.</p>
+<p>Alternatively, one may specify a “glob pattern” to match
+specific files in the directory. Of course, if the glob
+pattern does not contain a ‘*’, then it may match a single
+file.</p>
+<p>Examples:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">&quot;~/train_images/&quot;</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">&quot;~/train_images/cats*.png&quot;</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">&quot;~/train_images/*.tif&quot;</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">&quot;~/train_images/scan*&quot;</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">&quot;~/train_images/just_one_image.jpeg&quot;</span></code></li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>target_path_specifier</strong> – <cite>string</cite></td>
+</tr>
+</tbody>
+</table>
+<p>A pattern that describes the target data. Format is
+similar to the input path specification.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>collapse_channels</strong> – <cite>bool</cite></td>
+</tr>
+</tbody>
+</table>
+<p>By default, the images are returned in the CxHxW format,
+where C is the number of channels and H and W specify the
+height and width, respectively.</p>
+<p>If <cite>collapse_channels=True</cite>, then all channels in the
+image will be averaged to a single channel. This can be
+used to convert color images to gray-scale images, for
+instance.</p>
+<p>If <cite>collapse_channels=False</cite>, any channels in the image
+will be retained.</p>
+<p>In either case, the returned images have at least one
+channel.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>labels</strong> – <cite>int</cite> or <cite>list(int)</cite></td>
+</tr>
+</tbody>
+</table>
+<p>By default, both input and target image pixel values are
+converted to float32.</p>
+<p>If you want to retrieve the target image pixels as
+integral values instead, set:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">labels=k</span></code> for an integer <code class="docutils literal notranslate"><span class="pre">k</span></code> if the labels are contained in the set {0, 1, …, k-1};</li>
+<li><code class="docutils literal notranslate"><span class="pre">labels=[1,2,5]</span></code> if the labels are contained in the set {1,2,5}.</li>
+</ul>
+<p>Setting labels is useful for segmentation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="msd_pytorch.image_dataset.ImageDataset.num_labels">
+<code class="descname">num_labels</code><a class="headerlink" href="#msd_pytorch.image_dataset.ImageDataset.num_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of labels in this image stack.</p>
+<p>If the stack is not labeled, this property access raises a
+RuntimeError.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The number of labels in this image stack.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="msd_pytorch.image_dataset.ImageStack">
+<em class="property">class </em><code class="descclassname">msd_pytorch.image_dataset.</code><code class="descname">ImageStack</code><span class="sig-paren">(</span><em>path_specifier</em>, <em>*</em>, <em>collapse_channels=False</em>, <em>labels=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/image_dataset.html#ImageStack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.image_dataset.ImageStack" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A stack of images stored on disk.</p>
+<p>An image stack describes a collection of images matching the
+file path specifier <cite>path_specifier</cite>.</p>
+<p>The images can be tiff files, or any other image filetype
+supported by imageio.</p>
+<p>The image paths are sorted using a natural sorting
+mechanism. So “scan1.tif” comes before “scan10.tif”.</p>
+<p>Images can be retrieved by indexing into the stack. For example:</p>
+<p><code class="docutils literal notranslate"><span class="pre">ImageStack(&quot;*.tif&quot;)[i]</span></code></p>
+<p>These images are returned as torch
+tensors with three dimensions CxHxW.</p>
+<dl class="method">
+<dt id="msd_pytorch.image_dataset.ImageStack.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>path_specifier</em>, <em>*</em>, <em>collapse_channels=False</em>, <em>labels=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/image_dataset.html#ImageStack.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.image_dataset.ImageStack.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new ImageStack.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path_specifier</strong> – <cite>string</cite></td>
+</tr>
+</tbody>
+</table>
+<p>A path with optional glob pattern describing the image
+file paths. Tildes and other HOME directory specifications
+are expanded with <cite>expanduser</cite> and symlinks are resolved.</p>
+<p>If the path points to a directory, then all files in the
+directory are included in the image stack.</p>
+<p>If the path points to file, then that single file is
+included in the image stack.</p>
+<p>Alternatively, one may specify a “glob pattern” to match
+specific files in the directory. Of course, if the glob
+pattern does not contain a ‘*’, then it may match a single
+file.</p>
+<p>Examples:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">&quot;~/train_images/&quot;</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">&quot;~/train_images/cats*.png&quot;</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">&quot;~/train_images/*.tif&quot;</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">&quot;~/train_images/scan*&quot;</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">&quot;~/train_images/just_one_image.jpeg&quot;</span></code></li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>collapse_channels</strong> – <cite>bool</cite></td>
+</tr>
+</tbody>
+</table>
+<p>By default, the images are returned in the CxHxW format, where
+C is the number of channels and H and W specify the height and
+width, respectively.</p>
+<p>If <cite>collapse_channels=True</cite>, then all channels in the image
+will be averaged to a single channel. This can be used to
+convert color images to gray-scale images, for instance.</p>
+<p>If <cite>collapse_channels=False</cite>, any channels in the image will
+be retained.</p>
+<p>In either case, the returned images have at least one channel.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>labels</strong> – <cite>int</cite> or <cite>list(int)</cite></td>
+</tr>
+</tbody>
+</table>
+<p>By default, all image pixel values are converted to
+float32.</p>
+<p>If you want to retrieve the image pixels as
+integral values instead, set</p>
+<ul class="simple">
+<li><dl class="first docutils">
+<dt><cite>labels=k</cite> for an integer <cite>k</cite> if the labels are</dt>
+<dd>contained in the set {0, 1, …, k-1};</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>labels=[1,2,5]</cite> if the labels are contained in the set</dt>
+<dd>{1,2,5}.</dd>
+</dl>
+</li>
+</ul>
+<p>Setting labels is useful for segmentation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">An ImageStack</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.image_dataset.ImageStack.find_images">
+<code class="descname">find_images</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/image_dataset.html#ImageStack.find_images"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.image_dataset.ImageStack.find_images" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="msd_pytorch.image_dataset.ImageStack.num_labels">
+<code class="descname">num_labels</code><a class="headerlink" href="#msd_pytorch.image_dataset.ImageStack.num_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of labels in this image stack.</p>
+<p>If the stack is not labeled, this property access raises a
+RuntimeError.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The number of labels in this image stack.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-msd_pytorch.main">
+<span id="msd-pytorch-main-module"></span><h2>msd_pytorch.main module<a class="headerlink" href="#module-msd_pytorch.main" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="msd_pytorch.main.experiment_main">
+<code class="descclassname">msd_pytorch.main.</code><code class="descname">experiment_main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/main.html#experiment_main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.main.experiment_main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="msd_pytorch.main.main_function">
+<code class="descclassname">msd_pytorch.main.</code><code class="descname">main_function</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/main.html#main_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.main.main_function" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="msd_pytorch.main.regression">
+<code class="descclassname">msd_pytorch.main.</code><code class="descname">regression</code><span class="sig-paren">(</span><em>msd</em>, <em>epochs</em>, <em>train_input_glob</em>, <em>train_target_glob</em>, <em>val_input_glob</em>, <em>val_target_glob</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/main.html#regression"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.main.regression" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="msd_pytorch.main.segmentation">
+<code class="descclassname">msd_pytorch.main.</code><code class="descname">segmentation</code><span class="sig-paren">(</span><em>msd</em>, <em>epochs</em>, <em>train_input_glob</em>, <em>train_target_glob</em>, <em>val_input_glob</em>, <em>val_target_glob</em>, <em>labels</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/main.html#segmentation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.main.segmentation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="msd_pytorch.main.train">
+<code class="descclassname">msd_pytorch.main.</code><code class="descname">train</code><span class="sig-paren">(</span><em>model</em>, <em>epochs</em>, <em>train_dl</em>, <em>val_dl</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/main.html#train"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.main.train" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-msd_pytorch.msd_model">
+<span id="msd-pytorch-msd-model-module"></span><h2>msd_pytorch.msd_model module<a class="headerlink" href="#module-msd_pytorch.msd_model" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="msd_pytorch.msd_model.MSDModel">
+<em class="property">class </em><code class="descclassname">msd_pytorch.msd_model.</code><code class="descname">MSDModel</code><span class="sig-paren">(</span><em>c_in, c_out, depth, width, dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_model.html#MSDModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_model.MSDModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for MSD models.</p>
+<p>This class provides methods for</p>
+<ul class="simple">
+<li>training the network</li>
+<li>calculating validation scores</li>
+<li>loading and saving the network parameters to disk.</li>
+<li>computing normalization for input and target data.</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Do not initialize MSDModel directly. Use
+<a class="reference internal" href="#msd_pytorch.msd_segmentation_model.MSDSegmentationModel" title="msd_pytorch.msd_segmentation_model.MSDSegmentationModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">MSDSegmentationModel</span></code></a> or
+<a class="reference internal" href="#msd_pytorch.msd_regression_model.MSDRegressionModel" title="msd_pytorch.msd_regression_model.MSDRegressionModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">MSDRegressionModel</span></code></a> instead.</p>
+</div>
+<dl class="method">
+<dt id="msd_pytorch.msd_model.MSDModel.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>c_in, c_out, depth, width, dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_model.html#MSDModel.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_model.MSDModel.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new MSDModel base class.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Do not initialize MSDModel directly. Use
+<a class="reference internal" href="#msd_pytorch.msd_segmentation_model.MSDSegmentationModel" title="msd_pytorch.msd_segmentation_model.MSDSegmentationModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">MSDSegmentationModel</span></code></a> or
+<a class="reference internal" href="#msd_pytorch.msd_regression_model.MSDRegressionModel" title="msd_pytorch.msd_regression_model.MSDRegressionModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">MSDRegressionModel</span></code></a> instead.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>c_in</strong> – The number of input channels.</li>
+<li><strong>c_out</strong> – The number of output channels.</li>
+<li><strong>depth</strong> – The depth of the MSD network.</li>
+<li><strong>width</strong> – The width of the MSD network.</li>
+<li><strong>dilations</strong> – <cite>list(int)</cite></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>A list of dilations to use. Default is <code class="docutils literal notranslate"><span class="pre">[1,</span> <span class="pre">2,</span> <span class="pre">...,</span> <span class="pre">10]</span></code>.  A
+good alternative is <code class="docutils literal notranslate"><span class="pre">[1,</span> <span class="pre">2,</span> <span class="pre">4,</span> <span class="pre">8]</span></code>. The dilations are
+repeated when there are more layers than supplied dilations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.msd_model.MSDModel.forward">
+<code class="descname">forward</code><span class="sig-paren">(</span><em>input=None</em>, <em>target=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_model.html#MSDModel.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_model.MSDModel.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the loss for a single input-target pair.</p>
+<p>Both <code class="docutils literal notranslate"><span class="pre">input</span></code> and <code class="docutils literal notranslate"><span class="pre">target</span></code> are optional. If one of these
+parameters is not set, a previous value of these parameters is
+used.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>input</strong> – <cite>torch.Tensor</cite></td>
+</tr>
+</tbody>
+</table>
+<p>A <code class="docutils literal notranslate"><span class="pre">BxCxHxW</span></code>-dimensional torch input tensor.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>target</strong> – <cite>torch.Tensor</cite></td>
+</tr>
+</tbody>
+</table>
+<p>A <code class="docutils literal notranslate"><span class="pre">BxCxHxW</span></code>-dimensional torch input tensor.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The loss on target</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.msd_model.MSDModel.get_loss">
+<code class="descname">get_loss</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_model.html#MSDModel.get_loss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_model.MSDModel.get_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the mean loss of the last forward calculation.</p>
+<p>Gets the mean loss of the last <code class="docutils literal notranslate"><span class="pre">(input,</span> <span class="pre">target)</span></code> pair. The
+loss function that is used depends on whether the model is
+doing regression or segmentation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The loss.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.msd_model.MSDModel.get_output">
+<code class="descname">get_output</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_model.html#MSDModel.get_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_model.MSDModel.get_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the output of the network.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The output is only defined after a call to
+<a class="reference internal" href="#msd_pytorch.msd_model.MSDModel.forward" title="msd_pytorch.msd_model.MSDModel.forward"><code class="xref py py-func docutils literal notranslate"><span class="pre">forward()</span></code></a>, <a class="reference internal" href="#msd_pytorch.msd_model.MSDModel.learn" title="msd_pytorch.msd_model.MSDModel.learn"><code class="xref py py-func docutils literal notranslate"><span class="pre">learn()</span></code></a>, <a class="reference internal" href="#msd_pytorch.msd_model.MSDModel.train" title="msd_pytorch.msd_model.MSDModel.train"><code class="xref py py-func docutils literal notranslate"><span class="pre">train()</span></code></a>,
+<a class="reference internal" href="#msd_pytorch.msd_model.MSDModel.validate" title="msd_pytorch.msd_model.MSDModel.validate"><code class="xref py py-func docutils literal notranslate"><span class="pre">validate()</span></code></a>. If none of these methods has been
+called, <code class="docutils literal notranslate"><span class="pre">None</span></code> is returned.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A torch tensor containing the output of the network or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><cite>torch.Tensor</cite> or <cite>NoneType</cite></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.msd_model.MSDModel.init_optimizer">
+<code class="descname">init_optimizer</code><span class="sig-paren">(</span><em>trainable_net</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_model.html#MSDModel.init_optimizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_model.MSDModel.init_optimizer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.msd_model.MSDModel.learn">
+<code class="descname">learn</code><span class="sig-paren">(</span><em>input=None</em>, <em>target=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_model.html#MSDModel.learn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_model.MSDModel.learn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train on a single input-target pair.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>input</strong> – <cite>torch.Tensor</cite></td>
+</tr>
+</tbody>
+</table>
+<p>A <code class="docutils literal notranslate"><span class="pre">BxCxHxW</span></code>-dimensional torch input tensor.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>target</strong> – <cite>torch.Tensor</cite></td>
+</tr>
+</tbody>
+</table>
+<p>A <code class="docutils literal notranslate"><span class="pre">BxCxHxW</span></code>-dimensional torch input tensor.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.msd_model.MSDModel.load">
+<code class="descname">load</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_model.html#MSDModel.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_model.MSDModel.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load network parameters from disk.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> – The filesystem path where the network parameters are stored.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.msd_model.MSDModel.print">
+<code class="descname">print</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_model.html#MSDModel.print"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_model.MSDModel.print" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the network.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.msd_model.MSDModel.save">
+<code class="descname">save</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_model.html#MSDModel.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_model.MSDModel.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save network to disk.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> – A filesystem path where the network parameters are stored.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Nothing</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.msd_model.MSDModel.set_input">
+<code class="descname">set_input</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_model.html#MSDModel.set_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_model.MSDModel.set_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set input data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> – <cite>torch.Tensor</cite></td>
+</tr>
+</tbody>
+</table>
+<p>A <code class="docutils literal notranslate"><span class="pre">BxCxHxW</span></code>-dimensional torch input tensor.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.msd_model.MSDModel.set_normalization">
+<code class="descname">set_normalization</code><span class="sig-paren">(</span><em>dataloader</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_model.html#MSDModel.set_normalization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_model.MSDModel.set_normalization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalize input and target data.</p>
+<p>This function goes through all the training data to compute
+the mean and std of the training data.</p>
+<p>It modifies the network so that all future invocations of the
+network first normalize input data and target data to have
+mean zero and a standard deviation of one.</p>
+<p>These modified parameters are not updated after this step and
+are stored in the network, so that they are not lost when the
+network is saved to and loaded from disk.</p>
+<p>Normalizing in this way makes training more stable.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dataloader</strong> – The dataloader associated to the training data.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.msd_model.MSDModel.set_target">
+<code class="descname">set_target</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_model.html#MSDModel.set_target"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_model.MSDModel.set_target" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set target data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> – <cite>torch.Tensor</cite></td>
+</tr>
+</tbody>
+</table>
+<p>A <code class="docutils literal notranslate"><span class="pre">BxCxHxW</span></code>-dimensional torch target tensor.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.msd_model.MSDModel.train">
+<code class="descname">train</code><span class="sig-paren">(</span><em>dataloader</em>, <em>num_epochs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_model.html#MSDModel.train"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_model.MSDModel.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train on a dataset.</p>
+<p>Trains the network for <code class="docutils literal notranslate"><span class="pre">num_epochs</span></code> epochs on the dataset
+supplied by <code class="docutils literal notranslate"><span class="pre">dataloader</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>dataloader</strong> – A dataloader for a dataset to train on.</li>
+<li><strong>num_epochs</strong> – The number of epochs to train for.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.msd_model.MSDModel.validate">
+<code class="descname">validate</code><span class="sig-paren">(</span><em>dataloader</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_model.html#MSDModel.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_model.MSDModel.validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate validation score for dataset.</p>
+<p>Calculates the mean loss per <code class="docutils literal notranslate"><span class="pre">(input,</span> <span class="pre">target)</span></code> pair in
+<code class="docutils literal notranslate"><span class="pre">dataloader</span></code>. The loss function that is used depends on
+whether the model is doing regression or segmentation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dataloader</strong> – A dataloader for a dataset to calculate the loss on.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="msd_pytorch.msd_model.scaling_module">
+<code class="descclassname">msd_pytorch.msd_model.</code><code class="descname">scaling_module</code><span class="sig-paren">(</span><em>c_in</em>, <em>c_out</em>, <em>*</em>, <em>conv3d=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_model.html#scaling_module"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_model.scaling_module" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a Module that normalizes the input data.</p>
+<p>This part of the network can be used to renormalize the input
+data. Its parameters are</p>
+<ul class="simple">
+<li>saved when the network is saved;</li>
+<li>not updated by the gradient descent solvers.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>c_in</strong> – The number of input channels.</li>
+<li><strong>c_out</strong> – The number of output channels.</li>
+<li><strong>conv3d</strong> – Indicates that the input data is 3D instead of 2D.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A scaling module.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">torch.nn.ConvNd</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-msd_pytorch.msd_module">
+<span id="msd-pytorch-msd-module-module"></span><h2>msd_pytorch.msd_module module<a class="headerlink" href="#module-msd_pytorch.msd_module" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="msd_pytorch.msd_module.MSDFinalLayer">
+<em class="property">class </em><code class="descclassname">msd_pytorch.msd_module.</code><code class="descname">MSDFinalLayer</code><span class="sig-paren">(</span><em>c_in</em>, <em>c_out</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_module.html#MSDFinalLayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_module.MSDFinalLayer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<p>Documentation for MSDFinalLayer</p>
+<p>Implements the final 1x1 multiplication and bias addition for all
+intermediate layers to get to the output layer.</p>
+<p>Initializes the weight and bias to zero.</p>
+<dl class="method">
+<dt id="msd_pytorch.msd_module.MSDFinalLayer.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>c_in</em>, <em>c_out</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_module.html#MSDFinalLayer.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_module.MSDFinalLayer.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.msd_module.MSDFinalLayer.forward">
+<code class="descname">forward</code><span class="sig-paren">(</span><em>input</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_module.html#MSDFinalLayer.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_module.MSDFinalLayer.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="msd_pytorch.msd_module.MSDLayerModule">
+<em class="property">class </em><code class="descclassname">msd_pytorch.msd_module.</code><code class="descname">MSDLayerModule</code><span class="sig-paren">(</span><em>buffer</em>, <em>c_in</em>, <em>layer_depth</em>, <em>width</em>, <em>dilation</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_module.html#MSDLayerModule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_module.MSDLayerModule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<p>A hidden layer of the MSD module.</p>
+<p>The primary responsibility of this module is to define the
+<cite>forward()</cite> method.</p>
+<p>This module is used by the <cite>MSDModule</cite>.</p>
+<p>This module is not responsible for</p>
+<ul class="simple">
+<li>Buffer management</li>
+<li>Weight initialization</li>
+</ul>
+<dl class="method">
+<dt id="msd_pytorch.msd_module.MSDLayerModule.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>buffer</em>, <em>c_in</em>, <em>layer_depth</em>, <em>width</em>, <em>dilation</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_module.html#MSDLayerModule.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_module.MSDLayerModule.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the hidden layer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>buffer</strong> – a StitchBuffer object for storing the L and G buffers.</li>
+<li><strong>c_in</strong> – The number of input channels of the MSD module.</li>
+<li><strong>layer_depth</strong> – The depth of this layer in the MSD module.  This index is
+zero-based: the first hidden layer has index zero.</li>
+<li><strong>width</strong> – The width of the MSD module.</li>
+<li><strong>dilation</strong> – An integer describing the dilation factor for the
+convolutions in this layer.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A module for the MSD hidden layer.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#msd_pytorch.msd_module.MSDLayerModule" title="msd_pytorch.msd_module.MSDLayerModule">MSDLayerModule</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.msd_module.MSDLayerModule.forward">
+<code class="descname">forward</code><span class="sig-paren">(</span><em>input</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_module.html#MSDLayerModule.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_module.MSDLayerModule.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="msd_pytorch.msd_module.MSDModule">
+<em class="property">class </em><code class="descclassname">msd_pytorch.msd_module.</code><code class="descname">MSDModule</code><span class="sig-paren">(</span><em>c_in, c_out, depth, width, dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_module.html#MSDModule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_module.MSDModule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<dl class="method">
+<dt id="msd_pytorch.msd_module.MSDModule.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>c_in, c_out, depth, width, dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_module.html#MSDModule.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_module.MSDModule.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a msd module</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>c_in</strong> – # of input channels</li>
+<li><strong>c_out</strong> – # of output channels</li>
+<li><strong>depth</strong> – # of layers</li>
+<li><strong>width</strong> – # the width of the module</li>
+<li><strong>dilations</strong> – <cite>list(int)</cite></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>A list of dilations to use. Default is <code class="docutils literal notranslate"><span class="pre">[1,</span> <span class="pre">2,</span> <span class="pre">...,</span> <span class="pre">10]</span></code>.  A
+good alternative is <code class="docutils literal notranslate"><span class="pre">[1,</span> <span class="pre">2,</span> <span class="pre">4,</span> <span class="pre">8]</span></code>. The dilations are
+repeated.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">an MSD module</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#msd_pytorch.msd_module.MSDModule" title="msd_pytorch.msd_module.MSDModule">MSDModule</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.msd_module.MSDModule.forward">
+<code class="descname">forward</code><span class="sig-paren">(</span><em>input</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_module.html#MSDModule.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_module.MSDModule.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.msd_module.MSDModule.init_buffers">
+<code class="descname">init_buffers</code><span class="sig-paren">(</span><em>input</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_module.html#MSDModule.init_buffers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_module.MSDModule.init_buffers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="msd_pytorch.msd_module.init_convolution_weights">
+<code class="descclassname">msd_pytorch.msd_module.</code><code class="descname">init_convolution_weights</code><span class="sig-paren">(</span><em>conv_weight</em>, <em>c_in</em>, <em>c_out</em>, <em>width</em>, <em>depth</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_module.html#init_convolution_weights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_module.init_convolution_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize MSD convolution kernel weights</p>
+<p>Based on:</p>
+<p>Pelt, Daniel M., &amp; Sethian, J. A. (2017). A mixed-scale dense
+convolutional neural network for image analysis. Proceedings of
+the National Academy of Sciences, 115(2),
+254–259. <a class="reference external" href="http://dx.doi.org/10.1073/pnas.1715832114">http://dx.doi.org/10.1073/pnas.1715832114</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>conv_weight</strong> – The kernel weight data</li>
+<li><strong>c_in</strong> – Number of input channels of the MSD module</li>
+<li><strong>c_out</strong> – Number of output channels of the MSD module</li>
+<li><strong>width</strong> – The width of the MSD module</li>
+<li><strong>depth</strong> – The depth of the MSD module. This is the number of hidden layers.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Nothing</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="msd_pytorch.msd_module.stitchLazy">
+<code class="descclassname">msd_pytorch.msd_module.</code><code class="descname">stitchLazy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#msd_pytorch.msd_module.stitchLazy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="msd_pytorch.msd_module.units_in_front">
+<code class="descclassname">msd_pytorch.msd_module.</code><code class="descname">units_in_front</code><span class="sig-paren">(</span><em>c_in</em>, <em>width</em>, <em>layer_depth</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_module.html#units_in_front"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_module.units_in_front" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate how many intermediate images are in front of current layer</p>
+<ul class="simple">
+<li>The input channels count as intermediate images</li>
+<li>The <cite>layer_depth</cite> index is zero-based: the first hidden layer
+has index zero.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>c_in</strong> – The number of input channels of the MSD module</li>
+<li><strong>width</strong> – The width of the MSD module</li>
+<li><strong>layer_depth</strong> – The depth of the layer for which we are calculating the units
+in front.  This index is zero-based: the first hidden layer
+has index zero.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-msd_pytorch.msd_regression_model">
+<span id="msd-pytorch-msd-regression-model-module"></span><h2>msd_pytorch.msd_regression_model module<a class="headerlink" href="#module-msd_pytorch.msd_regression_model" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="msd_pytorch.msd_regression_model.MSDRegressionModel">
+<em class="property">class </em><code class="descclassname">msd_pytorch.msd_regression_model.</code><code class="descname">MSDRegressionModel</code><span class="sig-paren">(</span><em>c_in, c_out, depth, width, *, dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], loss='L2'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_regression_model.html#MSDRegressionModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_regression_model.MSDRegressionModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#msd_pytorch.msd_model.MSDModel" title="msd_pytorch.msd_model.MSDModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">msd_pytorch.msd_model.MSDModel</span></code></a></p>
+<p>An MSD network for regression.</p>
+<p>This class provides helper methods for using the MSD network
+module for regression.</p>
+<p>Refer to the documentation of
+<a class="reference internal" href="#msd_pytorch.msd_model.MSDModel" title="msd_pytorch.msd_model.MSDModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">MSDModel</span></code></a> for more information on
+the helper methods and attributes.</p>
+<dl class="method">
+<dt id="msd_pytorch.msd_regression_model.MSDRegressionModel.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>c_in, c_out, depth, width, *, dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], loss='L2'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_regression_model.html#MSDRegressionModel.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_regression_model.MSDRegressionModel.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new MSD network for regression.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>c_in</strong> – The number of input channels.</li>
+<li><strong>c_out</strong> – The number of output channels.</li>
+<li><strong>depth</strong> – The depth of the MSD network.</li>
+<li><strong>width</strong> – The width of the MSD network.</li>
+<li><strong>dilations</strong> – <cite>list(int)</cite></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>A list of dilations to use. Default is <code class="docutils literal notranslate"><span class="pre">[1,</span> <span class="pre">2,</span> <span class="pre">...,</span> <span class="pre">10]</span></code>.  A
+good alternative is <code class="docutils literal notranslate"><span class="pre">[1,</span> <span class="pre">2,</span> <span class="pre">4,</span> <span class="pre">8]</span></code>. The dilations are
+repeated when there are more layers than supplied dilations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>loss</strong> – <cite>string</cite></td>
+</tr>
+</tbody>
+</table>
+<p>A string describing the loss function that should be
+used. Currently, the following losses are supported:</p>
+<ul class="simple">
+<li>“L1” - <code class="docutils literal notranslate"><span class="pre">nn.L1Loss()</span></code></li>
+<li>“L2” - <code class="docutils literal notranslate"><span class="pre">nn.MSELoss()</span></code></li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-msd_pytorch.msd_segmentation_model">
+<span id="msd-pytorch-msd-segmentation-model-module"></span><h2>msd_pytorch.msd_segmentation_model module<a class="headerlink" href="#module-msd_pytorch.msd_segmentation_model" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="msd_pytorch.msd_segmentation_model.MSDSegmentationModel">
+<em class="property">class </em><code class="descclassname">msd_pytorch.msd_segmentation_model.</code><code class="descname">MSDSegmentationModel</code><span class="sig-paren">(</span><em>c_in, num_labels, depth, width, *, dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_segmentation_model.html#MSDSegmentationModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_segmentation_model.MSDSegmentationModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#msd_pytorch.msd_model.MSDModel" title="msd_pytorch.msd_model.MSDModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">msd_pytorch.msd_model.MSDModel</span></code></a></p>
+<p>An MSD network for segmentation.</p>
+<p>This class provides helper methods for using the MSD network
+module for segmentation.</p>
+<p>Refer to the documentation of
+<a class="reference internal" href="#msd_pytorch.msd_model.MSDModel" title="msd_pytorch.msd_model.MSDModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">MSDModel</span></code></a> for more information on
+the helper methods and attributes.</p>
+<dl class="method">
+<dt id="msd_pytorch.msd_segmentation_model.MSDSegmentationModel.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>c_in, num_labels, depth, width, *, dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_segmentation_model.html#MSDSegmentationModel.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_segmentation_model.MSDSegmentationModel.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new MSD network for segmentation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>c_in</strong> – The number of input channels.</li>
+<li><strong>num_labels</strong> – The number of labels to divide the segmentation into.</li>
+<li><strong>depth</strong> – The depth of the MSD network</li>
+<li><strong>width</strong> – The width of the MSD network</li>
+<li><strong>dilations</strong> – <cite>list(int)</cite></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>A list of dilations to use. Default is <code class="docutils literal notranslate"><span class="pre">[1,</span> <span class="pre">2,</span> <span class="pre">...,</span> <span class="pre">10]</span></code>.  A
+good alternative is <code class="docutils literal notranslate"><span class="pre">[1,</span> <span class="pre">2,</span> <span class="pre">4,</span> <span class="pre">8]</span></code>. The dilations are
+repeated when there are more layers than supplied dilations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.msd_segmentation_model.MSDSegmentationModel.set_normalization">
+<code class="descname">set_normalization</code><span class="sig-paren">(</span><em>dataloader</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_segmentation_model.html#MSDSegmentationModel.set_normalization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_segmentation_model.MSDSegmentationModel.set_normalization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalize input data.</p>
+<p>This function goes through all the training data to compute
+the mean and std of the training data. It modifies the network
+so that all future invocations of the network first normalize
+input data. The normalization parameters are saved.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dataloader</strong> – The dataloader associated to the training data.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.msd_segmentation_model.MSDSegmentationModel.set_target">
+<code class="descname">set_target</code><span class="sig-paren">(</span><em>target</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_segmentation_model.html#MSDSegmentationModel.set_target"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_segmentation_model.MSDSegmentationModel.set_target" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set target data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> – <cite>torch.Tensor</cite></td>
+</tr>
+</tbody>
+</table>
+<p>A <code class="docutils literal notranslate"><span class="pre">BxCxHxW</span></code>-dimensional torch target tensor.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-msd_pytorch.relu_inplace">
+<span id="msd-pytorch-relu-inplace-module"></span><h2>msd_pytorch.relu_inplace module<a class="headerlink" href="#module-msd_pytorch.relu_inplace" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="msd_pytorch.relu_inplace.ReLUInplaceFunction">
+<em class="property">class </em><code class="descclassname">msd_pytorch.relu_inplace.</code><code class="descname">ReLUInplaceFunction</code><a class="reference internal" href="_modules/msd_pytorch/relu_inplace.html#ReLUInplaceFunction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.relu_inplace.ReLUInplaceFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.autograd.function.Function</span></code></p>
+<dl class="staticmethod">
+<dt id="msd_pytorch.relu_inplace.ReLUInplaceFunction.backward">
+<em class="property">static </em><code class="descname">backward</code><span class="sig-paren">(</span><em>ctx</em>, <em>grad_output</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/relu_inplace.html#ReLUInplaceFunction.backward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.relu_inplace.ReLUInplaceFunction.backward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines a formula for differentiating the operation.</p>
+<p>This function is to be overridden by all subclasses.</p>
+<p>It must accept a context <code class="xref py py-attr docutils literal notranslate"><span class="pre">ctx</span></code> as the first argument, followed by
+as many outputs did <a class="reference internal" href="#msd_pytorch.relu_inplace.ReLUInplaceFunction.forward" title="msd_pytorch.relu_inplace.ReLUInplaceFunction.forward"><code class="xref py py-func docutils literal notranslate"><span class="pre">forward()</span></code></a> return, and it should return as many
+tensors, as there were inputs to <a class="reference internal" href="#msd_pytorch.relu_inplace.ReLUInplaceFunction.forward" title="msd_pytorch.relu_inplace.ReLUInplaceFunction.forward"><code class="xref py py-func docutils literal notranslate"><span class="pre">forward()</span></code></a>. Each argument is the
+gradient w.r.t the given output, and each returned value should be the
+gradient w.r.t. the corresponding input.</p>
+<p>The context can be used to retrieve tensors saved during the forward
+pass. It also has an attribute <code class="xref py py-attr docutils literal notranslate"><span class="pre">ctx.needs_input_grad</span></code> as a tuple
+of booleans representing whether each input needs gradient. E.g.,
+<a class="reference internal" href="#msd_pytorch.relu_inplace.ReLUInplaceFunction.backward" title="msd_pytorch.relu_inplace.ReLUInplaceFunction.backward"><code class="xref py py-func docutils literal notranslate"><span class="pre">backward()</span></code></a> will have <code class="docutils literal notranslate"><span class="pre">ctx.needs_input_grad[0]</span> <span class="pre">=</span> <span class="pre">True</span></code> if the
+first input to <a class="reference internal" href="#msd_pytorch.relu_inplace.ReLUInplaceFunction.forward" title="msd_pytorch.relu_inplace.ReLUInplaceFunction.forward"><code class="xref py py-func docutils literal notranslate"><span class="pre">forward()</span></code></a> needs gradient computated w.r.t. the
+output.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="msd_pytorch.relu_inplace.ReLUInplaceFunction.forward">
+<em class="property">static </em><code class="descname">forward</code><span class="sig-paren">(</span><em>ctx</em>, <em>input</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/relu_inplace.html#ReLUInplaceFunction.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.relu_inplace.ReLUInplaceFunction.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs the operation.</p>
+<p>This function is to be overridden by all subclasses.</p>
+<p>It must accept a context ctx as the first argument, followed by any
+number of arguments (tensors or other types).</p>
+<p>The context can be used to store tensors that can be then retrieved
+during the backward pass.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="msd_pytorch.relu_inplace.ReLUInplaceModule">
+<em class="property">class </em><code class="descclassname">msd_pytorch.relu_inplace.</code><code class="descname">ReLUInplaceModule</code><a class="reference internal" href="_modules/msd_pytorch/relu_inplace.html#ReLUInplaceModule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.relu_inplace.ReLUInplaceModule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<dl class="method">
+<dt id="msd_pytorch.relu_inplace.ReLUInplaceModule.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/relu_inplace.html#ReLUInplaceModule.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.relu_inplace.ReLUInplaceModule.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.relu_inplace.ReLUInplaceModule.forward">
+<code class="descname">forward</code><span class="sig-paren">(</span><em>input</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/relu_inplace.html#ReLUInplaceModule.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.relu_inplace.ReLUInplaceModule.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-msd_pytorch.stitch">
+<span id="msd-pytorch-stitch-module"></span><h2>msd_pytorch.stitch module<a class="headerlink" href="#module-msd_pytorch.stitch" title="Permalink to this headline">¶</a></h2>
+<p>Stitch Functions and Modules for threading the gradient</p>
+<p>Stitching refers to the practice of copying and / or reusing shared
+buffers in a network to improve efficiency. It handles distributing
+the gradient transparently.</p>
+<p>In this module, we implement three types of stitching:</p>
+<ol class="arabic simple">
+<li>Slow stitching: concatenates to inputs in the forward pass and
+distributes the gradient output in the backward
+pass. Inefficient. Slow stitching is used for testing.</li>
+<li>Copy Stitching: copies the input into a layer buffer <code class="docutils literal notranslate"><span class="pre">L</span></code> and returns
+all layers up to and including the newly copied input. More
+efficient than slow stitching, but preferably used sparingly.</li>
+<li>Lazy Stitching: assumes that the input has already been copied in
+the layer buffer <code class="docutils literal notranslate"><span class="pre">L</span></code> and returns all layers up to and including
+the input. The gradient is accumulated in a gradient buffer
+<code class="docutils literal notranslate"><span class="pre">G</span></code>. This is fast and efficient.</li>
+</ol>
+<dl class="class">
+<dt id="msd_pytorch.stitch.StitchBuffer">
+<em class="property">class </em><code class="descclassname">msd_pytorch.stitch.</code><code class="descname">StitchBuffer</code><a class="reference internal" href="_modules/msd_pytorch/stitch.html#StitchBuffer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.stitch.StitchBuffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="msd_pytorch.stitch.StitchBuffer.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/stitch.html#StitchBuffer.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.stitch.StitchBuffer.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Holds the <code class="docutils literal notranslate"><span class="pre">L</span></code> and <code class="docutils literal notranslate"><span class="pre">G</span></code> buffers for a stitched module.</p>
+<p>The intermediate layers are stored in <code class="docutils literal notranslate"><span class="pre">L</span></code> for the forward
+pass. The gradients are stored in the <code class="docutils literal notranslate"><span class="pre">G</span></code> buffer.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.stitch.StitchBuffer.like_">
+<code class="descname">like_</code><span class="sig-paren">(</span><em>tensor</em>, <em>new_shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/stitch.html#StitchBuffer.like_"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.stitch.StitchBuffer.like_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the <code class="docutils literal notranslate"><span class="pre">L</span></code> and <code class="docutils literal notranslate"><span class="pre">G</span></code> buffers to match tensor.</p>
+<p>Matches the tensor’s
+- data type
+- device (cpu, cuda, cuda:0, cuda:i)</p>
+<p>The shape is taken from the <cite>new_shape</cite> parameter.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>tensor</strong> – An input tensor</li>
+<li><strong>new_shape</strong> – The new shape that the buffer should have.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Nothing</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.stitch.StitchBuffer.zero_">
+<code class="descname">zero_</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/stitch.html#StitchBuffer.zero_"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.stitch.StitchBuffer.zero_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set buffers to zero.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="msd_pytorch.stitch.StitchCopyFunction">
+<em class="property">class </em><code class="descclassname">msd_pytorch.stitch.</code><code class="descname">StitchCopyFunction</code><a class="reference internal" href="_modules/msd_pytorch/stitch.html#StitchCopyFunction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.stitch.StitchCopyFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.autograd.function.Function</span></code></p>
+<p>Copy stitching:</p>
+<p>Stores output in buffer <code class="docutils literal notranslate"><span class="pre">L</span></code> in the forward pass and adds the
+<code class="docutils literal notranslate"><span class="pre">grad_output</span></code> to buffer <code class="docutils literal notranslate"><span class="pre">G</span></code> in the backward pass.</p>
+<p>The buffer <code class="docutils literal notranslate"><span class="pre">L</span></code> is a tensor of dimensions <cite>B x C x ?</cite> where</p>
+<ul class="simple">
+<li><cite>B</cite> is the minibatch size, and</li>
+<li><cite>C</cite> is the number of channels.</li>
+</ul>
+<p>The buffer <code class="docutils literal notranslate"><span class="pre">G</span></code> has the same dimension as <code class="docutils literal notranslate"><span class="pre">L</span></code>.</p>
+<p>The parameter <code class="docutils literal notranslate"><span class="pre">i</span></code> is an index in the <cite>C</cite> dimension and points to
+where the input (the output of the previous layer) must be copied.</p>
+<p>In the forward pass:</p>
+<ul class="simple">
+<li>write the input into <code class="docutils literal notranslate"><span class="pre">L</span></code> at channel <code class="docutils literal notranslate"><span class="pre">i</span></code></li>
+<li>return <code class="docutils literal notranslate"><span class="pre">L</span></code> up to and including channel <code class="docutils literal notranslate"><span class="pre">i</span></code></li>
+</ul>
+<p>In the backward pass:</p>
+<ul class="simple">
+<li>add the <code class="docutils literal notranslate"><span class="pre">grad_output</span></code> to <code class="docutils literal notranslate"><span class="pre">G</span></code></li>
+<li>return channel <code class="docutils literal notranslate"><span class="pre">i</span></code> of <code class="docutils literal notranslate"><span class="pre">G</span></code></li>
+</ul>
+<p>It is good practice to zero the <code class="docutils literal notranslate"><span class="pre">G</span></code> buffer before the backward
+pass. Sometimes, this is not possible since some methods, such as
+<code class="docutils literal notranslate"><span class="pre">torch.autograd.gradcheck</span></code>, repeatedly call <code class="docutils literal notranslate"><span class="pre">.grad()</span></code> on the
+output. Therefore, when <code class="docutils literal notranslate"><span class="pre">grad_output</span></code> is the same size as <code class="docutils literal notranslate"><span class="pre">G</span></code>, the
+buffer <code class="docutils literal notranslate"><span class="pre">G</span></code> is zeroed in the <code class="docutils literal notranslate"><span class="pre">backward</span></code> function.</p>
+<dl class="staticmethod">
+<dt id="msd_pytorch.stitch.StitchCopyFunction.backward">
+<em class="property">static </em><code class="descname">backward</code><span class="sig-paren">(</span><em>ctx</em>, <em>grad_output</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/stitch.html#StitchCopyFunction.backward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.stitch.StitchCopyFunction.backward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines a formula for differentiating the operation.</p>
+<p>This function is to be overridden by all subclasses.</p>
+<p>It must accept a context <code class="xref py py-attr docutils literal notranslate"><span class="pre">ctx</span></code> as the first argument, followed by
+as many outputs did <a class="reference internal" href="#msd_pytorch.stitch.StitchCopyFunction.forward" title="msd_pytorch.stitch.StitchCopyFunction.forward"><code class="xref py py-func docutils literal notranslate"><span class="pre">forward()</span></code></a> return, and it should return as many
+tensors, as there were inputs to <a class="reference internal" href="#msd_pytorch.stitch.StitchCopyFunction.forward" title="msd_pytorch.stitch.StitchCopyFunction.forward"><code class="xref py py-func docutils literal notranslate"><span class="pre">forward()</span></code></a>. Each argument is the
+gradient w.r.t the given output, and each returned value should be the
+gradient w.r.t. the corresponding input.</p>
+<p>The context can be used to retrieve tensors saved during the forward
+pass. It also has an attribute <code class="xref py py-attr docutils literal notranslate"><span class="pre">ctx.needs_input_grad</span></code> as a tuple
+of booleans representing whether each input needs gradient. E.g.,
+<a class="reference internal" href="#msd_pytorch.stitch.StitchCopyFunction.backward" title="msd_pytorch.stitch.StitchCopyFunction.backward"><code class="xref py py-func docutils literal notranslate"><span class="pre">backward()</span></code></a> will have <code class="docutils literal notranslate"><span class="pre">ctx.needs_input_grad[0]</span> <span class="pre">=</span> <span class="pre">True</span></code> if the
+first input to <a class="reference internal" href="#msd_pytorch.stitch.StitchCopyFunction.forward" title="msd_pytorch.stitch.StitchCopyFunction.forward"><code class="xref py py-func docutils literal notranslate"><span class="pre">forward()</span></code></a> needs gradient computated w.r.t. the
+output.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="msd_pytorch.stitch.StitchCopyFunction.forward">
+<em class="property">static </em><code class="descname">forward</code><span class="sig-paren">(</span><em>ctx</em>, <em>input</em>, <em>L</em>, <em>G</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/stitch.html#StitchCopyFunction.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.stitch.StitchCopyFunction.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs the operation.</p>
+<p>This function is to be overridden by all subclasses.</p>
+<p>It must accept a context ctx as the first argument, followed by any
+number of arguments (tensors or other types).</p>
+<p>The context can be used to store tensors that can be then retrieved
+during the backward pass.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="msd_pytorch.stitch.StitchCopyModule">
+<em class="property">class </em><code class="descclassname">msd_pytorch.stitch.</code><code class="descname">StitchCopyModule</code><span class="sig-paren">(</span><em>buffer</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/stitch.html#StitchCopyModule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.stitch.StitchCopyModule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<dl class="method">
+<dt id="msd_pytorch.stitch.StitchCopyModule.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>buffer</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/stitch.html#StitchCopyModule.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.stitch.StitchCopyModule.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a new StitchCopyModule</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>buffer</strong> – A StitchBuffer</li>
+<li><strong>i</strong> – index of the output channel of the stitch</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.stitch.StitchCopyModule.forward">
+<code class="descname">forward</code><span class="sig-paren">(</span><em>input</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/stitch.html#StitchCopyModule.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.stitch.StitchCopyModule.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="msd_pytorch.stitch.StitchLazyFunction">
+<em class="property">class </em><code class="descclassname">msd_pytorch.stitch.</code><code class="descname">StitchLazyFunction</code><a class="reference internal" href="_modules/msd_pytorch/stitch.html#StitchLazyFunction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.stitch.StitchLazyFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.autograd.function.Function</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">StitchLazyFunction</span></code> is similar to <code class="docutils literal notranslate"><span class="pre">StitchCopyFunction</span></code>, but it
+does not copy the output of the previous layer into <code class="docutils literal notranslate"><span class="pre">L</span></code>. Hence the
+name. <code class="docutils literal notranslate"><span class="pre">StitchLazyFunction</span></code> supposes that the output of the the
+previous layer has already been copied into <code class="docutils literal notranslate"><span class="pre">L</span></code>. This can be
+accomplished with <code class="docutils literal notranslate"><span class="pre">conv_cuda.conv2dInPlace</span></code>, for instance.</p>
+<p>The buffer <code class="docutils literal notranslate"><span class="pre">L</span></code> is a tensor of dimensions <cite>B x C x ?</cite> where</p>
+<ul class="simple">
+<li><cite>B</cite> is the minibatch size, and</li>
+<li><cite>C</cite> is the number of channels.</li>
+</ul>
+<p>The buffer <code class="docutils literal notranslate"><span class="pre">G</span></code> has the same dimension as <code class="docutils literal notranslate"><span class="pre">L</span></code>.</p>
+<p>The parameter <code class="docutils literal notranslate"><span class="pre">i</span></code> is an index in the <cite>C</cite> dimension and points to
+where the input (the output of the previous layer) must be copied.</p>
+<p>In the forward pass:</p>
+<ul class="simple">
+<li>write the input into <code class="docutils literal notranslate"><span class="pre">L</span></code> at channel <code class="docutils literal notranslate"><span class="pre">i</span></code></li>
+</ul>
+<p>In the backward pass:</p>
+<ul class="simple">
+<li>add the <code class="docutils literal notranslate"><span class="pre">grad_output</span></code> to <code class="docutils literal notranslate"><span class="pre">G</span></code></li>
+<li>return channel <code class="docutils literal notranslate"><span class="pre">i</span></code> of <code class="docutils literal notranslate"><span class="pre">G</span></code></li>
+</ul>
+<p>It is good practice to zero the <code class="docutils literal notranslate"><span class="pre">G</span></code> buffer before the backward
+pass. Sometimes, this is not possible since some methods, such as
+<code class="docutils literal notranslate"><span class="pre">torch.autograd.gradcheck</span></code>, repeatedly call <code class="docutils literal notranslate"><span class="pre">.grad()</span></code> on the
+output. Therefore, when <code class="docutils literal notranslate"><span class="pre">grad_output</span></code> is the same size as <code class="docutils literal notranslate"><span class="pre">G</span></code>, the
+buffer <code class="docutils literal notranslate"><span class="pre">G</span></code> is zeroed in the <code class="docutils literal notranslate"><span class="pre">backward</span></code> function.</p>
+<dl class="staticmethod">
+<dt id="msd_pytorch.stitch.StitchLazyFunction.backward">
+<em class="property">static </em><code class="descname">backward</code><span class="sig-paren">(</span><em>ctx</em>, <em>grad_output</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/stitch.html#StitchLazyFunction.backward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.stitch.StitchLazyFunction.backward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines a formula for differentiating the operation.</p>
+<p>This function is to be overridden by all subclasses.</p>
+<p>It must accept a context <code class="xref py py-attr docutils literal notranslate"><span class="pre">ctx</span></code> as the first argument, followed by
+as many outputs did <a class="reference internal" href="#msd_pytorch.stitch.StitchLazyFunction.forward" title="msd_pytorch.stitch.StitchLazyFunction.forward"><code class="xref py py-func docutils literal notranslate"><span class="pre">forward()</span></code></a> return, and it should return as many
+tensors, as there were inputs to <a class="reference internal" href="#msd_pytorch.stitch.StitchLazyFunction.forward" title="msd_pytorch.stitch.StitchLazyFunction.forward"><code class="xref py py-func docutils literal notranslate"><span class="pre">forward()</span></code></a>. Each argument is the
+gradient w.r.t the given output, and each returned value should be the
+gradient w.r.t. the corresponding input.</p>
+<p>The context can be used to retrieve tensors saved during the forward
+pass. It also has an attribute <code class="xref py py-attr docutils literal notranslate"><span class="pre">ctx.needs_input_grad</span></code> as a tuple
+of booleans representing whether each input needs gradient. E.g.,
+<a class="reference internal" href="#msd_pytorch.stitch.StitchLazyFunction.backward" title="msd_pytorch.stitch.StitchLazyFunction.backward"><code class="xref py py-func docutils literal notranslate"><span class="pre">backward()</span></code></a> will have <code class="docutils literal notranslate"><span class="pre">ctx.needs_input_grad[0]</span> <span class="pre">=</span> <span class="pre">True</span></code> if the
+first input to <a class="reference internal" href="#msd_pytorch.stitch.StitchLazyFunction.forward" title="msd_pytorch.stitch.StitchLazyFunction.forward"><code class="xref py py-func docutils literal notranslate"><span class="pre">forward()</span></code></a> needs gradient computated w.r.t. the
+output.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="msd_pytorch.stitch.StitchLazyFunction.forward">
+<em class="property">static </em><code class="descname">forward</code><span class="sig-paren">(</span><em>ctx</em>, <em>input</em>, <em>L</em>, <em>G</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/stitch.html#StitchLazyFunction.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.stitch.StitchLazyFunction.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs the operation.</p>
+<p>This function is to be overridden by all subclasses.</p>
+<p>It must accept a context ctx as the first argument, followed by any
+number of arguments (tensors or other types).</p>
+<p>The context can be used to store tensors that can be then retrieved
+during the backward pass.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="msd_pytorch.stitch.StitchLazyModule">
+<em class="property">class </em><code class="descclassname">msd_pytorch.stitch.</code><code class="descname">StitchLazyModule</code><span class="sig-paren">(</span><em>buffer</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/stitch.html#StitchLazyModule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.stitch.StitchLazyModule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<dl class="method">
+<dt id="msd_pytorch.stitch.StitchLazyModule.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>buffer</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/stitch.html#StitchLazyModule.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.stitch.StitchLazyModule.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a new StitchLazyModule</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>buffer</strong> – A StitchBuffer</li>
+<li><strong>i</strong> – index of the output channel of the stitch</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.stitch.StitchLazyModule.forward">
+<code class="descname">forward</code><span class="sig-paren">(</span><em>input</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/stitch.html#StitchLazyModule.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.stitch.StitchLazyModule.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="msd_pytorch.stitch.StitchSlowFunction">
+<em class="property">class </em><code class="descclassname">msd_pytorch.stitch.</code><code class="descname">StitchSlowFunction</code><a class="reference internal" href="_modules/msd_pytorch/stitch.html#StitchSlowFunction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.stitch.StitchSlowFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.autograd.function.Function</span></code></p>
+<p>Naive stitching: concatenates two inputs in the channel dimension.</p>
+<dl class="staticmethod">
+<dt id="msd_pytorch.stitch.StitchSlowFunction.backward">
+<em class="property">static </em><code class="descname">backward</code><span class="sig-paren">(</span><em>ctx</em>, <em>grad_output</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/stitch.html#StitchSlowFunction.backward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.stitch.StitchSlowFunction.backward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines a formula for differentiating the operation.</p>
+<p>This function is to be overridden by all subclasses.</p>
+<p>It must accept a context <code class="xref py py-attr docutils literal notranslate"><span class="pre">ctx</span></code> as the first argument, followed by
+as many outputs did <a class="reference internal" href="#msd_pytorch.stitch.StitchSlowFunction.forward" title="msd_pytorch.stitch.StitchSlowFunction.forward"><code class="xref py py-func docutils literal notranslate"><span class="pre">forward()</span></code></a> return, and it should return as many
+tensors, as there were inputs to <a class="reference internal" href="#msd_pytorch.stitch.StitchSlowFunction.forward" title="msd_pytorch.stitch.StitchSlowFunction.forward"><code class="xref py py-func docutils literal notranslate"><span class="pre">forward()</span></code></a>. Each argument is the
+gradient w.r.t the given output, and each returned value should be the
+gradient w.r.t. the corresponding input.</p>
+<p>The context can be used to retrieve tensors saved during the forward
+pass. It also has an attribute <code class="xref py py-attr docutils literal notranslate"><span class="pre">ctx.needs_input_grad</span></code> as a tuple
+of booleans representing whether each input needs gradient. E.g.,
+<a class="reference internal" href="#msd_pytorch.stitch.StitchSlowFunction.backward" title="msd_pytorch.stitch.StitchSlowFunction.backward"><code class="xref py py-func docutils literal notranslate"><span class="pre">backward()</span></code></a> will have <code class="docutils literal notranslate"><span class="pre">ctx.needs_input_grad[0]</span> <span class="pre">=</span> <span class="pre">True</span></code> if the
+first input to <a class="reference internal" href="#msd_pytorch.stitch.StitchSlowFunction.forward" title="msd_pytorch.stitch.StitchSlowFunction.forward"><code class="xref py py-func docutils literal notranslate"><span class="pre">forward()</span></code></a> needs gradient computated w.r.t. the
+output.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="msd_pytorch.stitch.StitchSlowFunction.forward">
+<em class="property">static </em><code class="descname">forward</code><span class="sig-paren">(</span><em>ctx</em>, <em>input1</em>, <em>input2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/stitch.html#StitchSlowFunction.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.stitch.StitchSlowFunction.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs the operation.</p>
+<p>This function is to be overridden by all subclasses.</p>
+<p>It must accept a context ctx as the first argument, followed by any
+number of arguments (tensors or other types).</p>
+<p>The context can be used to store tensors that can be then retrieved
+during the backward pass.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="msd_pytorch.stitch.stitchCopy">
+<code class="descclassname">msd_pytorch.stitch.</code><code class="descname">stitchCopy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#msd_pytorch.stitch.stitchCopy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="msd_pytorch.stitch.stitchLazy">
+<code class="descclassname">msd_pytorch.stitch.</code><code class="descname">stitchLazy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#msd_pytorch.stitch.stitchLazy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="msd_pytorch.stitch.stitchSlow">
+<code class="descclassname">msd_pytorch.stitch.</code><code class="descname">stitchSlow</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#msd_pytorch.stitch.stitchSlow" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-msd_pytorch">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-msd_pytorch" title="Permalink to this headline">¶</a></h2>
+<p>Top-level package for Mixed-scale Dense Networks for PyTorch.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="CHANGELOG.html" class="btn btn-neutral float-right" title="Changelog" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="modules.html" class="btn btn-neutral float-left" title="msd_pytorch" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Allard Hendriksen
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

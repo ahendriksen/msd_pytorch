@@ -1,0 +1,338 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Examples &mdash; Mixed-scale Dense Networks for PyTorch  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="msd_pytorch" href="modules.html" />
+    <link rel="prev" title="Mixed-scale Dense Networks for PyTorch" href="README.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Mixed-scale Dense Networks for PyTorch
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="README.html">Mixed-scale Dense Networks for PyTorch</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">msd_pytorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CHANGELOG.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Mixed-scale Dense Networks for PyTorch</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Examples</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/examples.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="examples">
+<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
+<p>This page is intended to give you a simple introduction to the
+msd_pytorch package and how to work with it. The following code
+example trains an MSD regression or segmentation network on a dataset.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">A short example to get you started with Mixed-scale Dense Networks for PyTorch</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">msd_pytorch</span> <span class="kn">as</span> <span class="nn">mp</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="c1">###############################################################################</span>
+<span class="c1">#                              Network parameters                             #</span>
+<span class="c1">###############################################################################</span>
+<span class="c1"># The number of input channels of the MSD network</span>
+<span class="n">c_in</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="c1"># The depth of the MSD network. Good values range between 30 and 200.</span>
+<span class="n">depth</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="c1"># The width of the MSD network. A value of 1 is recommended.</span>
+<span class="n">width</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="c1"># The dilation scheme to use for the MSD network. The default is [1,</span>
+<span class="c1"># 2, ..., 10], but [1, 2, 4, 8] is good too.</span>
+<span class="n">dilations</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+
+<span class="c1"># If using the MSD network for regression, set these parameters too.</span>
+
+<span class="c1"># The loss function to use. Can be &quot;L1&quot; or &quot;L2&quot;.</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="s2">&quot;L2&quot;</span>
+<span class="c1"># The number of output channels of the network.</span>
+<span class="n">c_out</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="c1">###############################################################################</span>
+<span class="c1">#                              Dataset parameters                             #</span>
+<span class="c1">###############################################################################</span>
+
+<span class="c1"># The glob pattern for the training set input data. For instance: &quot;~/train/input*.tif&quot;.</span>
+<span class="n">train_input_glob</span> <span class="o">=</span> <span class="s2">&quot;~/datasets/MLTestData/train/noisy/*1.tiff&quot;</span>
+<span class="c1"># The glob pattern for the training set target data. For instance: &quot;~/train/target/img*.png&quot;</span>
+<span class="n">train_target_glob</span> <span class="o">=</span> <span class="s2">&quot;~/datasets/MLTestData/train/label/*1.tiff&quot;</span>
+<span class="c1"># The glob pattern for the validation set input data. Can be left</span>
+<span class="c1"># empty if there is no validation data.</span>
+<span class="n">val_input_glob</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<span class="c1"># The glob pattern for the validation set input data. Can be left</span>
+<span class="c1"># empty if there is no validation data.</span>
+<span class="n">val_target_glob</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+<span class="c1"># If you are doing segmentation, set the values of the label you are</span>
+<span class="c1"># expecting in the target dataset. You can either set this value to an</span>
+<span class="c1"># integer `k`, indicating that the label set is {0, 1, ..., k-1}, or</span>
+<span class="c1"># explicitly set the expected label values using a list, as is done</span>
+<span class="c1"># below.</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
+
+<span class="c1">###############################################################################</span>
+<span class="c1">#                             Training parameters                             #</span>
+<span class="c1">###############################################################################</span>
+<span class="c1"># The number of epochs to train for</span>
+<span class="n">epochs</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="c1"># Which task to perform. Can be &quot;regression&quot; or &quot;segmentation&quot;</span>
+<span class="n">task</span> <span class="o">=</span> <span class="s2">&quot;segmentation&quot;</span>
+<span class="c1"># Currently, the MSD_pytorch network only supports a batch size of 1.</span>
+<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="c1">###############################################################################</span>
+<span class="c1">#                                 Loading data                                #</span>
+<span class="c1">###############################################################################</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Load training dataset&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="s2">&quot;regression&quot;</span><span class="p">:</span>
+    <span class="n">train_ds</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">ImageDataset</span><span class="p">(</span><span class="n">train_input_glob</span><span class="p">,</span> <span class="n">train_target_glob</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">train_ds</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">ImageDataset</span><span class="p">(</span><span class="n">train_input_glob</span><span class="p">,</span> <span class="n">train_target_glob</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+
+<span class="n">train_dl</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_ds</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c1"># Load Validation dataset (if specified)</span>
+<span class="k">if</span> <span class="n">val_input_glob</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Load validation set&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="s2">&quot;regression&quot;</span><span class="p">:</span>
+        <span class="n">val_ds</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">ImageDataset</span><span class="p">(</span><span class="n">val_input_glob</span><span class="p">,</span> <span class="n">val_target_glob</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">val_ds</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">ImageDataset</span><span class="p">(</span><span class="n">val_input_glob</span><span class="p">,</span> <span class="n">val_target_glob</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+
+    <span class="n">val_dl</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">val_ds</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;No validation set loaded&quot;</span><span class="p">)</span>
+    <span class="n">val_dl</span> <span class="o">=</span> <span class="bp">None</span>
+
+
+<span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Create {task} network model&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="s2">&quot;regression&quot;</span><span class="p">:</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">MSDRegressionModel</span><span class="p">(</span>
+        <span class="n">c_in</span><span class="p">,</span> <span class="n">c_out</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">dilations</span><span class="o">=</span><span class="n">dilations</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="n">loss</span>
+    <span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">MSDSegmentationModel</span><span class="p">(</span>
+        <span class="n">c_in</span><span class="p">,</span> <span class="n">train_ds</span><span class="o">.</span><span class="n">num_labels</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">dilations</span><span class="o">=</span><span class="n">dilations</span>
+    <span class="p">)</span>
+
+<span class="c1"># The network works best if the input data has mean zero and has a</span>
+<span class="c1"># standard deviation of 1. To achieve this, we get a rough estimate of</span>
+<span class="c1"># correction parameters from the training data. These parameters are</span>
+<span class="c1"># not updated after this step and are stored in the network, so that</span>
+<span class="c1"># they are not lost when the network is saved to and loaded from disk.</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Start estimating normalization parameters&quot;</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">set_normalization</span><span class="p">(</span><span class="n">train_dl</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Done estimating normalization parameters&quot;</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Starting training...&quot;</span><span class="p">)</span>
+<span class="n">best_validation_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+<span class="n">validation_error</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
+    <span class="c1"># Train</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">train_dl</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># Compute training error</span>
+    <span class="n">train_error</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">train_dl</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;{epoch:05} Training error: {train_error: 0.6f}&quot;</span><span class="p">)</span>
+    <span class="c1"># Compute validation error</span>
+    <span class="k">if</span> <span class="n">val_dl</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">validation_error</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">val_dl</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;{epoch:05} Validation error: {validation_error: 0.6f}&quot;</span><span class="p">)</span>
+    <span class="c1"># Save network if worthwile</span>
+    <span class="k">if</span> <span class="n">validation_error</span> <span class="o">&lt;</span> <span class="n">best_validation_error</span> <span class="ow">or</span> <span class="n">val_dl</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">best_validation_error</span> <span class="o">=</span> <span class="n">validation_error</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;msd_network_epoch_{epoch}.torch&quot;</span><span class="p">)</span>
+
+<span class="c1"># Save final network parameters</span>
+<span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;msd_network_epoch_{epoch}.torch&quot;</span><span class="p">)</span>
+
+<span class="c1"># The parameters can be reloaded again:</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;msd_network_epoch_{epoch}.torch&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="modules.html" class="btn btn-neutral float-right" title="msd_pytorch" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="README.html" class="btn btn-neutral float-left" title="Mixed-scale Dense Networks for PyTorch" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Allard Hendriksen
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

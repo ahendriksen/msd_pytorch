@@ -1,0 +1,11 @@
+/*.so
+/*.egg-info
+*~
+/build
+/.eggs
+__pycache__
+/msd_*.torch
+/htmlcov/
+/.coverage
+*.doctree
+/docs/doctrees/*.pickle

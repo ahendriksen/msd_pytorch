@@ -1,0 +1,572 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>msd_pytorch.image_dataset &mdash; Mixed-scale Dense Networks for PyTorch  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Mixed-scale Dense Networks for PyTorch
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">Mixed-scale Dense Networks for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">msd_pytorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../CHANGELOG.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Mixed-scale Dense Networks for PyTorch</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>msd_pytorch.image_dataset</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for msd_pytorch.image_dataset</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="k">import</span> <span class="n">Dataset</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">imageio</span>
+<span class="kn">import</span> <span class="nn">tifffile</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="k">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">.errors</span> <span class="k">import</span> <span class="n">InputError</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+
+<span class="k">def</span> <span class="nf">_natural_sort</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">key</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="k">else</span> <span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;([0-9]+)&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">)]</span>
+
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_convert_to_integral</span><span class="p">(</span><span class="n">img</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert numpy array to integral value type.</span>
+
+<span class="sd">    Handles Boolean arrays, signed and unsigned integer type arrays.</span>
+
+<span class="sd">    :param img: A numpy array to convert.</span>
+<span class="sd">    :returns:</span>
+<span class="sd">    :rtype:</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">img</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;u&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">img</span>
+    <span class="k">elif</span> <span class="n">img</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;i&quot;</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Converting signed integer image to unsigned integer.&quot;</span><span class="p">)</span>
+        <span class="c1"># The PyTorch segmentation losses require 64 bit labels for</span>
+        <span class="c1"># some reason. We might as well convert the image to uint64</span>
+        <span class="c1"># here.</span>
+        <span class="k">return</span> <span class="n">img</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint64</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">img</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span>
+        <span class="c1"># convert boolean to unsigned integer.</span>
+        <span class="k">return</span> <span class="n">img</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span>
+            <span class="n">f</span><span class="s2">&quot;Image could not be converted to an integral value. Its type is </span><span class="si">{img.dtype}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_relabel_image</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">_convert_to_integral</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Iterable</span><span class="p">):</span>
+        <span class="c1"># Check for values in the image that are not in the label set:</span>
+        <span class="n">non_labels</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">img</span><span class="p">))</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">non_labels</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span>
+                <span class="n">f</span><span class="s2">&quot;Encountered unexpected values </span><span class="si">{non_labels}</span><span class="s2"> that are not in the label set.&quot;</span>
+            <span class="p">)</span>
+        <span class="c1"># Relabel the image</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">labels</span><span class="p">):</span>
+            <span class="n">data</span><span class="p">[</span><span class="n">img</span> <span class="o">==</span> <span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+            <span class="k">return</span> <span class="n">data</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Image values should be contained in [0, labels-1]. We check this and return the image.</span>
+        <span class="k">if</span> <span class="n">img</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">labels</span> <span class="o">&lt;=</span> <span class="n">img</span><span class="o">.</span><span class="n">max</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span>
+                <span class="n">f</span><span class="s2">&quot;Image pixel value range {[img.min(), img.max()]} exceeded range {[0, labels - 1]}.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">img</span>
+
+
+<span class="k">def</span> <span class="nf">_load_natural_image</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">imageio</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+
+    <span class="c1"># If the image is a gray-scale, RGB, or RGBA image. The channel</span>
+    <span class="c1"># dimension will be last. We move it to the front.</span>
+    <span class="k">if</span> <span class="n">img</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">img</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">img</span>
+
+
+<div class="viewcode-block" id="ImageStack"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.image_dataset.ImageStack">[docs]</a><span class="k">class</span> <span class="nc">ImageStack</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A stack of images stored on disk.</span>
+
+<span class="sd">    An image stack describes a collection of images matching the</span>
+<span class="sd">    file path specifier `path_specifier`.</span>
+
+<span class="sd">    The images can be tiff files, or any other image filetype</span>
+<span class="sd">    supported by imageio.</span>
+
+<span class="sd">    The image paths are sorted using a natural sorting</span>
+<span class="sd">    mechanism. So &quot;scan1.tif&quot; comes before &quot;scan10.tif&quot;.</span>
+
+<span class="sd">    Images can be retrieved by indexing into the stack. For example:</span>
+
+<span class="sd">    ``ImageStack(&quot;*.tif&quot;)[i]``</span>
+
+<span class="sd">    These images are returned as torch</span>
+<span class="sd">    tensors with three dimensions CxHxW.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ImageStack.__init__"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.image_dataset.ImageStack.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path_specifier</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">collapse_channels</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a new ImageStack.</span>
+
+<span class="sd">        :param path_specifier: `string`</span>
+
+<span class="sd">        A path with optional glob pattern describing the image</span>
+<span class="sd">        file paths. Tildes and other HOME directory specifications</span>
+<span class="sd">        are expanded with `expanduser` and symlinks are resolved.</span>
+
+<span class="sd">        If the path points to a directory, then all files in the</span>
+<span class="sd">        directory are included in the image stack.</span>
+
+<span class="sd">        If the path points to file, then that single file is</span>
+<span class="sd">        included in the image stack.</span>
+
+<span class="sd">        Alternatively, one may specify a &quot;glob pattern&quot; to match</span>
+<span class="sd">        specific files in the directory. Of course, if the glob</span>
+<span class="sd">        pattern does not contain a &#39;*&#39;, then it may match a single</span>
+<span class="sd">        file.</span>
+
+<span class="sd">        Examples:</span>
+
+<span class="sd">        * ``&quot;~/train_images/&quot;``</span>
+<span class="sd">        * ``&quot;~/train_images/cats*.png&quot;``</span>
+<span class="sd">        * ``&quot;~/train_images/*.tif&quot;``</span>
+<span class="sd">        * ``&quot;~/train_images/scan*&quot;``</span>
+<span class="sd">        * ``&quot;~/train_images/just_one_image.jpeg&quot;``</span>
+
+<span class="sd">        :param collapse_channels: `bool`</span>
+
+<span class="sd">        By default, the images are returned in the CxHxW format, where</span>
+<span class="sd">        C is the number of channels and H and W specify the height and</span>
+<span class="sd">        width, respectively.</span>
+
+<span class="sd">        If `collapse_channels=True`, then all channels in the image</span>
+<span class="sd">        will be averaged to a single channel. This can be used to</span>
+<span class="sd">        convert color images to gray-scale images, for instance.</span>
+
+<span class="sd">        If `collapse_channels=False`, any channels in the image will</span>
+<span class="sd">        be retained.</span>
+
+<span class="sd">        In either case, the returned images have at least one channel.</span>
+
+<span class="sd">        :param labels: `int` or `list(int)`</span>
+
+<span class="sd">        By default, all image pixel values are converted to</span>
+<span class="sd">        float32.</span>
+
+<span class="sd">        If you want to retrieve the image pixels as</span>
+<span class="sd">        integral values instead, set</span>
+
+<span class="sd">        * `labels=k` for an integer `k` if the labels are</span>
+<span class="sd">           contained in the set {0, 1, ..., k-1};</span>
+<span class="sd">        * `labels=[1,2,5]` if the labels are contained in the set</span>
+<span class="sd">           {1,2,5}.</span>
+
+<span class="sd">        Setting labels is useful for segmentation.</span>
+
+<span class="sd">        :returns: An ImageStack</span>
+<span class="sd">        :rtype:</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ImageStack</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">path_specifier</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path_specifier</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path_specifier</span> <span class="o">=</span> <span class="n">path_specifier</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">collapse_channels</span> <span class="o">=</span> <span class="n">collapse_channels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">paths</span> <span class="o">=</span> <span class="n">ImageStack</span><span class="o">.</span><span class="n">find_images</span><span class="p">(</span><span class="n">path_specifier</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ImageStack.find_images"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.image_dataset.ImageStack.find_images">[docs]</a>    <span class="k">def</span> <span class="nf">find_images</span><span class="p">(</span><span class="n">path_specifier</span><span class="p">):</span>
+        <span class="n">path_specifier</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path_specifier</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">path_specifier</span><span class="o">.</span><span class="n">name</span> <span class="ow">and</span> <span class="s2">&quot;*&quot;</span> <span class="ow">in</span> <span class="n">path_specifier</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="n">path_specifier</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">path_specifier</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">path_specifier</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">path_specifier</span><span class="p">]</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Image stack consists of single file </span><span class="si">{path_specifier}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">path_specifier</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="n">path_specifier</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">]</span>
+        <span class="n">paths</span> <span class="o">=</span> <span class="n">_natural_sort</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="n">f</span><span class="s2">&quot;Image stack is empty for path specification </span><span class="si">{path_specifier}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">paths</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">num_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The number of labels in this image stack.</span>
+
+<span class="sd">        If the stack is not labeled, this property access raises a</span>
+<span class="sd">        RuntimeError.</span>
+
+<span class="sd">        :returns: The number of labels in this image stack.</span>
+<span class="sd">        :rtype: int</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;This image stack has no labels&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Iterable</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="c1"># Load image</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;.tif&quot;</span><span class="p">,</span> <span class="s2">&quot;.tiff&quot;</span><span class="p">]:</span>
+                <span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">tifffile</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">img</span> <span class="o">=</span> <span class="n">_load_natural_image</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Could not read image from </span><span class="si">{path}</span><span class="s2">. Got error </span><span class="si">{e}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Convert image type if necessary:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">img</span> <span class="o">=</span> <span class="n">_relabel_image</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">InputError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span>
+                    <span class="n">f</span><span class="s2">&quot;Expected labeled image from path </span><span class="si">{path}</span><span class="s2">. Got error </span><span class="si">{e}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+        <span class="c1"># Check and set image dimensions</span>
+        <span class="k">if</span> <span class="n">img</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Image in </span><span class="si">{path}</span><span class="s2"> has more than 3 dimensions.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">img</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Image in </span><span class="si">{path}</span><span class="s2"> has less than 2 dimensions.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># The # of dimensions can be 2 or 3 at this point. Make it 3.</span>
+        <span class="k">if</span> <span class="n">img</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+
+        <span class="c1"># Collapse channels if necessary</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">collapse_channels</span>
+        <span class="p">),</span> <span class="s2">&quot;Cannot collapse channels of segmentation image stack.&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">collapse_channels</span><span class="p">:</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">img</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">img</span></div>
+
+
+<div class="viewcode-block" id="ImageDataset"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.image_dataset.ImageDataset">[docs]</a><span class="k">class</span> <span class="nc">ImageDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A dataset for images stored on disk.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ImageDataset.__init__"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.image_dataset.ImageDataset.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">input_path_specifier</span><span class="p">,</span>
+        <span class="n">target_path_specifier</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">collapse_channels</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a new image dataset.</span>
+
+<span class="sd">        :param input_path_specifier: `string`</span>
+
+<span class="sd">        A path with optional glob pattern describing the image</span>
+<span class="sd">        file paths. Tildes and other HOME directory specifications</span>
+<span class="sd">        are expanded with `expanduser` and symlinks are resolved.</span>
+
+<span class="sd">        If the path points to a directory, then all files in the</span>
+<span class="sd">        directory are included in the image stack.</span>
+
+<span class="sd">        If the path points to file, then that single file is</span>
+<span class="sd">        included in the image stack.</span>
+
+<span class="sd">        Alternatively, one may specify a &quot;glob pattern&quot; to match</span>
+<span class="sd">        specific files in the directory. Of course, if the glob</span>
+<span class="sd">        pattern does not contain a &#39;*&#39;, then it may match a single</span>
+<span class="sd">        file.</span>
+
+<span class="sd">        Examples:</span>
+
+<span class="sd">        * ``&quot;~/train_images/&quot;``</span>
+<span class="sd">        * ``&quot;~/train_images/cats*.png&quot;``</span>
+<span class="sd">        * ``&quot;~/train_images/*.tif&quot;``</span>
+<span class="sd">        * ``&quot;~/train_images/scan*&quot;``</span>
+<span class="sd">        * ``&quot;~/train_images/just_one_image.jpeg&quot;``</span>
+
+<span class="sd">        :param target_path_specifier: `string`</span>
+
+<span class="sd">        A pattern that describes the target data. Format is</span>
+<span class="sd">        similar to the input path specification.</span>
+
+<span class="sd">        :param collapse_channels: `bool`</span>
+
+<span class="sd">        By default, the images are returned in the CxHxW format,</span>
+<span class="sd">        where C is the number of channels and H and W specify the</span>
+<span class="sd">        height and width, respectively.</span>
+
+<span class="sd">        If `collapse_channels=True`, then all channels in the</span>
+<span class="sd">        image will be averaged to a single channel. This can be</span>
+<span class="sd">        used to convert color images to gray-scale images, for</span>
+<span class="sd">        instance.</span>
+
+<span class="sd">        If `collapse_channels=False`, any channels in the image</span>
+<span class="sd">        will be retained.</span>
+
+<span class="sd">        In either case, the returned images have at least one</span>
+<span class="sd">        channel.</span>
+
+<span class="sd">        :param labels: `int` or `list(int)`</span>
+
+<span class="sd">        By default, both input and target image pixel values are</span>
+<span class="sd">        converted to float32.</span>
+
+<span class="sd">        If you want to retrieve the target image pixels as</span>
+<span class="sd">        integral values instead, set:</span>
+
+<span class="sd">        * ``labels=k`` for an integer ``k`` if the labels are contained in the set {0, 1, ..., k-1};</span>
+<span class="sd">        * ``labels=[1,2,5]`` if the labels are contained in the set {1,2,5}.</span>
+
+<span class="sd">        Setting labels is useful for segmentation.</span>
+
+<span class="sd">        :returns:</span>
+<span class="sd">        :rtype:</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ImageDataset</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_path_specifier</span> <span class="o">=</span> <span class="n">input_path_specifier</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_path_specifier</span> <span class="o">=</span> <span class="n">target_path_specifier</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">collapse_channels</span> <span class="o">=</span> <span class="n">collapse_channels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span>
+
+        <span class="c1"># Do not collapse channels in the target images when we do</span>
+        <span class="c1"># segmentation. This is not supported.</span>
+        <span class="n">collapse_target</span> <span class="o">=</span> <span class="n">collapse_channels</span> <span class="ow">and</span> <span class="n">labels</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_stack</span> <span class="o">=</span> <span class="n">ImageStack</span><span class="p">(</span>
+            <span class="n">input_path_specifier</span><span class="p">,</span> <span class="n">collapse_channels</span><span class="o">=</span><span class="n">collapse_channels</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_stack</span> <span class="o">=</span> <span class="n">ImageStack</span><span class="p">(</span>
+            <span class="n">target_path_specifier</span><span class="p">,</span> <span class="n">collapse_channels</span><span class="o">=</span><span class="n">collapse_target</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_stack</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_stack</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span>
+                <span class="n">f</span><span class="s2">&quot;Number of input and target images does not match. &quot;</span>
+                <span class="n">f</span><span class="s2">&quot;Got {len(self.input_stack)} input images and {len(self.target_stack)} target images.&quot;</span>
+            <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_stack</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_stack</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_stack</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">num_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The number of labels in this image stack.</span>
+
+<span class="sd">        If the stack is not labeled, this property access raises a</span>
+<span class="sd">        RuntimeError.</span>
+
+<span class="sd">        :returns: The number of labels in this image stack.</span>
+<span class="sd">        :rtype: int</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_stack</span><span class="o">.</span><span class="n">num_labels</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Allard Hendriksen
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

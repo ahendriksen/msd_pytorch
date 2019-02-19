@@ -1,0 +1,403 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>msd_pytorch.msd_module &mdash; Mixed-scale Dense Networks for PyTorch  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Mixed-scale Dense Networks for PyTorch
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">Mixed-scale Dense Networks for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">msd_pytorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../CHANGELOG.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Mixed-scale Dense Networks for PyTorch</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>msd_pytorch.msd_module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for msd_pytorch.msd_module</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">msd_pytorch.conv</span> <span class="k">import</span> <span class="n">Conv2dInPlaceModule</span>
+<span class="kn">from</span> <span class="nn">msd_pytorch.stitch</span> <span class="k">import</span> <span class="n">stitchLazy</span><span class="p">,</span> <span class="n">StitchCopyModule</span><span class="p">,</span> <span class="n">StitchBuffer</span>
+<span class="kn">from</span> <span class="nn">msd_pytorch.relu_inplace</span> <span class="k">import</span> <span class="n">ReLUInplaceModule</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">sqrt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<div class="viewcode-block" id="units_in_front"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_module.units_in_front">[docs]</a><span class="k">def</span> <span class="nf">units_in_front</span><span class="p">(</span><span class="n">c_in</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">layer_depth</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate how many intermediate images are in front of current layer</span>
+
+<span class="sd">    * The input channels count as intermediate images</span>
+<span class="sd">    * The `layer_depth` index is zero-based: the first hidden layer</span>
+<span class="sd">      has index zero.</span>
+
+<span class="sd">    :param c_in: The number of input channels of the MSD module</span>
+<span class="sd">    :param width: The width of the MSD module</span>
+<span class="sd">    :param layer_depth:</span>
+<span class="sd">        The depth of the layer for which we are calculating the units</span>
+<span class="sd">        in front.  This index is zero-based: the first hidden layer</span>
+<span class="sd">        has index zero.</span>
+<span class="sd">    :returns:</span>
+<span class="sd">    :rtype:</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">c_in</span> <span class="o">+</span> <span class="n">width</span> <span class="o">*</span> <span class="n">layer_depth</span></div>
+
+
+<div class="viewcode-block" id="init_convolution_weights"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_module.init_convolution_weights">[docs]</a><span class="k">def</span> <span class="nf">init_convolution_weights</span><span class="p">(</span><span class="n">conv_weight</span><span class="p">,</span> <span class="n">c_in</span><span class="p">,</span> <span class="n">c_out</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">depth</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Initialize MSD convolution kernel weights</span>
+
+<span class="sd">    Based on:</span>
+
+<span class="sd">    Pelt, Daniel M., &amp; Sethian, J. A. (2017). A mixed-scale dense</span>
+<span class="sd">    convolutional neural network for image analysis. Proceedings of</span>
+<span class="sd">    the National Academy of Sciences, 115(2),</span>
+<span class="sd">    254–259. http://dx.doi.org/10.1073/pnas.1715832114</span>
+
+<span class="sd">    :param conv_weight:</span>
+<span class="sd">        The kernel weight data</span>
+<span class="sd">    :param c_in:</span>
+<span class="sd">        Number of input channels of the MSD module</span>
+<span class="sd">    :param c_out:</span>
+<span class="sd">        Number of output channels of the MSD module</span>
+<span class="sd">    :param width:</span>
+<span class="sd">        The width of the MSD module</span>
+<span class="sd">    :param depth:</span>
+<span class="sd">        The depth of the MSD module. This is the number of hidden layers.</span>
+<span class="sd">    :returns: Nothing</span>
+<span class="sd">    :rtype:</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># The number of paramters in the convolution depends on whether</span>
+    <span class="c1"># the convolution is 2D or 3D. We multiply all non-channel</span>
+    <span class="c1"># dimensions of the weight here to get the right answer.</span>
+    <span class="n">num_params</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">conv_weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
+    <span class="n">num_channels</span> <span class="o">=</span> <span class="n">num_params</span> <span class="o">*</span> <span class="p">(</span><span class="n">c_in</span> <span class="o">+</span> <span class="n">width</span> <span class="o">*</span> <span class="p">(</span><span class="n">depth</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="n">c_out</span>
+    <span class="n">std_dev</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span> <span class="o">/</span> <span class="n">num_channels</span><span class="p">)</span>
+    <span class="n">conv_weight</span><span class="o">.</span><span class="n">normal_</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">std_dev</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MSDLayerModule"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_module.MSDLayerModule">[docs]</a><span class="k">class</span> <span class="nc">MSDLayerModule</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A hidden layer of the MSD module.</span>
+
+<span class="sd">    The primary responsibility of this module is to define the</span>
+<span class="sd">    `forward()` method.</span>
+
+<span class="sd">    This module is used by the `MSDModule`.</span>
+
+<span class="sd">    This module is not responsible for</span>
+
+<span class="sd">    * Buffer management</span>
+<span class="sd">    * Weight initialization</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="MSDLayerModule.__init__"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_module.MSDLayerModule.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">c_in</span><span class="p">,</span> <span class="n">layer_depth</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">dilation</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize the hidden layer.</span>
+
+<span class="sd">        :param buffer: a StitchBuffer object for storing the L and G buffers.</span>
+<span class="sd">        :param c_in: The number of input channels of the MSD module.</span>
+<span class="sd">        :param layer_depth:</span>
+<span class="sd">            The depth of this layer in the MSD module.  This index is</span>
+<span class="sd">            zero-based: the first hidden layer has index zero.</span>
+<span class="sd">        :param width: The width of the MSD module.</span>
+<span class="sd">        :param dilation:</span>
+<span class="sd">            An integer describing the dilation factor for the</span>
+<span class="sd">            convolutions in this layer.</span>
+<span class="sd">        :returns: A module for the MSD hidden layer.</span>
+<span class="sd">        :rtype: MSDLayerModule</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MSDLayerModule</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="n">in_front</span> <span class="o">=</span> <span class="n">units_in_front</span><span class="p">(</span><span class="n">c_in</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">layer_depth</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_front</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">in_front</span><span class="p">,</span> <span class="n">width</span>
+
+        <span class="c1"># Set output to None for the Conv2dInPlaceModule for now. We</span>
+        <span class="c1"># set it in the forward pass.</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">convolution</span> <span class="o">=</span> <span class="n">Conv2dInPlaceModule</span><span class="p">(</span>
+            <span class="n">output</span><span class="p">,</span> <span class="n">in_front</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="n">dilation</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Add the relu to get a nice printout for the network from</span>
+        <span class="c1"># pytorch.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">relu</span> <span class="o">=</span> <span class="n">ReLUInplaceModule</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="MSDLayerModule.forward"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_module.MSDLayerModule.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+        <span class="c1"># Set output</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">convolution</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">L</span><span class="o">.</span><span class="n">narrow</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_front</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convolution</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">stitchLazy</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">L</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_front</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span></div></div>
+
+
+<div class="viewcode-block" id="MSDFinalLayer"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_module.MSDFinalLayer">[docs]</a><span class="k">class</span> <span class="nc">MSDFinalLayer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Documentation for MSDFinalLayer</span>
+
+<span class="sd">    Implements the final 1x1 multiplication and bias addition for all</span>
+<span class="sd">    intermediate layers to get to the output layer.</span>
+
+<span class="sd">    Initializes the weight and bias to zero.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="MSDFinalLayer.__init__"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_module.MSDFinalLayer.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c_in</span><span class="p">,</span> <span class="n">c_out</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MSDFinalLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_in</span> <span class="o">=</span> <span class="n">c_in</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_out</span> <span class="o">=</span> <span class="n">c_out</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linear</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv1d</span><span class="p">(</span><span class="n">c_in</span><span class="p">,</span> <span class="n">c_out</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="MSDFinalLayer.forward"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_module.MSDFinalLayer.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+        <span class="n">b</span><span class="p">,</span> <span class="n">c_in</span><span class="p">,</span> <span class="o">*</span><span class="n">size</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">tmp_size</span> <span class="o">=</span> <span class="nb">input</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span>
+
+        <span class="c1"># Put channels in last place in input shape</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">c_in</span><span class="p">,</span> <span class="n">tmp_size</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">c_out</span><span class="p">,</span> <span class="o">*</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span></div></div>
+
+
+<div class="viewcode-block" id="MSDModule"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_module.MSDModule">[docs]</a><span class="k">class</span> <span class="nc">MSDModule</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="viewcode-block" id="MSDModule.__init__"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_module.MSDModule.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">c_in</span><span class="p">,</span> <span class="n">c_out</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">dilations</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a msd module</span>
+
+<span class="sd">        :param c_in: # of input channels</span>
+<span class="sd">        :param c_out: # of output channels</span>
+<span class="sd">        :param depth: # of layers</span>
+<span class="sd">        :param width: # the width of the module</span>
+<span class="sd">        :param dilations: `list(int)`</span>
+
+<span class="sd">        A list of dilations to use. Default is ``[1, 2, ..., 10]``.  A</span>
+<span class="sd">        good alternative is ``[1, 2, 4, 8]``. The dilations are</span>
+<span class="sd">        repeated.</span>
+
+<span class="sd">        :returns: an MSD module</span>
+<span class="sd">        :rtype: MSDModule</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MSDModule</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="c1">#</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_in</span> <span class="o">=</span> <span class="n">c_in</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_out</span> <span class="o">=</span> <span class="n">c_out</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">depth</span> <span class="o">=</span> <span class="n">depth</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="n">width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dilations</span> <span class="o">=</span> <span class="n">dilations</span>
+
+        <span class="n">buffer</span> <span class="o">=</span> <span class="n">StitchBuffer</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span> <span class="o">=</span> <span class="n">buffer</span>
+
+        <span class="c1"># The first layer copies input into the L stitch buffer</span>
+        <span class="n">stitch_layer</span> <span class="o">=</span> <span class="n">StitchCopyModule</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Then we have `depth` number of hidden layers:</span>
+        <span class="n">hidden_layers</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">MSDLayerModule</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">c_in</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">dilations</span><span class="p">[</span><span class="n">d</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">dilations</span><span class="p">)])</span>
+            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">depth</span><span class="p">)</span>
+        <span class="p">]</span>
+
+        <span class="c1"># Initialize weights for hidden layers:</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">hidden_layers</span><span class="p">:</span>
+            <span class="n">init_convolution_weights</span><span class="p">(</span>
+                <span class="n">m</span><span class="o">.</span><span class="n">convolution</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">c_in</span><span class="p">,</span> <span class="n">c_out</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">depth</span>
+            <span class="p">)</span>
+            <span class="n">m</span><span class="o">.</span><span class="n">convolution</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
+
+        <span class="n">in_front</span> <span class="o">=</span> <span class="n">units_in_front</span><span class="p">(</span><span class="n">c_in</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">depth</span><span class="p">)</span>
+        <span class="n">c_final</span> <span class="o">=</span> <span class="n">MSDFinalLayer</span><span class="p">(</span><span class="n">in_front</span><span class="p">,</span> <span class="n">c_out</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">stitch_layer</span><span class="p">,</span> <span class="o">*</span><span class="n">hidden_layers</span><span class="p">,</span> <span class="n">c_final</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="MSDModule.forward"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_module.MSDModule.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_buffers</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MSDModule.init_buffers"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_module.MSDModule.init_buffers">[docs]</a>    <span class="k">def</span> <span class="nf">init_buffers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+        <span class="n">batch_sz</span><span class="p">,</span> <span class="n">c_in</span><span class="p">,</span> <span class="o">*</span><span class="n">shape</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="k">assert</span> <span class="n">c_in</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">c_in</span><span class="p">,</span> <span class="s2">&quot;Unexpected number of input channels&quot;</span>
+
+        <span class="c1"># Ensure that the stitch buffer is the correct shape</span>
+        <span class="n">total_units</span> <span class="o">=</span> <span class="n">units_in_front</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c_in</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">)</span>
+        <span class="n">new_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">batch_sz</span><span class="p">,</span> <span class="n">total_units</span><span class="p">,</span> <span class="o">*</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">like_</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">new_shape</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Allard Hendriksen
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

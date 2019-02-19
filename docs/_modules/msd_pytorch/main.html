@@ -1,0 +1,348 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>msd_pytorch.main &mdash; Mixed-scale Dense Networks for PyTorch  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Mixed-scale Dense Networks for PyTorch
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">Mixed-scale Dense Networks for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">msd_pytorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../CHANGELOG.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Mixed-scale Dense Networks for PyTorch</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>msd_pytorch.main</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for msd_pytorch.main</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="k">import</span> <span class="n">environ</span>
+<span class="kn">from</span> <span class="nn">sacred</span> <span class="k">import</span> <span class="n">Experiment</span><span class="p">,</span> <span class="n">Ingredient</span>
+<span class="kn">from</span> <span class="nn">timeit</span> <span class="k">import</span> <span class="n">default_timer</span> <span class="k">as</span> <span class="n">timer</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="k">import</span> <span class="n">DataLoader</span>
+<span class="kn">import</span> <span class="nn">msd_pytorch</span> <span class="k">as</span> <span class="nn">mp</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<span class="n">msd_ingredient</span> <span class="o">=</span> <span class="n">Ingredient</span><span class="p">(</span><span class="s2">&quot;msd&quot;</span><span class="p">)</span>
+<span class="n">ex</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">(</span><span class="s2">&quot;MSD&quot;</span><span class="p">,</span> <span class="n">ingredients</span><span class="o">=</span><span class="p">[</span><span class="n">msd_ingredient</span><span class="p">])</span>
+
+<span class="n">mongo_enabled</span> <span class="o">=</span> <span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MONGO_SACRED_ENABLED&quot;</span><span class="p">)</span>
+<span class="n">mongo_user</span> <span class="o">=</span> <span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MONGO_SACRED_USER&quot;</span><span class="p">)</span>
+<span class="n">mongo_pass</span> <span class="o">=</span> <span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MONGO_SACRED_PASS&quot;</span><span class="p">)</span>
+<span class="n">mongo_host</span> <span class="o">=</span> <span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MONGO_SACRED_HOST&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">mongo_enabled</span> <span class="o">==</span> <span class="s2">&quot;true&quot;</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">sacred.observers</span> <span class="k">import</span> <span class="n">MongoObserver</span>
+
+    <span class="k">assert</span> <span class="n">mongo_user</span><span class="p">,</span> <span class="s2">&quot;Setting $MONGO_USER is required&quot;</span>
+    <span class="k">assert</span> <span class="n">mongo_pass</span><span class="p">,</span> <span class="s2">&quot;Setting $MONGO_PASS is required&quot;</span>
+    <span class="k">assert</span> <span class="n">mongo_host</span><span class="p">,</span> <span class="s2">&quot;Setting $MONGO_HOST is required&quot;</span>
+
+    <span class="n">mongo_url</span> <span class="o">=</span> <span class="s2">&quot;mongodb://</span><span class="si">{0}</span><span class="s2">:</span><span class="si">{1}</span><span class="s2">@</span><span class="si">{2}</span><span class="s2">:27017/sacred?authMechanism=SCRAM-SHA-1&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">mongo_user</span><span class="p">,</span> <span class="n">mongo_pass</span><span class="p">,</span> <span class="n">mongo_host</span>
+    <span class="p">)</span>
+
+    <span class="n">ex</span><span class="o">.</span><span class="n">observers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">MongoObserver</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">mongo_url</span><span class="p">,</span> <span class="n">db_name</span><span class="o">=</span><span class="s2">&quot;sacred&quot;</span><span class="p">))</span>
+
+
+<span class="nd">@msd_ingredient</span><span class="o">.</span><span class="n">config</span>
+<span class="k">def</span> <span class="nf">msd_config</span><span class="p">():</span>
+    <span class="n">c_in</span> <span class="o">=</span> <span class="mi">1</span>                     <span class="c1"># Number of input channels</span>
+    <span class="n">c_out</span> <span class="o">=</span> <span class="mi">1</span>                    <span class="c1"># Number of output channels (for regression; see `labels` for segmentation)</span>
+    <span class="n">depth</span> <span class="o">=</span> <span class="mi">10</span>                   <span class="c1"># The depth of the network</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="mi">1</span>                    <span class="c1"># The width of the network</span>
+    <span class="n">dilations</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>  <span class="c1"># The dilation-scheme that is used in the network</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="s1">&#39;L2&#39;</span>                  <span class="c1"># Which loss to use for regression (options: &quot;L1&quot; or &quot;L2&quot;)</span>
+
+
+<span class="nd">@ex</span><span class="o">.</span><span class="n">config</span>
+<span class="k">def</span> <span class="nf">ex_config</span><span class="p">():</span>
+    <span class="c1"># Set parameters</span>
+    <span class="n">epochs</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># The number of epochs to train for</span>
+    <span class="n">train_input_glob</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># The glob pattern for the training set input data</span>
+    <span class="n">train_target_glob</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># The glob pattern for the training set target data</span>
+    <span class="n">val_input_glob</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># The glob pattern for the validation set input data</span>
+    <span class="n">val_target_glob</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># The glob pattern for the validation set input data</span>
+
+    <span class="c1"># Segmentation-specific</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="segmentation"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.main.segmentation">[docs]</a><span class="nd">@ex</span><span class="o">.</span><span class="n">command</span>
+<span class="k">def</span> <span class="nf">segmentation</span><span class="p">(</span>
+    <span class="n">msd</span><span class="p">,</span>
+    <span class="n">epochs</span><span class="p">,</span>
+    <span class="n">train_input_glob</span><span class="p">,</span>
+    <span class="n">train_target_glob</span><span class="p">,</span>
+    <span class="n">val_input_glob</span><span class="p">,</span>
+    <span class="n">val_target_glob</span><span class="p">,</span>
+    <span class="n">labels</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Load training dataset&quot;</span><span class="p">)</span>
+    <span class="c1"># Create train (always) and validation (only if specified) datasets.</span>
+    <span class="n">train_ds</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">ImageDataset</span><span class="p">(</span><span class="n">train_input_glob</span><span class="p">,</span> <span class="n">train_target_glob</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+    <span class="n">train_dl</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_ds</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">val_input_glob</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Load validation set&quot;</span><span class="p">)</span>
+        <span class="n">val_ds</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">ImageDataset</span><span class="p">(</span><span class="n">val_input_glob</span><span class="p">,</span> <span class="n">val_target_glob</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+        <span class="n">val_dl</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">val_ds</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No validation set loaded&quot;</span><span class="p">)</span>
+        <span class="n">val_dl</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Create network model&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">MSDSegmentationModel</span><span class="p">(</span><span class="n">num_labels</span><span class="o">=</span><span class="n">train_ds</span><span class="o">.</span><span class="n">num_labels</span><span class="p">)</span>
+    <span class="n">train</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">train_dl</span><span class="p">,</span> <span class="n">val_dl</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="regression"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.main.regression">[docs]</a><span class="nd">@ex</span><span class="o">.</span><span class="n">command</span>
+<span class="k">def</span> <span class="nf">regression</span><span class="p">(</span>
+    <span class="n">msd</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">train_input_glob</span><span class="p">,</span> <span class="n">train_target_glob</span><span class="p">,</span> <span class="n">val_input_glob</span><span class="p">,</span> <span class="n">val_target_glob</span>
+<span class="p">):</span>
+    <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Load training dataset&quot;</span><span class="p">)</span>
+    <span class="c1"># Create train (always) and validation (only if specified) datasets.</span>
+    <span class="n">train_ds</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">ImageDataset</span><span class="p">(</span><span class="n">train_input_glob</span><span class="p">,</span> <span class="n">train_target_glob</span><span class="p">)</span>
+    <span class="n">train_dl</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_ds</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">val_input_glob</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Load validation set&quot;</span><span class="p">)</span>
+        <span class="n">val_ds</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">ImageDataset</span><span class="p">(</span><span class="n">val_input_glob</span><span class="p">,</span> <span class="n">val_target_glob</span><span class="p">)</span>
+        <span class="n">val_dl</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">val_ds</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No validation set loaded&quot;</span><span class="p">)</span>
+        <span class="n">val_dl</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Create network model&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">MSDRegressionModel</span><span class="p">()</span>
+    <span class="n">train</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">train_dl</span><span class="p">,</span> <span class="n">val_dl</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="train"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.main.train">[docs]</a><span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">train_dl</span><span class="p">,</span> <span class="n">val_dl</span><span class="p">):</span>
+    <span class="c1"># The network works best if the input data has mean zero and has a</span>
+    <span class="c1"># standard deviation of 1. To achieve this, we get a rough estimate of</span>
+    <span class="c1"># correction parameters from the training data. These parameters are</span>
+    <span class="c1"># not updated after this step and are stored in the network, so that</span>
+    <span class="c1"># they are not lost when the network is saved to and loaded from disk.</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Start estimating normalization parameters&quot;</span><span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">set_normalization</span><span class="p">(</span><span class="n">train_dl</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Done estimating normalization parameters&quot;</span><span class="p">)</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting training...&quot;</span><span class="p">)</span>
+    <span class="n">best_validation_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="n">validation_error</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">timer</span><span class="p">()</span>
+        <span class="c1"># Train</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">train_dl</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># Compute training error</span>
+        <span class="n">train_error</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">train_dl</span><span class="p">)</span>
+        <span class="n">ex</span><span class="o">.</span><span class="n">log_scalar</span><span class="p">(</span><span class="s2">&quot;Training error&quot;</span><span class="p">,</span> <span class="n">train_error</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{epoch:05}</span><span class="s2"> Training error: </span><span class="si">{train_error: 0.6f}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># Compute validation error</span>
+        <span class="k">if</span> <span class="n">val_dl</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">validation_error</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">val_dl</span><span class="p">)</span>
+            <span class="n">ex</span><span class="o">.</span><span class="n">log_scalar</span><span class="p">(</span><span class="s2">&quot;Validation error&quot;</span><span class="p">,</span> <span class="n">validation_error</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{epoch:05}</span><span class="s2"> Validation error: </span><span class="si">{validation_error: 0.6f}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># Save network if worthwile</span>
+        <span class="k">if</span> <span class="n">validation_error</span> <span class="o">&lt;</span> <span class="n">best_validation_error</span> <span class="ow">or</span> <span class="n">val_dl</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">best_validation_error</span> <span class="o">=</span> <span class="n">validation_error</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;msd_network_epoch_</span><span class="si">{epoch}</span><span class="s2">.torch&quot;</span><span class="p">)</span>
+            <span class="n">ex</span><span class="o">.</span><span class="n">add_artifact</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;msd_network_epoch_</span><span class="si">{epoch}</span><span class="s2">.torch&quot;</span><span class="p">)</span>
+
+        <span class="n">end</span> <span class="o">=</span> <span class="n">timer</span><span class="p">()</span>
+        <span class="n">ex</span><span class="o">.</span><span class="n">log_scalar</span><span class="p">(</span><span class="s2">&quot;Iteration time&quot;</span><span class="p">,</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{epoch:05}</span><span class="s2"> Iteration time: {end-start: 0.6f}&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Always save final network parameters</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;msd_network_epoch_</span><span class="si">{epoch}</span><span class="s2">.torch&quot;</span><span class="p">)</span>
+    <span class="n">ex</span><span class="o">.</span><span class="n">add_artifact</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;msd_network_epoch_</span><span class="si">{epoch}</span><span class="s2">.torch&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="experiment_main"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.main.experiment_main">[docs]</a><span class="nd">@ex</span><span class="o">.</span><span class="n">main</span>
+<span class="k">def</span> <span class="nf">experiment_main</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Experiment main!&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="main_function"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.main.main_function">[docs]</a><span class="k">def</span> <span class="nf">main_function</span><span class="p">():</span>
+    <span class="n">mp</span><span class="o">.</span><span class="n">MSDRegressionModel</span> <span class="o">=</span> <span class="n">msd_ingredient</span><span class="o">.</span><span class="n">capture</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">MSDRegressionModel</span><span class="p">)</span>
+    <span class="n">mp</span><span class="o">.</span><span class="n">MSDSegmentationModel</span> <span class="o">=</span> <span class="n">msd_ingredient</span><span class="o">.</span><span class="n">capture</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">MSDSegmentationModel</span><span class="p">)</span>
+
+    <span class="n">ex</span><span class="o">.</span><span class="n">run_commandline</span><span class="p">()</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Allard Hendriksen
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

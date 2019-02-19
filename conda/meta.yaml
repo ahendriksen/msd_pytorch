@@ -1,0 +1,47 @@
+
+{% set data = load_setup_py_data() %}
+
+package:
+    name: msd_pytorch
+    version: {{ data['version'] }}
+
+source:
+    path: ../
+
+build:
+    number: '12'
+    script_env:
+      - TMP_NVCC_LOCATION         # Used to store multiple versions of the CUDA toolkit
+    entry_points:
+      - msd=msd_pytorch.main:main_function
+
+requirements:
+    build:
+        - {{ compiler('c') }}
+        - {{ compiler('cxx') }}
+    host:
+        - python
+        - setuptools
+        - pytorch==1.1.0
+        - cudatoolkit {{cudatoolkit}}
+        - torchvision
+        {% for dep in data['setup_requires'] %}
+        - {{ dep.lower() }}
+        {% endfor %}
+    run:
+        - python
+        - pytorch=1.1.0
+        - {{ pin_compatible('cudatoolkit', max_pin='x.x') }}
+        # dependencies are defined in setup.py
+        {% for dep in data['install_requires'] %}
+        - {{ dep.lower() }}
+        {% endfor %}
+
+about:
+    home: https://github.com/ahendriksen/msd_pytorch
+    license_file: LICENSE.md
+    summary: "An implementation of Mixed-Scale Dense networks in PyTorch. "
+
+extra:
+    maintainers:
+        - Allard Hendriksen

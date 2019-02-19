@@ -1,0 +1,455 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>msd_pytorch.stitch &mdash; Mixed-scale Dense Networks for PyTorch  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Mixed-scale Dense Networks for PyTorch
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">Mixed-scale Dense Networks for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">msd_pytorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../CHANGELOG.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Mixed-scale Dense Networks for PyTorch</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>msd_pytorch.stitch</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for msd_pytorch.stitch</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Stitch Functions and Modules for threading the gradient</span>
+
+<span class="sd">Stitching refers to the practice of copying and / or reusing shared</span>
+<span class="sd">buffers in a network to improve efficiency. It handles distributing</span>
+<span class="sd">the gradient transparently.</span>
+
+<span class="sd">In this module, we implement three types of stitching:</span>
+
+<span class="sd">1) Slow stitching: concatenates to inputs in the forward pass and</span>
+<span class="sd">   distributes the gradient output in the backward</span>
+<span class="sd">   pass. Inefficient. Slow stitching is used for testing.</span>
+
+<span class="sd">2) Copy Stitching: copies the input into a layer buffer ``L`` and returns</span>
+<span class="sd">   all layers up to and including the newly copied input. More</span>
+<span class="sd">   efficient than slow stitching, but preferably used sparingly.</span>
+
+<span class="sd">3) Lazy Stitching: assumes that the input has already been copied in</span>
+<span class="sd">   the layer buffer ``L`` and returns all layers up to and including</span>
+<span class="sd">   the input. The gradient is accumulated in a gradient buffer</span>
+<span class="sd">   ``G``. This is fast and efficient.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch</span> <span class="k">as</span> <span class="nn">t</span>
+<span class="kn">from</span> <span class="nn">torch.autograd</span> <span class="k">import</span> <span class="n">Variable</span><span class="p">,</span> <span class="n">Function</span>
+
+
+<div class="viewcode-block" id="StitchBuffer"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchBuffer">[docs]</a><span class="k">class</span> <span class="nc">StitchBuffer</span><span class="p">:</span>
+<div class="viewcode-block" id="StitchBuffer.__init__"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchBuffer.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Holds the ``L`` and ``G`` buffers for a stitched module.</span>
+
+<span class="sd">        The intermediate layers are stored in ``L`` for the forward</span>
+<span class="sd">        pass. The gradients are stored in the ``G`` buffer.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">L</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="StitchBuffer.like_"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchBuffer.like_">[docs]</a>    <span class="k">def</span> <span class="nf">like_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensor</span><span class="p">,</span> <span class="n">new_shape</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Change the ``L`` and ``G`` buffers to match tensor.</span>
+
+<span class="sd">        Matches the tensor&#39;s</span>
+<span class="sd">        - data type</span>
+<span class="sd">        - device (cpu, cuda, cuda:0, cuda:i)</span>
+
+<span class="sd">        The shape is taken from the `new_shape` parameter.</span>
+
+<span class="sd">        :param tensor: An input tensor</span>
+<span class="sd">        :param new_shape: The new shape that the buffer should have.</span>
+<span class="sd">        :returns: Nothing</span>
+<span class="sd">        :rtype:</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">make_new</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">new_shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="o">.</span><span class="n">shape</span>
+            <span class="ow">or</span> <span class="n">tensor</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="o">.</span><span class="n">dtype</span>
+            <span class="ow">or</span> <span class="n">tensor</span><span class="o">.</span><span class="n">device</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="o">.</span><span class="n">device</span>
+        <span class="p">)</span>
+
+        <span class="n">options</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">tensor</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="s2">&quot;device&quot;</span><span class="p">:</span> <span class="n">tensor</span><span class="o">.</span><span class="n">device</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">make_new</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">L</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">new_zeros</span><span class="p">(</span><span class="n">new_shape</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">new_zeros</span><span class="p">(</span><span class="n">new_shape</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="StitchBuffer.zero_"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchBuffer.zero_">[docs]</a>    <span class="k">def</span> <span class="nf">zero_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set buffers to zero.</span>
+
+<span class="sd">        :returns:</span>
+<span class="sd">        :rtype:</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="StitchSlowFunction"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchSlowFunction">[docs]</a><span class="k">class</span> <span class="nc">StitchSlowFunction</span><span class="p">(</span><span class="n">Function</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;StitchSlowFunction</span>
+
+<span class="sd">    Naive stitching: concatenates two inputs in the channel dimension.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="StitchSlowFunction.forward"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchSlowFunction.forward">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">input1</span><span class="p">,</span> <span class="n">input2</span><span class="p">):</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="n">input1</span><span class="p">,</span> <span class="n">input2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">t</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">input1</span><span class="p">,</span> <span class="n">input2</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="StitchSlowFunction.backward"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchSlowFunction.backward">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">):</span>
+        <span class="n">input1</span><span class="p">,</span> <span class="n">input2</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
+        <span class="n">nc1</span> <span class="o">=</span> <span class="n">input1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">grad_output</span><span class="p">[:,</span> <span class="p">:</span><span class="n">nc1</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">grad_output</span><span class="p">[:,</span> <span class="n">nc1</span><span class="p">:,</span> <span class="p">:,</span> <span class="p">:]</span></div></div>
+
+
+<span class="n">stitchSlow</span> <span class="o">=</span> <span class="n">StitchSlowFunction</span><span class="o">.</span><span class="n">apply</span>
+
+
+<div class="viewcode-block" id="StitchCopyFunction"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchCopyFunction">[docs]</a><span class="k">class</span> <span class="nc">StitchCopyFunction</span><span class="p">(</span><span class="n">Function</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Copy stitching:</span>
+
+<span class="sd">    Stores output in buffer ``L`` in the forward pass and adds the</span>
+<span class="sd">    ``grad_output`` to buffer ``G`` in the backward pass.</span>
+
+<span class="sd">    The buffer ``L`` is a tensor of dimensions `B x C x ?` where</span>
+
+<span class="sd">    * `B` is the minibatch size, and</span>
+<span class="sd">    * `C` is the number of channels.</span>
+
+<span class="sd">    The buffer ``G`` has the same dimension as ``L``.</span>
+
+<span class="sd">    The parameter ``i`` is an index in the `C` dimension and points to</span>
+<span class="sd">    where the input (the output of the previous layer) must be copied.</span>
+
+<span class="sd">    In the forward pass:</span>
+
+<span class="sd">    * write the input into ``L`` at channel ``i``</span>
+<span class="sd">    * return ``L`` up to and including channel ``i``</span>
+
+<span class="sd">    In the backward pass:</span>
+
+<span class="sd">    * add the ``grad_output`` to ``G``</span>
+<span class="sd">    * return channel ``i`` of ``G``</span>
+
+<span class="sd">    It is good practice to zero the ``G`` buffer before the backward</span>
+<span class="sd">    pass. Sometimes, this is not possible since some methods, such as</span>
+<span class="sd">    ``torch.autograd.gradcheck``, repeatedly call ``.grad()`` on the</span>
+<span class="sd">    output. Therefore, when ``grad_output`` is the same size as ``G``, the</span>
+<span class="sd">    buffer ``G`` is zeroed in the ``backward`` function.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="StitchCopyFunction.forward"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchCopyFunction.forward">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">input</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">L</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="p">(</span>
+            <span class="n">f</span><span class="s2">&quot;Input type (</span><span class="si">{input.dtype}</span><span class="s2">) and layer L type (</span><span class="si">{L.dtype}</span><span class="s2">) &quot;</span>
+            <span class="s2">&quot;should be the same. &quot;</span>
+        <span class="p">)</span>
+
+        <span class="n">width</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">i</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="n">G</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">width</span>
+        <span class="c1"># Decouple L as a variable from the input</span>
+        <span class="n">L_input</span> <span class="o">=</span> <span class="n">L</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">narrow</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+        <span class="n">L_input</span><span class="o">.</span><span class="n">copy_</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+        <span class="n">L_output</span> <span class="o">=</span> <span class="n">L</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">narrow</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="n">width</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">L_output</span></div>
+
+<div class="viewcode-block" id="StitchCopyFunction.backward"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchCopyFunction.backward">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">):</span>
+        <span class="n">G</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">i</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">width</span>
+        <span class="c1"># If grad_output has the same size size as G, zero-fill the</span>
+        <span class="c1"># gradient buffer G. This way, we make the gradient</span>
+        <span class="c1"># computation reentrant -- it can be repeated multiple times.</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">+</span> <span class="n">width</span> <span class="o">==</span> <span class="n">G</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">G_output</span> <span class="o">=</span> <span class="n">G</span>
+            <span class="n">G_output</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">G_output</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">narrow</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="n">width</span><span class="p">)</span>
+
+        <span class="n">G_output</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">grad_output</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">G_input</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">narrow</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">G_input</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div></div>
+
+
+<span class="n">stitchCopy</span> <span class="o">=</span> <span class="n">StitchCopyFunction</span><span class="o">.</span><span class="n">apply</span>
+
+
+<div class="viewcode-block" id="StitchCopyModule"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchCopyModule">[docs]</a><span class="k">class</span> <span class="nc">StitchCopyModule</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="viewcode-block" id="StitchCopyModule.__init__"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchCopyModule.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Make a new StitchCopyModule</span>
+
+<span class="sd">        :param buffer: A StitchBuffer</span>
+<span class="sd">        :param i: index of the output channel of the stitch</span>
+<span class="sd">        :returns:</span>
+<span class="sd">        :rtype:</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">StitchCopyModule</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span> <span class="o">=</span> <span class="n">buffer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="n">i</span></div>
+
+<div class="viewcode-block" id="StitchCopyModule.forward"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchCopyModule.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">stitchCopy</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">L</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="StitchLazyFunction"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchLazyFunction">[docs]</a><span class="k">class</span> <span class="nc">StitchLazyFunction</span><span class="p">(</span><span class="n">Function</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;StitchLazyFunction</span>
+
+
+<span class="sd">    ``StitchLazyFunction`` is similar to ``StitchCopyFunction``, but it</span>
+<span class="sd">    does not copy the output of the previous layer into ``L``. Hence the</span>
+<span class="sd">    name. ``StitchLazyFunction`` supposes that the output of the the</span>
+<span class="sd">    previous layer has already been copied into ``L``. This can be</span>
+<span class="sd">    accomplished with ``conv_cuda.conv2dInPlace``, for instance.</span>
+
+<span class="sd">    The buffer ``L`` is a tensor of dimensions `B x C x ?` where</span>
+
+<span class="sd">    * `B` is the minibatch size, and</span>
+<span class="sd">    * `C` is the number of channels.</span>
+
+<span class="sd">    The buffer ``G`` has the same dimension as ``L``.</span>
+
+<span class="sd">    The parameter ``i`` is an index in the `C` dimension and points to</span>
+<span class="sd">    where the input (the output of the previous layer) must be copied.</span>
+
+<span class="sd">    In the forward pass:</span>
+
+<span class="sd">    * write the input into ``L`` at channel ``i``</span>
+
+<span class="sd">    In the backward pass:</span>
+
+<span class="sd">    * add the ``grad_output`` to ``G``</span>
+<span class="sd">    * return channel ``i`` of ``G``</span>
+
+<span class="sd">    It is good practice to zero the ``G`` buffer before the backward</span>
+<span class="sd">    pass. Sometimes, this is not possible since some methods, such as</span>
+<span class="sd">    ``torch.autograd.gradcheck``, repeatedly call ``.grad()`` on the</span>
+<span class="sd">    output. Therefore, when ``grad_output`` is the same size as ``G``, the</span>
+<span class="sd">    buffer ``G`` is zeroed in the ``backward`` function.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="StitchLazyFunction.forward"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchLazyFunction.forward">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">i</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="n">G</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">width</span>
+        <span class="k">return</span> <span class="n">L</span><span class="o">.</span><span class="n">narrow</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="n">width</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="StitchLazyFunction.backward"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchLazyFunction.backward">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">):</span>
+        <span class="n">G</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">i</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">width</span>
+        <span class="c1"># If grad_output has the same size size as G, zero-fill the</span>
+        <span class="c1"># gradient buffer G. This way, we make the gradient</span>
+        <span class="c1"># computation reentrant -- it can be repeated multiple times.</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">+</span> <span class="n">width</span> <span class="o">==</span> <span class="n">G</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">G_output</span> <span class="o">=</span> <span class="n">G</span>
+            <span class="n">G_output</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">G_output</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">narrow</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="n">width</span><span class="p">)</span>
+
+        <span class="n">G_output</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">grad_output</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">G_input</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">narrow</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">Variable</span><span class="p">(</span><span class="n">G_input</span><span class="p">),</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div></div>
+
+
+<span class="n">stitchLazy</span> <span class="o">=</span> <span class="n">StitchLazyFunction</span><span class="o">.</span><span class="n">apply</span>
+
+
+<div class="viewcode-block" id="StitchLazyModule"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchLazyModule">[docs]</a><span class="k">class</span> <span class="nc">StitchLazyModule</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="viewcode-block" id="StitchLazyModule.__init__"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchLazyModule.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Make a new StitchLazyModule</span>
+
+<span class="sd">        :param buffer: A StitchBuffer</span>
+<span class="sd">        :param i: index of the output channel of the stitch</span>
+<span class="sd">        :returns:</span>
+<span class="sd">        :rtype:</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">StitchLazyModule</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span> <span class="o">=</span> <span class="n">buffer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="n">i</span></div>
+
+<div class="viewcode-block" id="StitchLazyModule.forward"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchLazyModule.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">stitchLazy</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">L</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Allard Hendriksen
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
