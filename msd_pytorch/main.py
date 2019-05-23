@@ -9,6 +9,7 @@ import torch
 from torch.nn import MSELoss
 import msd_pytorch as mp
 from .bench import bench
+from pathlib import Path
 
 msd_ingredient = Ingredient("msd")
 ex = Experiment("MSD", ingredients=[msd_ingredient])
@@ -56,6 +57,8 @@ def ex_config():
     # Benchmark specific
     input_size = 1024
 
+    # Path where to store the final weights (msd will append '.torch')
+    weights_path = "weights"
 
 @ex.command
 def segmentation(
@@ -67,6 +70,7 @@ def segmentation(
     train_target_glob,
     val_input_glob,
     val_target_glob,
+    weights_path,
 ):
     logging.info("Load training dataset")
     # Create train (always) and validation (only if specified) datasets.
@@ -82,7 +86,7 @@ def segmentation(
 
     logging.info("Create network model")
     model = mp.MSDSegmentationModel(num_labels=train_ds.num_labels)
-    train(model, epochs, train_dl, val_dl)
+    train(model, epochs, train_dl, val_dl, weights_path)
 
 
 @ex.command
@@ -94,6 +98,7 @@ def regression(
     train_target_glob,
     val_input_glob,
     val_target_glob,
+    weights_path,
 ):
     logging.info("Load training dataset")
     # Create train (always) and validation (only if specified) datasets.
@@ -109,7 +114,7 @@ def regression(
 
     logging.info("Create network model")
     model = mp.MSDRegressionModel()
-    train(model, epochs, train_dl, val_dl)
+    train(model, epochs, train_dl, val_dl, weights_path)
 
 
 @ex.command
@@ -129,7 +134,12 @@ def benchmark(msd, batch_size, input_size):
     print(bench("Gradient", t))
 
 
-def train(model, epochs, train_dl, val_dl):
+def train(model, epochs, train_dl, val_dl, weights_path):
+
+    weights_path = Path(weights_path).expanduser().resolve()
+    if weights_path.exists():
+        logging.warning(f"Overwriting weights file {weights_path}")
+
     # The network works best if the input data has mean zero and has a
     # standard deviation of 1. To achieve this, we get a rough estimate of
     # correction parameters from the training data. These parameters are
@@ -159,16 +169,16 @@ def train(model, epochs, train_dl, val_dl):
         # Save network if worthwile
         if validation_error < best_validation_error or val_dl is None:
             best_validation_error = validation_error
-            model.save(f"msd_network_epoch_{epoch}.torch", epoch)
-            ex.add_artifact(f"msd_network_epoch_{epoch}.torch")
+            model.save(f"{weights_path}_epoch_{epoch}.torch", epoch)
+            ex.add_artifact(f"{weights_path}_epoch_{epoch}.torch")
 
         end = timer()
         ex.log_scalar("Iteration time", end - start)
         logging.info(f"{epoch:05} Iteration time: {end-start: 0.6f}")
 
     # Always save final network parameters
-    model.save(f"msd_network_epoch_{epoch}.torch", epoch)
-    ex.add_artifact(f"msd_network_epoch_{epoch}.torch")
+    model.save(f"{weights_path}.torch", epoch)
+    ex.add_artifact(f"{weights_path}.torch")
 
 
 @ex.main

@@ -6,7 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- <insert-features-not-in-a-release-yet>
+- Add weights_path command-line argument to msd executable to indicate
+  where to store final weights.
 ### Fixed
 - <insert-bugs-fixed-not-in-a-release-yet>
 
