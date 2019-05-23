@@ -84,7 +84,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Mixed-scale Dense Networks for PyTorch</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#getting-started">Getting Started</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#requirements">Requirements</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#installing-with-conda">Installing with conda</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installing-with-conda">Installing with Conda</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#installing-from-source">Installing from source</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#using-the-tools">Using the tools</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#running-the-examples">Running the examples</a></li>
@@ -187,9 +187,11 @@ manager</a> for Python 3.</p>
 <p>This package is compatible with python 3.6 and 3.7.</p>
 </div>
 <div class="section" id="installing-with-conda">
-<h3>Installing with conda<a class="headerlink" href="#installing-with-conda" title="Permalink to this headline">¶</a></h3>
-<p>Simply install with:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">aahendriksen</span> <span class="o">-</span><span class="n">c</span> <span class="n">pytorch</span> <span class="n">msd_pytorch</span>
+<h3>Installing with Conda<a class="headerlink" href="#installing-with-conda" title="Permalink to this headline">¶</a></h3>
+<p>Simply install with either cuda version 9.0 or version 10.0:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">aahendriksen</span> <span class="o">-</span><span class="n">c</span> <span class="n">pytorch</span> <span class="n">msd_pytorch</span> <span class="n">cudatoolkit</span><span class="o">=</span><span class="mf">9.0</span>
+<span class="c1"># or</span>
+<span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">aahendriksen</span> <span class="o">-</span><span class="n">c</span> <span class="n">pytorch</span> <span class="n">msd_pytorch</span> <span class="n">cudatoolkit</span><span class="o">=</span><span class="mf">10.0</span>
 </pre></div>
 </div>
 </div>

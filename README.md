@@ -25,11 +25,13 @@ This package requires
 
 This package is compatible with python 3.6 and 3.7.
 
-### Installing with conda
+### Installing with Conda
 
-Simply install with:
+Simply install with either cuda version 9.0 or version 10.0:
 ```
-conda install -c conda-forge -c aahendriksen -c pytorch msd_pytorch
+conda install -c conda-forge -c aahendriksen -c pytorch msd_pytorch cudatoolkit=9.0
+# or
+conda install -c conda-forge -c aahendriksen -c pytorch msd_pytorch cudatoolkit=10.0
 ```
 
 ### Installing from source
