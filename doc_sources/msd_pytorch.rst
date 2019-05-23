@@ -4,10 +4,26 @@ msd\_pytorch package
 Submodules
 ----------
 
+msd\_pytorch.bench module
+-------------------------
+
+.. automodule:: msd_pytorch.bench
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 msd\_pytorch.conv module
 ------------------------
 
 .. automodule:: msd_pytorch.conv
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+msd\_pytorch.conv\_relu module
+------------------------------
+
+.. automodule:: msd_pytorch.conv_relu
     :members:
     :undoc-members:
     :show-inheritance:

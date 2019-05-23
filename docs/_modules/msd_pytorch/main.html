@@ -150,10 +150,13 @@
 <span class="kn">from</span> <span class="nn">os</span> <span class="k">import</span> <span class="n">environ</span>
 <span class="kn">from</span> <span class="nn">sacred</span> <span class="k">import</span> <span class="n">Experiment</span><span class="p">,</span> <span class="n">Ingredient</span>
 <span class="kn">from</span> <span class="nn">timeit</span> <span class="k">import</span> <span class="n">default_timer</span> <span class="k">as</span> <span class="n">timer</span>
+<span class="kn">from</span> <span class="nn">timeit</span> <span class="k">import</span> <span class="n">Timer</span>
 <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="k">import</span> <span class="n">DataLoader</span>
-<span class="kn">import</span> <span class="nn">msd_pytorch</span> <span class="k">as</span> <span class="nn">mp</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.nn</span> <span class="k">import</span> <span class="n">MSELoss</span>
+<span class="kn">import</span> <span class="nn">msd_pytorch</span> <span class="k">as</span> <span class="nn">mp</span>
+<span class="kn">from</span> <span class="nn">.bench</span> <span class="k">import</span> <span class="n">bench</span>
 
 <span class="n">msd_ingredient</span> <span class="o">=</span> <span class="n">Ingredient</span><span class="p">(</span><span class="s2">&quot;msd&quot;</span><span class="p">)</span>
 <span class="n">ex</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">(</span><span class="s2">&quot;MSD&quot;</span><span class="p">,</span> <span class="n">ingredients</span><span class="o">=</span><span class="p">[</span><span class="n">msd_ingredient</span><span class="p">])</span>
@@ -183,35 +186,36 @@
     <span class="n">c_out</span> <span class="o">=</span> <span class="mi">1</span>                    <span class="c1"># Number of output channels (for regression; see `labels` for segmentation)</span>
     <span class="n">depth</span> <span class="o">=</span> <span class="mi">10</span>                   <span class="c1"># The depth of the network</span>
     <span class="n">width</span> <span class="o">=</span> <span class="mi">1</span>                    <span class="c1"># The width of the network</span>
-    <span class="n">dilations</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>  <span class="c1"># The dilation-scheme that is used in the network</span>
+    <span class="n">dilations</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>  <span class="c1"># The dilation-scheme that is used in the network</span>
     <span class="n">loss</span> <span class="o">=</span> <span class="s1">&#39;L2&#39;</span>                  <span class="c1"># Which loss to use for regression (options: &quot;L1&quot; or &quot;L2&quot;)</span>
 
 
 <span class="nd">@ex</span><span class="o">.</span><span class="n">config</span>
 <span class="k">def</span> <span class="nf">ex_config</span><span class="p">():</span>
-    <span class="c1"># Set parameters</span>
-    <span class="n">epochs</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># The number of epochs to train for</span>
+    <span class="n">epochs</span> <span class="o">=</span> <span class="mi">1</span>             <span class="c1"># The number of epochs to train for</span>
+    <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">1</span>         <span class="c1"># The mini-batch size</span>
     <span class="n">train_input_glob</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># The glob pattern for the training set input data</span>
-    <span class="n">train_target_glob</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># The glob pattern for the training set target data</span>
-    <span class="n">val_input_glob</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># The glob pattern for the validation set input data</span>
-    <span class="n">val_target_glob</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># The glob pattern for the validation set input data</span>
+    <span class="n">train_target_glob</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="c1"># The glob pattern for the training set target data</span>
+    <span class="n">val_input_glob</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>    <span class="c1"># The glob pattern for the validation set input data</span>
+    <span class="n">val_target_glob</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>   <span class="c1"># The glob pattern for the validation set input data</span>
 
-    <span class="c1"># Segmentation-specific</span>
+    <span class="c1"># The labels that you expect in your segmentation targets (if you are doing segmentation)</span>
     <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="c1"># Benchmark specific</span>
+    <span class="n">input_size</span> <span class="o">=</span> <span class="mi">1024</span>
 
 
 <div class="viewcode-block" id="segmentation"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.main.segmentation">[docs]</a><span class="nd">@ex</span><span class="o">.</span><span class="n">command</span>
 <span class="k">def</span> <span class="nf">segmentation</span><span class="p">(</span>
     <span class="n">msd</span><span class="p">,</span>
     <span class="n">epochs</span><span class="p">,</span>
+    <span class="n">labels</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="p">,</span>
     <span class="n">train_input_glob</span><span class="p">,</span>
     <span class="n">train_target_glob</span><span class="p">,</span>
     <span class="n">val_input_glob</span><span class="p">,</span>
     <span class="n">val_target_glob</span><span class="p">,</span>
-    <span class="n">labels</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">1</span>
-
     <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Load training dataset&quot;</span><span class="p">)</span>
     <span class="c1"># Create train (always) and validation (only if specified) datasets.</span>
     <span class="n">train_ds</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">ImageDataset</span><span class="p">(</span><span class="n">train_input_glob</span><span class="p">,</span> <span class="n">train_target_glob</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
@@ -231,10 +235,14 @@
 
 <div class="viewcode-block" id="regression"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.main.regression">[docs]</a><span class="nd">@ex</span><span class="o">.</span><span class="n">command</span>
 <span class="k">def</span> <span class="nf">regression</span><span class="p">(</span>
-    <span class="n">msd</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">train_input_glob</span><span class="p">,</span> <span class="n">train_target_glob</span><span class="p">,</span> <span class="n">val_input_glob</span><span class="p">,</span> <span class="n">val_target_glob</span>
+    <span class="n">msd</span><span class="p">,</span>
+    <span class="n">epochs</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="p">,</span>
+    <span class="n">train_input_glob</span><span class="p">,</span>
+    <span class="n">train_target_glob</span><span class="p">,</span>
+    <span class="n">val_input_glob</span><span class="p">,</span>
+    <span class="n">val_target_glob</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">1</span>
-
     <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Load training dataset&quot;</span><span class="p">)</span>
     <span class="c1"># Create train (always) and validation (only if specified) datasets.</span>
     <span class="n">train_ds</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">ImageDataset</span><span class="p">(</span><span class="n">train_input_glob</span><span class="p">,</span> <span class="n">train_target_glob</span><span class="p">)</span>
@@ -250,6 +258,23 @@
     <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Create network model&quot;</span><span class="p">)</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">MSDRegressionModel</span><span class="p">()</span>
     <span class="n">train</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">train_dl</span><span class="p">,</span> <span class="n">val_dl</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="benchmark"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.main.benchmark">[docs]</a><span class="nd">@ex</span><span class="o">.</span><span class="n">command</span>
+<span class="k">def</span> <span class="nf">benchmark</span><span class="p">(</span><span class="n">msd</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">input_size</span><span class="p">):</span>
+    <span class="n">inp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">msd</span><span class="p">[</span><span class="s2">&quot;c_in&quot;</span><span class="p">],</span> <span class="n">input_size</span><span class="p">,</span> <span class="n">input_size</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+    <span class="n">tgt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">msd</span><span class="p">[</span><span class="s2">&quot;c_out&quot;</span><span class="p">],</span> <span class="n">input_size</span><span class="p">,</span> <span class="n">input_size</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">MSDRegressionModel</span><span class="p">()</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">Timer</span><span class="p">(</span><span class="n">stmt</span><span class="o">=</span><span class="s2">&quot;model.net(inp)&quot;</span><span class="p">,</span> <span class="nb">globals</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;inp&quot;</span><span class="p">:</span> <span class="n">inp</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">model</span><span class="p">})</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">bench</span><span class="p">(</span><span class="s2">&quot;Forward&quot;</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span>
+
+    <span class="n">mse</span> <span class="o">=</span> <span class="n">MSELoss</span><span class="p">()</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">Timer</span><span class="p">(</span>
+        <span class="n">stmt</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;result = model.net(inp);&quot;</span> <span class="s2">&quot;loss = mse(result, tgt);&quot;</span> <span class="s2">&quot;loss.backward()&quot;</span><span class="p">),</span>
+        <span class="nb">globals</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;inp&quot;</span><span class="p">:</span> <span class="n">inp</span><span class="p">,</span> <span class="s2">&quot;tgt&quot;</span><span class="p">:</span> <span class="n">tgt</span><span class="p">,</span> <span class="s2">&quot;mse&quot;</span><span class="p">:</span> <span class="n">mse</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">model</span><span class="p">},</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">bench</span><span class="p">(</span><span class="s2">&quot;Gradient&quot;</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="train"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.main.train">[docs]</a><span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">train_dl</span><span class="p">,</span> <span class="n">val_dl</span><span class="p">):</span>
@@ -282,7 +307,7 @@
         <span class="c1"># Save network if worthwile</span>
         <span class="k">if</span> <span class="n">validation_error</span> <span class="o">&lt;</span> <span class="n">best_validation_error</span> <span class="ow">or</span> <span class="n">val_dl</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">best_validation_error</span> <span class="o">=</span> <span class="n">validation_error</span>
-            <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;msd_network_epoch_</span><span class="si">{epoch}</span><span class="s2">.torch&quot;</span><span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;msd_network_epoch_</span><span class="si">{epoch}</span><span class="s2">.torch&quot;</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
             <span class="n">ex</span><span class="o">.</span><span class="n">add_artifact</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;msd_network_epoch_</span><span class="si">{epoch}</span><span class="s2">.torch&quot;</span><span class="p">)</span>
 
         <span class="n">end</span> <span class="o">=</span> <span class="n">timer</span><span class="p">()</span>
@@ -290,13 +315,65 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{epoch:05}</span><span class="s2"> Iteration time: {end-start: 0.6f}&quot;</span><span class="p">)</span>
 
     <span class="c1"># Always save final network parameters</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;msd_network_epoch_</span><span class="si">{epoch}</span><span class="s2">.torch&quot;</span><span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;msd_network_epoch_</span><span class="si">{epoch}</span><span class="s2">.torch&quot;</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
     <span class="n">ex</span><span class="o">.</span><span class="n">add_artifact</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;msd_network_epoch_</span><span class="si">{epoch}</span><span class="s2">.torch&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="experiment_main"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.main.experiment_main">[docs]</a><span class="nd">@ex</span><span class="o">.</span><span class="n">main</span>
 <span class="k">def</span> <span class="nf">experiment_main</span><span class="p">():</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Experiment main!&quot;</span><span class="p">)</span></div>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">MSD</span>
+<span class="sd">---</span>
+
+<span class="sd">If you have input and target images in directories</span>
+<span class="sd">`./train/input/` and `./train/target/`, then you can train a network</span>
+<span class="sd">to do regression with the following command in your terminal:</span>
+
+<span class="sd">&gt; msd regression -p with train_input_glob=&#39;./train/input/*&#39; train_target_glob=&#39;./train/target/*&#39; epochs=10 msd.depth=30</span>
+
+<span class="sd">Similarly, segmentation is possible using the following command:</span>
+
+<span class="sd">&gt; msd segmentation -p with train_input_glob=&#39;./train/input/*&#39; train_target_glob=&#39;./train/target/*&#39; epochs=10 msd.depth=30 labels=[0,1,2,3]</span>
+
+<span class="sd">More command-line arguments are available</span>
+
+<span class="sd">epochs = 1                         # The number of epochs to train for</span>
+<span class="sd">labels = [0, 1]                    # The labels that you expect in your segmentation targets (if you are doing segmentation)</span>
+<span class="sd">train_input_glob = &#39;&#39;              # The glob pattern for the training set input data</span>
+<span class="sd">train_target_glob = &#39;&#39;             # The glob pattern for the training set target data</span>
+<span class="sd">val_input_glob = &#39;&#39;                # The glob pattern for the validation set input data</span>
+<span class="sd">val_target_glob = &#39;&#39;               # The glob pattern for the validation set input data</span>
+<span class="sd">msd:</span>
+<span class="sd">  c_in = 1                         # Number of input channels</span>
+<span class="sd">  c_out = 1                        # Number of output channels (for regression; see `labels` for segmentation)</span>
+<span class="sd">  depth = 10                       # The depth of the network</span>
+<span class="sd">  width = 1                        # The width of the network</span>
+<span class="sd">  dilations = [1, 2, ..., 10]      # The dilation-scheme that is used in the network</span>
+<span class="sd">  loss = &#39;L2&#39;                      # Which loss to use for regression (options: &quot;L1&quot; or &quot;L2&quot;)</span>
+
+
+<span class="sd">The path specification for the images is a path with optional glob</span>
+<span class="sd">pattern describing the image file paths. Tildes and other HOME</span>
+<span class="sd">directory specifications are expanded with `os.path.expanduser` and</span>
+<span class="sd">symlinks are resolved.</span>
+
+<span class="sd">If the path points to a directory, then all files in the directory are</span>
+<span class="sd">included. If the path points to file, then that single file is</span>
+<span class="sd">included.</span>
+
+<span class="sd">Alternatively, one may specify a &quot;glob pattern&quot; to match</span>
+<span class="sd">specific files in the directory.</span>
+
+<span class="sd">Examples:</span>
+
+<span class="sd">* &quot;~/train_images/&quot;</span>
+<span class="sd">* &quot;~/train_images/cats*.png&quot;</span>
+<span class="sd">* &quot;~/train_images/*.tif&quot;</span>
+<span class="sd">* &quot;~/train_images/scan*&quot;</span>
+<span class="sd">* &quot;~/train_images/just_one_image.jpeg&quot;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+    <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="main_function"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.main.main_function">[docs]</a><span class="k">def</span> <span class="nf">main_function</span><span class="p">():</span>

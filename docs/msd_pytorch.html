@@ -86,7 +86,9 @@
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">msd_pytorch</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">msd_pytorch package</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-msd_pytorch.bench">msd_pytorch.bench module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-msd_pytorch.conv">msd_pytorch.conv module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-msd_pytorch.conv_relu">msd_pytorch.conv_relu module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-msd_pytorch.errors">msd_pytorch.errors module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-msd_pytorch.image_dataset">msd_pytorch.image_dataset module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-msd_pytorch.main">msd_pytorch.main module</a></li>
@@ -173,6 +175,42 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
+<div class="section" id="module-msd_pytorch.bench">
+<span id="msd-pytorch-bench-module"></span><h2>msd_pytorch.bench module<a class="headerlink" href="#module-msd_pytorch.bench" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="msd_pytorch.bench.TimeitResult">
+<em class="property">class </em><code class="descclassname">msd_pytorch.bench.</code><code class="descname">TimeitResult</code><span class="sig-paren">(</span><em>name</em>, <em>loops</em>, <em>repeat</em>, <em>best</em>, <em>worst</em>, <em>all_runs</em>, <em>precision=3</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/bench.html#TimeitResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.bench.TimeitResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Object returned by the timeit magic with info about the run.</p>
+<p>Contains the following attributes :</p>
+<p>loops: (int) number of loops done per measurement
+repeat: (int) number of times the measurement has been repeated
+best: (float) best execution time / number
+all_runs: (list of float) execution time of each run (in s)</p>
+<dl class="method">
+<dt id="msd_pytorch.bench.TimeitResult.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>name</em>, <em>loops</em>, <em>repeat</em>, <em>best</em>, <em>worst</em>, <em>all_runs</em>, <em>precision=3</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/bench.html#TimeitResult.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.bench.TimeitResult.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="msd_pytorch.bench.TimeitResult.average">
+<code class="descname">average</code><a class="headerlink" href="#msd_pytorch.bench.TimeitResult.average" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="msd_pytorch.bench.TimeitResult.stdev">
+<code class="descname">stdev</code><a class="headerlink" href="#msd_pytorch.bench.TimeitResult.stdev" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="msd_pytorch.bench.bench">
+<code class="descclassname">msd_pytorch.bench.</code><code class="descname">bench</code><span class="sig-paren">(</span><em>name</em>, <em>timer</em>, <em>repeat=3</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/bench.html#bench"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.bench.bench" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
 <div class="section" id="module-msd_pytorch.conv">
 <span id="msd-pytorch-conv-module"></span><h2>msd_pytorch.conv module<a class="headerlink" href="#module-msd_pytorch.conv" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
@@ -239,6 +277,75 @@ registered hooks while the latter silently ignores them.</p>
 <dl class="function">
 <dt id="msd_pytorch.conv.conv2dInPlace">
 <code class="descclassname">msd_pytorch.conv.</code><code class="descname">conv2dInPlace</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#msd_pytorch.conv.conv2dInPlace" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-msd_pytorch.conv_relu">
+<span id="msd-pytorch-conv-relu-module"></span><h2>msd_pytorch.conv_relu module<a class="headerlink" href="#module-msd_pytorch.conv_relu" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="msd_pytorch.conv_relu.ConvRelu2dInPlaceFunction">
+<em class="property">class </em><code class="descclassname">msd_pytorch.conv_relu.</code><code class="descname">ConvRelu2dInPlaceFunction</code><a class="reference internal" href="_modules/msd_pytorch/conv_relu.html#ConvRelu2dInPlaceFunction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.conv_relu.ConvRelu2dInPlaceFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.autograd.function.Function</span></code></p>
+<dl class="staticmethod">
+<dt id="msd_pytorch.conv_relu.ConvRelu2dInPlaceFunction.backward">
+<em class="property">static </em><code class="descname">backward</code><span class="sig-paren">(</span><em>ctx</em>, <em>grad_output</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/conv_relu.html#ConvRelu2dInPlaceFunction.backward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.conv_relu.ConvRelu2dInPlaceFunction.backward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines a formula for differentiating the operation.</p>
+<p>This function is to be overridden by all subclasses.</p>
+<p>It must accept a context <code class="xref py py-attr docutils literal notranslate"><span class="pre">ctx</span></code> as the first argument, followed by
+as many outputs did <a class="reference internal" href="#msd_pytorch.conv_relu.ConvRelu2dInPlaceFunction.forward" title="msd_pytorch.conv_relu.ConvRelu2dInPlaceFunction.forward"><code class="xref py py-func docutils literal notranslate"><span class="pre">forward()</span></code></a> return, and it should return as many
+tensors, as there were inputs to <a class="reference internal" href="#msd_pytorch.conv_relu.ConvRelu2dInPlaceFunction.forward" title="msd_pytorch.conv_relu.ConvRelu2dInPlaceFunction.forward"><code class="xref py py-func docutils literal notranslate"><span class="pre">forward()</span></code></a>. Each argument is the
+gradient w.r.t the given output, and each returned value should be the
+gradient w.r.t. the corresponding input.</p>
+<p>The context can be used to retrieve tensors saved during the forward
+pass. It also has an attribute <code class="xref py py-attr docutils literal notranslate"><span class="pre">ctx.needs_input_grad</span></code> as a tuple
+of booleans representing whether each input needs gradient. E.g.,
+<a class="reference internal" href="#msd_pytorch.conv_relu.ConvRelu2dInPlaceFunction.backward" title="msd_pytorch.conv_relu.ConvRelu2dInPlaceFunction.backward"><code class="xref py py-func docutils literal notranslate"><span class="pre">backward()</span></code></a> will have <code class="docutils literal notranslate"><span class="pre">ctx.needs_input_grad[0]</span> <span class="pre">=</span> <span class="pre">True</span></code> if the
+first input to <a class="reference internal" href="#msd_pytorch.conv_relu.ConvRelu2dInPlaceFunction.forward" title="msd_pytorch.conv_relu.ConvRelu2dInPlaceFunction.forward"><code class="xref py py-func docutils literal notranslate"><span class="pre">forward()</span></code></a> needs gradient computated w.r.t. the
+output.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="msd_pytorch.conv_relu.ConvRelu2dInPlaceFunction.forward">
+<em class="property">static </em><code class="descname">forward</code><span class="sig-paren">(</span><em>ctx</em>, <em>input</em>, <em>weight</em>, <em>bias</em>, <em>output</em>, <em>stride</em>, <em>dilation</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/conv_relu.html#ConvRelu2dInPlaceFunction.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.conv_relu.ConvRelu2dInPlaceFunction.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs the operation.</p>
+<p>This function is to be overridden by all subclasses.</p>
+<p>It must accept a context ctx as the first argument, followed by any
+number of arguments (tensors or other types).</p>
+<p>The context can be used to store tensors that can be then retrieved
+during the backward pass.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="msd_pytorch.conv_relu.ConvRelu2dInPlaceModule">
+<em class="property">class </em><code class="descclassname">msd_pytorch.conv_relu.</code><code class="descname">ConvRelu2dInPlaceModule</code><span class="sig-paren">(</span><em>output</em>, <em>in_channels</em>, <em>out_channels</em>, <em>kernel_size=3</em>, <em>dilation=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/conv_relu.html#ConvRelu2dInPlaceModule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.conv_relu.ConvRelu2dInPlaceModule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<dl class="method">
+<dt id="msd_pytorch.conv_relu.ConvRelu2dInPlaceModule.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>output</em>, <em>in_channels</em>, <em>out_channels</em>, <em>kernel_size=3</em>, <em>dilation=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/conv_relu.html#ConvRelu2dInPlaceModule.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.conv_relu.ConvRelu2dInPlaceModule.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.conv_relu.ConvRelu2dInPlaceModule.forward">
+<code class="descname">forward</code><span class="sig-paren">(</span><em>input</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/conv_relu.html#ConvRelu2dInPlaceModule.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.conv_relu.ConvRelu2dInPlaceModule.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="msd_pytorch.conv_relu.conv_relu2dInPlace">
+<code class="descclassname">msd_pytorch.conv_relu.</code><code class="descname">conv_relu2dInPlace</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#msd_pytorch.conv_relu.conv_relu2dInPlace" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -514,6 +621,11 @@ RuntimeError.</p>
 <div class="section" id="module-msd_pytorch.main">
 <span id="msd-pytorch-main-module"></span><h2>msd_pytorch.main module<a class="headerlink" href="#module-msd_pytorch.main" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
+<dt id="msd_pytorch.main.benchmark">
+<code class="descclassname">msd_pytorch.main.</code><code class="descname">benchmark</code><span class="sig-paren">(</span><em>msd</em>, <em>batch_size</em>, <em>input_size</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/main.html#benchmark"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.main.benchmark" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="msd_pytorch.main.experiment_main">
 <code class="descclassname">msd_pytorch.main.</code><code class="descname">experiment_main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/main.html#experiment_main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.main.experiment_main" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -525,12 +637,12 @@ RuntimeError.</p>
 
 <dl class="function">
 <dt id="msd_pytorch.main.regression">
-<code class="descclassname">msd_pytorch.main.</code><code class="descname">regression</code><span class="sig-paren">(</span><em>msd</em>, <em>epochs</em>, <em>train_input_glob</em>, <em>train_target_glob</em>, <em>val_input_glob</em>, <em>val_target_glob</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/main.html#regression"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.main.regression" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">msd_pytorch.main.</code><code class="descname">regression</code><span class="sig-paren">(</span><em>msd</em>, <em>epochs</em>, <em>batch_size</em>, <em>train_input_glob</em>, <em>train_target_glob</em>, <em>val_input_glob</em>, <em>val_target_glob</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/main.html#regression"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.main.regression" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="msd_pytorch.main.segmentation">
-<code class="descclassname">msd_pytorch.main.</code><code class="descname">segmentation</code><span class="sig-paren">(</span><em>msd</em>, <em>epochs</em>, <em>train_input_glob</em>, <em>train_target_glob</em>, <em>val_input_glob</em>, <em>val_target_glob</em>, <em>labels</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/main.html#segmentation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.main.segmentation" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">msd_pytorch.main.</code><code class="descname">segmentation</code><span class="sig-paren">(</span><em>msd</em>, <em>epochs</em>, <em>labels</em>, <em>batch_size</em>, <em>train_input_glob</em>, <em>train_target_glob</em>, <em>val_input_glob</em>, <em>val_target_glob</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/main.html#segmentation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.main.segmentation" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -717,9 +829,9 @@ called, <code class="docutils literal notranslate"><span class="pre">None</span>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> – The filesystem path where the network parameters are stored.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the number of epochs the network has trained for.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">int</td>
 </tr>
 </tbody>
 </table>
@@ -733,17 +845,23 @@ called, <code class="docutils literal notranslate"><span class="pre">None</span>
 
 <dl class="method">
 <dt id="msd_pytorch.msd_model.MSDModel.save">
-<code class="descname">save</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_model.html#MSDModel.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_model.MSDModel.save" title="Permalink to this definition">¶</a></dt>
+<code class="descname">save</code><span class="sig-paren">(</span><em>path</em>, <em>epoch</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_model.html#MSDModel.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_model.MSDModel.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save network to disk.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> – A filesystem path where the network parameters are stored.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>path</strong> – A filesystem path where the network parameters are stored.</li>
+<li><strong>epoch</strong> – The number of epochs the network has trained for. This is useful for reloading!</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Nothing</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Nothing</p>
+</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"></p>
+</td>
 </tr>
 </tbody>
 </table>

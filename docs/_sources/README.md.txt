@@ -9,27 +9,27 @@ brief overview of its features and limitations.
 * Free software: GNU General Public License v3
 * Documentation: [https://ahendriksen.github.io/msd_pytorch]
 
-## Readiness
-
-The author of this package is in the process of setting up this
-package for optimal usability. The following has already been completed:
-
-- [ ] An initial release
-	- In `CHANGELOG.md`, a release date has been added to v0.1.0 (change the YYYY-MM-DD).
-	- The release has been marked a release on GitHub.
-	- For more info, see the [Software Release Guide](https://cicwi.github.io/software-guides/software-release-guide).
-
 ## Getting Started
 
 It takes a few steps to setup Mixed-scale Dense Networks for PyTorch
 on your machine. We recommend installing [Anaconda package
 manager](https://www.anaconda.com/download/) for Python 3.
 
+### Requirements
+
+This package requires
+
+- Linux x64
+- CUDA 9.0 and/or 10.0 compatible graphics card
+- [Anaconda package manager](https://www.anaconda.com/download/)
+
+This package is compatible with python 3.6 and 3.7.
+
 ### Installing with conda
 
 Simply install with:
 ```
-conda install -c aahendriksen -c pytorch msd_pytorch
+conda install -c conda-forge -c aahendriksen -c pytorch msd_pytorch
 ```
 
 ### Installing from source
@@ -39,12 +39,11 @@ installed. Specifically, you need `nvcc` and a compatible C++
 compiler. Moreover, you need to have a working installation of
 PyTorch.
 
-To isntall PyTorch, we recommend using conda. Install PyTorch with
+To install PyTorch, we recommend using conda. Install PyTorch with
 either of these versions of cudatoolkit:
 ``` shell
-conda install pytorch=1.0.1 torchvision cudatoolkit=10.0 -c pytorch
-conda install pytorch=1.0.1 torchvision cudatoolkit=9.0 -c pytorch
-conda install pytorch=1.0.1 torchvision cudatoolkit=8.0 -c pytorch
+conda install pytorch=1.1.0 torchvision cudatoolkit=10.0 -c pytorch
+conda install pytorch=1.1.0 torchvision cudatoolkit=9.0  -c pytorch
 ```
 
 To get the source code, simply clone this GitHub project.

@@ -82,8 +82,8 @@
             
               <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Mixed-scale Dense Networks for PyTorch</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#readiness">Readiness</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#getting-started">Getting Started</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#installing-with-conda">Installing with conda</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#installing-from-source">Installing from source</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#using-the-tools">Using the tools</a></li>
@@ -171,28 +171,25 @@ brief overview of its features and limitations.</p>
 <li>Free software: GNU General Public License v3</li>
 <li>Documentation: [https://ahendriksen.github.io/msd_pytorch]</li>
 </ul>
-<div class="section" id="readiness">
-<h2>Readiness<a class="headerlink" href="#readiness" title="Permalink to this headline">¶</a></h2>
-<p>The author of this package is in the process of setting up this
-package for optimal usability. The following has already been completed:</p>
-<ul class="simple">
-<li>[ ] An initial release<ul>
-<li>In <code class="docutils literal notranslate"><span class="pre">CHANGELOG.md</span></code>, a release date has been added to v0.1.0 (change the YYYY-MM-DD).</li>
-<li>The release has been marked a release on GitHub.</li>
-<li>For more info, see the <a class="reference external" href="https://cicwi.github.io/software-guides/software-release-guide">Software Release Guide</a>.</li>
-</ul>
-</li>
-</ul>
-</div>
 <div class="section" id="getting-started">
 <h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
 <p>It takes a few steps to setup Mixed-scale Dense Networks for PyTorch
 on your machine. We recommend installing <a class="reference external" href="https://www.anaconda.com/download/">Anaconda package
 manager</a> for Python 3.</p>
+<div class="section" id="requirements">
+<h3>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h3>
+<p>This package requires</p>
+<ul class="simple">
+<li>Linux x64</li>
+<li>CUDA 9.0 and/or 10.0 compatible graphics card</li>
+<li><a class="reference external" href="https://www.anaconda.com/download/">Anaconda package manager</a></li>
+</ul>
+<p>This package is compatible with python 3.6 and 3.7.</p>
+</div>
 <div class="section" id="installing-with-conda">
 <h3>Installing with conda<a class="headerlink" href="#installing-with-conda" title="Permalink to this headline">¶</a></h3>
 <p>Simply install with:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">aahendriksen</span> <span class="o">-</span><span class="n">c</span> <span class="n">pytorch</span> <span class="n">msd_pytorch</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">aahendriksen</span> <span class="o">-</span><span class="n">c</span> <span class="n">pytorch</span> <span class="n">msd_pytorch</span>
 </pre></div>
 </div>
 </div>
@@ -202,11 +199,10 @@ manager</a> for Python 3.</p>
 installed. Specifically, you need <code class="docutils literal notranslate"><span class="pre">nvcc</span></code> and a compatible C++
 compiler. Moreover, you need to have a working installation of
 PyTorch.</p>
-<p>To isntall PyTorch, we recommend using conda. Install PyTorch with
+<p>To install PyTorch, we recommend using conda. Install PyTorch with
 either of these versions of cudatoolkit:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>conda install <span class="nv">pytorch</span><span class="o">=</span><span class="m">1</span>.0.1 torchvision <span class="nv">cudatoolkit</span><span class="o">=</span><span class="m">10</span>.0 -c pytorch
-conda install <span class="nv">pytorch</span><span class="o">=</span><span class="m">1</span>.0.1 torchvision <span class="nv">cudatoolkit</span><span class="o">=</span><span class="m">9</span>.0 -c pytorch
-conda install <span class="nv">pytorch</span><span class="o">=</span><span class="m">1</span>.0.1 torchvision <span class="nv">cudatoolkit</span><span class="o">=</span><span class="m">8</span>.0 -c pytorch
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>conda install <span class="nv">pytorch</span><span class="o">=</span><span class="m">1</span>.1.0 torchvision <span class="nv">cudatoolkit</span><span class="o">=</span><span class="m">10</span>.0 -c pytorch
+conda install <span class="nv">pytorch</span><span class="o">=</span><span class="m">1</span>.1.0 torchvision <span class="nv">cudatoolkit</span><span class="o">=</span><span class="m">9</span>.0  -c pytorch
 </pre></div>
 </div>
 <p>To get the source code, simply clone this GitHub project.</p>

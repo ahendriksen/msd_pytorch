@@ -1,0 +1,306 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>msd_pytorch.bench &mdash; Mixed-scale Dense Networks for PyTorch  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Mixed-scale Dense Networks for PyTorch
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">Mixed-scale Dense Networks for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">msd_pytorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../CHANGELOG.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Mixed-scale Dense Networks for PyTorch</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>msd_pytorch.bench</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for msd_pytorch.bench</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">timeit</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+
+<span class="k">def</span> <span class="nf">_format_time</span><span class="p">(</span><span class="n">timespan</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Formats the timespan in a human readable form&quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">timespan</span> <span class="o">&gt;=</span> <span class="mf">60.0</span><span class="p">:</span>
+        <span class="c1"># we have more than a minute, format that in a human readable form</span>
+        <span class="c1"># Idea from http://snipplr.com/view/5713/</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;d&quot;</span><span class="p">,</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">24</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="mi">60</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">leftover</span> <span class="o">=</span> <span class="n">timespan</span>
+        <span class="k">for</span> <span class="n">suffix</span><span class="p">,</span> <span class="n">length</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">leftover</span> <span class="o">/</span> <span class="n">length</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">leftover</span> <span class="o">=</span> <span class="n">leftover</span> <span class="o">%</span> <span class="n">length</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">u</span><span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">),</span> <span class="n">suffix</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">leftover</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">break</span>
+        <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+
+    <span class="c1"># Unfortunately the unicode &#39;micro&#39; symbol can cause problems in</span>
+    <span class="c1"># certain terminals.</span>
+    <span class="c1"># See bug: https://bugs.launchpad.net/ipython/+bug/348466</span>
+    <span class="c1"># Try to prevent crashes by being more secure than it needs to</span>
+    <span class="c1"># E.g. eclipse is able to print a µ, but has no sys.stdout.encoding set.</span>
+    <span class="n">units</span> <span class="o">=</span> <span class="p">[</span><span class="sa">u</span><span class="s2">&quot;s&quot;</span><span class="p">,</span> <span class="sa">u</span><span class="s2">&quot;ms&quot;</span><span class="p">,</span> <span class="sa">u</span><span class="s2">&quot;us&quot;</span><span class="p">,</span> <span class="s2">&quot;ns&quot;</span><span class="p">]</span>  <span class="c1"># the save value</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;encoding&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">encoding</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="sa">u</span><span class="s2">&quot;</span><span class="se">\xb5</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">encoding</span><span class="p">)</span>
+            <span class="n">units</span> <span class="o">=</span> <span class="p">[</span><span class="sa">u</span><span class="s2">&quot;s&quot;</span><span class="p">,</span> <span class="sa">u</span><span class="s2">&quot;ms&quot;</span><span class="p">,</span> <span class="sa">u</span><span class="s2">&quot;</span><span class="se">\xb5</span><span class="s2">s&quot;</span><span class="p">,</span> <span class="s2">&quot;ns&quot;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+    <span class="n">scaling</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1e3</span><span class="p">,</span> <span class="mf">1e6</span><span class="p">,</span> <span class="mf">1e9</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">timespan</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="n">order</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="o">-</span><span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">timespan</span><span class="p">))</span> <span class="o">//</span> <span class="mi">3</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">order</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="k">return</span> <span class="sa">u</span><span class="s2">&quot;</span><span class="si">%.*g</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">precision</span><span class="p">,</span> <span class="n">timespan</span> <span class="o">*</span> <span class="n">scaling</span><span class="p">[</span><span class="n">order</span><span class="p">],</span> <span class="n">units</span><span class="p">[</span><span class="n">order</span><span class="p">])</span>
+
+
+<div class="viewcode-block" id="TimeitResult"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.bench.TimeitResult">[docs]</a><span class="k">class</span> <span class="nc">TimeitResult</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Object returned by the timeit magic with info about the run.</span>
+
+<span class="sd">    Contains the following attributes :</span>
+
+<span class="sd">    loops: (int) number of loops done per measurement</span>
+<span class="sd">    repeat: (int) number of times the measurement has been repeated</span>
+<span class="sd">    best: (float) best execution time / number</span>
+<span class="sd">    all_runs: (list of float) execution time of each run (in s)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TimeitResult.__init__"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.bench.TimeitResult.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">loops</span><span class="p">,</span> <span class="n">repeat</span><span class="p">,</span> <span class="n">best</span><span class="p">,</span> <span class="n">worst</span><span class="p">,</span> <span class="n">all_runs</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loops</span> <span class="o">=</span> <span class="n">loops</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">repeat</span> <span class="o">=</span> <span class="n">repeat</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best</span> <span class="o">=</span> <span class="n">best</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worst</span> <span class="o">=</span> <span class="n">worst</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_runs</span> <span class="o">=</span> <span class="n">all_runs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_precision</span> <span class="o">=</span> <span class="n">precision</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timings</span> <span class="o">=</span> <span class="p">[</span><span class="n">dt</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">loops</span> <span class="k">for</span> <span class="n">dt</span> <span class="ow">in</span> <span class="n">all_runs</span><span class="p">]</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">average</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">fsum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">timings</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">timings</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">stdev</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">average</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">math</span><span class="o">.</span><span class="n">fsum</span><span class="p">([(</span><span class="n">x</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">timings</span><span class="p">])</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">timings</span><span class="p">)</span>
+        <span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">pm</span> <span class="o">=</span> <span class="s2">&quot;+-&quot;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;encoding&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">encoding</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="sa">u</span><span class="s2">&quot;</span><span class="se">\xb1</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">encoding</span><span class="p">)</span>
+                <span class="n">pm</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;</span><span class="se">\xb1</span><span class="s2">&quot;</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="k">return</span> <span class="sa">u</span><span class="s2">&quot;</span><span class="si">{name:&lt;30}{mean:&lt;7}</span><span class="s2"> </span><span class="si">{pm}</span><span class="s2"> </span><span class="si">{std:&lt;7}</span><span class="s2"> per loop (mean </span><span class="si">{pm}</span><span class="s2"> std. dev. of </span><span class="si">{runs}</span><span class="s2"> run</span><span class="si">{run_plural}</span><span class="s2">, </span><span class="si">{loops}</span><span class="s2"> loop</span><span class="si">{loop_plural}</span><span class="s2"> each)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span><span class="p">,</span>
+            <span class="n">pm</span><span class="o">=</span><span class="n">pm</span><span class="p">,</span>
+            <span class="n">runs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">repeat</span><span class="p">,</span>
+            <span class="n">loops</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loops</span><span class="p">,</span>
+            <span class="n">loop_plural</span><span class="o">=</span><span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">loops</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">&quot;s&quot;</span><span class="p">,</span>
+            <span class="n">run_plural</span><span class="o">=</span><span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">repeat</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">&quot;s&quot;</span><span class="p">,</span>
+            <span class="n">mean</span><span class="o">=</span><span class="n">_format_time</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">average</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_precision</span><span class="p">),</span>
+            <span class="n">std</span><span class="o">=</span><span class="n">_format_time</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdev</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_precision</span><span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_repr_pretty_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">cycle</span><span class="p">):</span>
+        <span class="n">unic</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="sa">u</span><span class="s2">&quot;&lt;TimeitResult : &quot;</span> <span class="o">+</span> <span class="n">unic</span> <span class="o">+</span> <span class="sa">u</span><span class="s2">&quot;&gt;&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="bench"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.bench.bench">[docs]</a><span class="k">def</span> <span class="nf">bench</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">timer</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="n">timeit</span><span class="o">.</span><span class="n">default_repeat</span><span class="p">):</span>
+    <span class="n">number</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># determine number so that 0.2 &lt;= total time &lt; 2.0</span>
+    <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">):</span>
+        <span class="n">number</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">index</span>
+        <span class="n">time_number</span> <span class="o">=</span> <span class="n">timer</span><span class="o">.</span><span class="n">timeit</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">time_number</span> <span class="o">&gt;=</span> <span class="mf">0.2</span><span class="p">:</span>
+            <span class="k">break</span>
+
+    <span class="n">all_runs</span> <span class="o">=</span> <span class="n">timer</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">repeat</span><span class="p">,</span> <span class="n">number</span><span class="p">)</span>
+    <span class="n">best</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">all_runs</span><span class="p">)</span> <span class="o">/</span> <span class="n">number</span>
+    <span class="n">worst</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">all_runs</span><span class="p">)</span> <span class="o">/</span> <span class="n">number</span>
+    <span class="n">timeit_result</span> <span class="o">=</span> <span class="n">TimeitResult</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">number</span><span class="p">,</span> <span class="n">repeat</span><span class="p">,</span> <span class="n">best</span><span class="p">,</span> <span class="n">worst</span><span class="p">,</span> <span class="n">all_runs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">timeit_result</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Allard Hendriksen
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

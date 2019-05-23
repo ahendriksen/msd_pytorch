@@ -210,8 +210,8 @@ example trains an MSD regression or segmentation network on a dataset.</p>
 <span class="n">epochs</span> <span class="o">=</span> <span class="mi">10</span>
 <span class="c1"># Which task to perform. Can be &quot;regression&quot; or &quot;segmentation&quot;</span>
 <span class="n">task</span> <span class="o">=</span> <span class="s2">&quot;segmentation&quot;</span>
-<span class="c1"># Currently, the MSD_pytorch network only supports a batch size of 1.</span>
-<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="c1"># The mini-batch size used in training.</span>
+<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">3</span>
 
 <span class="c1">###############################################################################</span>
 <span class="c1">#                                 Loading data                                #</span>
@@ -275,13 +275,13 @@ example trains an MSD regression or segmentation network on a dataset.</p>
     <span class="c1"># Save network if worthwile</span>
     <span class="k">if</span> <span class="n">validation_error</span> <span class="o">&lt;</span> <span class="n">best_validation_error</span> <span class="ow">or</span> <span class="n">val_dl</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">best_validation_error</span> <span class="o">=</span> <span class="n">validation_error</span>
-        <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;msd_network_epoch_{epoch}.torch&quot;</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;msd_network_epoch_{epoch}.torch&quot;</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
 
 <span class="c1"># Save final network parameters</span>
-<span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;msd_network_epoch_{epoch}.torch&quot;</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;msd_network_epoch_{epoch}.torch&quot;</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
 
 <span class="c1"># The parameters can be reloaded again:</span>
-<span class="n">model</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;msd_network_epoch_{epoch}.torch&quot;</span><span class="p">)</span>
+<span class="n">epoch</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;msd_network_epoch_{epoch}.torch&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>

@@ -149,10 +149,13 @@
 <span></span><span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">msd_pytorch.conv</span> <span class="k">import</span> <span class="n">Conv2dInPlaceModule</span>
+<span class="kn">from</span> <span class="nn">msd_pytorch.conv_relu</span> <span class="k">import</span> <span class="n">ConvRelu2dInPlaceModule</span>
 <span class="kn">from</span> <span class="nn">msd_pytorch.stitch</span> <span class="k">import</span> <span class="n">stitchLazy</span><span class="p">,</span> <span class="n">StitchCopyModule</span><span class="p">,</span> <span class="n">StitchBuffer</span>
 <span class="kn">from</span> <span class="nn">msd_pytorch.relu_inplace</span> <span class="k">import</span> <span class="n">ReLUInplaceModule</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">sqrt</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">use_conv_relu</span> <span class="o">=</span> <span class="kc">True</span>
 
 
 <div class="viewcode-block" id="units_in_front"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_module.units_in_front">[docs]</a><span class="k">def</span> <span class="nf">units_in_front</span><span class="p">(</span><span class="n">c_in</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">layer_depth</span><span class="p">):</span>
@@ -246,19 +249,24 @@
         <span class="c1"># Set output to None for the Conv2dInPlaceModule for now. We</span>
         <span class="c1"># set it in the forward pass.</span>
         <span class="n">output</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">convolution</span> <span class="o">=</span> <span class="n">Conv2dInPlaceModule</span><span class="p">(</span>
-            <span class="n">output</span><span class="p">,</span> <span class="n">in_front</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="n">dilation</span>
-        <span class="p">)</span>
-
-        <span class="c1"># Add the relu to get a nice printout for the network from</span>
-        <span class="c1"># pytorch.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">relu</span> <span class="o">=</span> <span class="n">ReLUInplaceModule</span><span class="p">()</span></div>
+        <span class="k">if</span> <span class="n">use_conv_relu</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">convolution</span> <span class="o">=</span> <span class="n">ConvRelu2dInPlaceModule</span><span class="p">(</span>
+                <span class="n">output</span><span class="p">,</span> <span class="n">in_front</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="n">dilation</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">convolution</span> <span class="o">=</span> <span class="n">Conv2dInPlaceModule</span><span class="p">(</span>
+                <span class="n">output</span><span class="p">,</span> <span class="n">in_front</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="n">dilation</span>
+            <span class="p">)</span>
+            <span class="c1"># Add the relu to get a nice printout for the network from</span>
+            <span class="c1"># pytorch.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">relu</span> <span class="o">=</span> <span class="n">ReLUInplaceModule</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="MSDLayerModule.forward"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_module.MSDLayerModule.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
         <span class="c1"># Set output</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">convolution</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">L</span><span class="o">.</span><span class="n">narrow</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_front</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
         <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convolution</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">use_conv_relu</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
         <span class="n">output</span> <span class="o">=</span> <span class="n">stitchLazy</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">L</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_front</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">output</span></div></div>
 

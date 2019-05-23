@@ -340,7 +340,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">set_target</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="MSDModel.learn"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_model.MSDModel.learn">[docs]</a>    <span class="k">def</span> <span class="nf">learn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Train on a single input-target pair.</span>
@@ -354,10 +356,12 @@
 <span class="sd">        A ``BxCxHxW``-dimensional torch input tensor.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">loss</span></div>
 
 <div class="viewcode-block" id="MSDModel.train"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_model.MSDModel.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">,</span> <span class="n">num_epochs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Train on a dataset.</span>
@@ -389,8 +393,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">validation_loss</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="ow">in</span> <span class="n">dataloader</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-            <span class="n">validation_loss</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_loss</span><span class="p">()</span>
+            <span class="n">validation_loss</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">validation_loss</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataloader</span><span class="p">)</span></div>
 
@@ -426,26 +429,39 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span></div>
 
-<div class="viewcode-block" id="MSDModel.save"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_model.MSDModel.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+<div class="viewcode-block" id="MSDModel.save"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_model.MSDModel.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">epoch</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Save network to disk.</span>
 
 <span class="sd">        :param path: A filesystem path where the network parameters are stored.</span>
+<span class="sd">        :param epoch: The number of epochs the network has trained for. This is useful for reloading!</span>
 <span class="sd">        :returns: Nothing</span>
 <span class="sd">        :rtype:</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">t</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="n">path</span><span class="p">)</span></div>
+        <span class="n">state</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;epoch&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">epoch</span><span class="p">),</span>
+            <span class="s2">&quot;state_dict&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
+            <span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
+        <span class="p">}</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="MSDModel.load"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_model.MSDModel.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Load network parameters from disk.</span>
 
 <span class="sd">        :param path: The filesystem path where the network parameters are stored.</span>
-<span class="sd">        :returns:</span>
-<span class="sd">        :rtype:</span>
+<span class="sd">        :returns: the number of epochs the network has trained for.</span>
+<span class="sd">        :rtype: int</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span></div></div>
+        <span class="n">state</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;state_dict&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;optimizer&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+
+        <span class="n">epoch</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;epoch&quot;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">epoch</span></div></div>
 </pre></div>
 
            </div>
