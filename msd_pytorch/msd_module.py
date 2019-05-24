@@ -1,5 +1,4 @@
 import torch.nn as nn
-import torch
 from msd_pytorch.conv import Conv2dInPlaceModule
 from msd_pytorch.conv_relu import ConvRelu2dInPlaceModule
 from msd_pytorch.stitch import stitchLazy, StitchCopyModule, StitchBuffer
@@ -54,7 +53,7 @@ def init_convolution_weights(conv_weight, c_in, c_out, width, depth):
     :rtype:
 
     """
-    # The number of paramters in the convolution depends on whether
+    # The number of parameters in the convolution depends on whether
     # the convolution is 2D or 3D. We multiply all non-channel
     # dimensions of the weight here to get the right answer.
     num_params = np.product(conv_weight.shape[2:])
@@ -137,8 +136,7 @@ class MSDFinalLayer(nn.Module):
         self.c_in = c_in
         self.c_out = c_out
         self.linear = nn.Conv1d(c_in, c_out, 1)
-        self.linear.weight.data.zero_()
-        self.linear.bias.data.zero_()
+        self.reset_parameters()
 
     def forward(self, input):
         b, c_in, *size = input.shape
@@ -149,6 +147,10 @@ class MSDFinalLayer(nn.Module):
         output = self.linear(output)
         output = output.view(b, self.c_out, *size)
         return output
+
+    def reset_parameters(self):
+        self.linear.weight.data.zero_()
+        self.linear.bias.data.zero_()
 
 
 class MSDModule(nn.Module):
@@ -186,22 +188,22 @@ class MSDModule(nn.Module):
         stitch_layer = StitchCopyModule(buffer, 0)
 
         # Then we have `depth` number of hidden layers:
-        hidden_layers = [
+        self.hidden_layers = [
             MSDLayerModule(buffer, c_in, d, width, dilations[d % len(dilations)])
             for d in range(depth)
         ]
 
         # Initialize weights for hidden layers:
-        for m in hidden_layers:
+        for m in self.hidden_layers:
             init_convolution_weights(
                 m.convolution.weight.data, c_in, c_out, width, depth
             )
             m.convolution.bias.data.zero_()
 
         in_front = units_in_front(c_in, width, depth)
-        c_final = MSDFinalLayer(in_front, c_out)
+        self.c_final = MSDFinalLayer(in_front, c_out)
 
-        self.net = nn.Sequential(stitch_layer, *hidden_layers, c_final)
+        self.net = nn.Sequential(stitch_layer, *self.hidden_layers, self.c_final)
 
         self.net.cuda()
 

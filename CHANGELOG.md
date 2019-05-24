@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Add weights_path command-line argument to msd executable to indicate
   where to store final weights.
+- Add MSDBlock2d: this is a faster and slightly more memory efficient
+  implementation of the same MSD component. Many thanks to Jonas
+  Adler for suggesting this way of structuring the code!
 ### Fixed
 - <insert-bugs-fixed-not-in-a-release-yet>
 
