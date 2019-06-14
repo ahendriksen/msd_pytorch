@@ -191,6 +191,8 @@ class MSDModel:
         if target is not None:
             self.set_target(target)
 
+        self.output = None
+        self.loss = None
         self.output = self.net(self.input)
         self.loss = self.criterion(self.output, self.target)
 
