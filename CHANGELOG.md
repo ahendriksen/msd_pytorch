@@ -6,7 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Support for multi-gpu execution. Use `parallel=True` when
+  constructing a `MSDRegressionModel` or `MSDSegmentationModel`.
 ### Fixed
+- Make `model.forward()` more memory-efficient.
 ### Removed
 
 ## [0.7.1] - 2019-05-27
