@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+### Fixed
+### Removed
+
+## [0.7.2] - 2019-07-30
+### Added
 - Support for multi-gpu execution. Use `parallel=True` when
   constructing a `MSDRegressionModel` or `MSDSegmentationModel`.
 ### Fixed
@@ -26,5 +31,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release.
 
-[Unreleased]: https://www.github.com/ahendriksen/msd_pytorch/compare/v0.6.2...master
+[Unreleased]: https://www.github.com/ahendriksen/msd_pytorch/compare/v0.7.2...master
+[0.7.2]: https://www.github.com/ahendriksen/msd_pytorch/compare/v0.7.1...v0.7.2
 [0.7.1]: https://www.github.com/ahendriksen/msd_pytorch/compare/v0.6.2...v0.7.1

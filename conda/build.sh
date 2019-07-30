@@ -35,7 +35,11 @@ export CUDA_HOME=$TMP_NVCC_LOCATION/cuda-$cudatoolkit
 if [ -f $CUDA_HOME/bin/nvcc ] ; then
     echo "-- CUDA already installed";
 else
-    bash $CUDA_INSTALLER --silent --toolkit --toolkitpath=$CUDA_HOME --tmpdir=$TMP_NVCC_LOCATION --override
+    echo "Installing version ${cudatoolkit} "
+    echo "  with ${CUDA_INSTALLER}"
+    echo "  into ${CUDA_HOME}"
+    echo "  with temp space ${TMP_NVCC_LOCATION}"
+    sh $CUDA_INSTALLER --silent --toolkit --toolkitpath=$CUDA_HOME --tmpdir=$TMP_NVCC_LOCATION --override
 fi
 
 echo "-- Setting CUDA_HOME: $CUDA_HOME"
