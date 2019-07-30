@@ -3,6 +3,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
+using at::OptionalDeviceGuard;
 
 template <typename scalar_t>
 __global__ void relu_inplace_cuda_forward_kernel(scalar_t* __restrict__ input, size_t size) {
@@ -24,26 +25,26 @@ __global__ void relu_inplace_cuda_backward_kernel(const scalar_t* __restrict__ i
 }
 
 at::Tensor relu_inplace_cuda_forward(at::Tensor input){
-
+    OptionalDeviceGuard device_guard(at::device_of(input));
     const int threads = 1024;
     auto size = input.numel();
     const dim3 blocks((size + threads - 1) / threads, 1);
 
-    AT_DISPATCH_FLOATING_TYPES(input.type(), "relu_inplace_cuda_forward", ([&] {
+    AT_DISPATCH_FLOATING_TYPES(input.scalar_type(), "relu_inplace_cuda_forward", ([&] {
 		relu_inplace_cuda_forward_kernel<scalar_t><<<blocks, threads>>>(input.data<scalar_t>(), size);
 	    }));
     return input;
 }
 
 at::Tensor relu_inplace_cuda_backward(at::Tensor input, at::Tensor grad_output){
-
+    OptionalDeviceGuard device_guard(at::device_of(grad_output));
     auto grad_input = at::zeros_like(grad_output);
 
     const int threads = 1024;
     auto size = input.numel();
     const dim3 blocks((size + threads - 1) / threads, 1);
 
-    AT_DISPATCH_FLOATING_TYPES(input.type(), "relu_inplace_cuda_forward", ([&] {
+    AT_DISPATCH_FLOATING_TYPES(input.scalar_type(), "relu_inplace_cuda_forward", ([&] {
 		relu_inplace_cuda_backward_kernel<scalar_t><<<blocks, threads>>>(input.data<scalar_t>(),
 										 grad_output.data<scalar_t>(),
 										 grad_input.data<scalar_t>(),

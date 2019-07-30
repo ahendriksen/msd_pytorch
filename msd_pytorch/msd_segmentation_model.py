@@ -24,6 +24,7 @@ class MSDSegmentationModel(MSDModel):
         width,
         *,
         dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        parallel=False,
     ):
         """Create a new MSD network for segmentation.
 
@@ -36,6 +37,12 @@ class MSDSegmentationModel(MSDModel):
         A list of dilations to use. Default is ``[1, 2, ..., 10]``.  A
         good alternative is ``[1, 2, 4, 8]``. The dilations are
         repeated when there are more layers than supplied dilations.
+
+        :param parallel: `bool`
+
+        Whether or not to execute the model on multiple GPUs.  Note
+        that the batch size must be a multiple of the number of
+        available GPUs.
 
         :returns:
         :rtype:
@@ -51,6 +58,9 @@ class MSDSegmentationModel(MSDModel):
         net_trained = nn.Sequential(self.msd, nn.LogSoftmax(dim=1))
         self.net = nn.Sequential(self.scale_in, net_trained)
         self.net.cuda()
+
+        if parallel:
+            self.net = nn.DataParallel(self.net)
 
         # Train all parameters apart from self.scale_in.
         self.init_optimizer(net_trained)

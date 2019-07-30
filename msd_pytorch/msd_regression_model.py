@@ -26,6 +26,7 @@ class MSDRegressionModel(MSDModel):
         *,
         dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
         loss="L2",
+        parallel=False,
     ):
         """Create a new MSD network for regression.
 
@@ -47,6 +48,12 @@ class MSDRegressionModel(MSDModel):
         * "L1" - ``nn.L1Loss()``
         * "L2" - ``nn.MSELoss()``
 
+        :param parallel: `bool`
+
+        Whether or not to execute the model on multiple GPUs.  Note
+        that the batch size must be a multiple of the number of
+        available GPUs.
+
         :returns:
         :rtype:
 
@@ -62,6 +69,8 @@ class MSDRegressionModel(MSDModel):
         # Define the whole network:
         self.net = nn.Sequential(self.scale_in, self.msd, self.scale_out)
         self.net.cuda()
+        if parallel:
+            self.net = nn.DataParallel(self.net)
 
         # Train only MSD parameters:
         self.init_optimizer(self.msd)

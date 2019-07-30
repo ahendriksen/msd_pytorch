@@ -160,6 +160,8 @@ class MSDBlock2d(torch.nn.Module):
 
         depth = len(self.dilations)
 
+        self.bias = torch.nn.Parameter(torch.Tensor(depth * width))
+
         self.weights = []
         for i in range(depth):
             n_in = in_channels + width * i
@@ -170,7 +172,6 @@ class MSDBlock2d(torch.nn.Module):
             self.register_parameter('weight{}'.format(i), weight)
             self.weights.append(weight)
 
-        self.bias = torch.nn.Parameter(torch.Tensor(depth * width))
 
         self.reset_parameters()
 
@@ -185,7 +186,19 @@ class MSDBlock2d(torch.nn.Module):
             torch.nn.init.uniform_(self.bias, -bound, bound)
 
     def forward(self, input):
-        return MSDBlockImpl2d.apply(input, self.dilations, self.bias, *self.weights)
+        # This is a bit of a hack, since we require but cannot assume
+        # that self.parameters() remains sorted in the order that we
+        # added the parameters.
+        #
+        # However, we need to obtain weights in this way, because
+        # self.weights may become obsolete when used in multi-gpu
+        # settings when the weights are automatically transferred (by,
+        # e.g., torch.nn.DataParallel). In that case, self.weights may
+        # continue to point to the weight parameters on the original
+        # device, even when the weight parameters have been
+        # transferred to a different gpu.
+        bias, *weights = self.parameters()
+        return MSDBlockImpl2d.apply(input, self.dilations, bias, *weights)
 
 
 class MSDModule2d(torch.nn.Module):

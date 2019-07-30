@@ -63,6 +63,14 @@ at::Tensor conv_relu_forward(at::Tensor input,
     CHECK_CUDA(bias);
     CHECK_INPUT(kernel); 	// kernel must be contiguous.
 
+    torch::TensorArg arg_input(input, "input", 0);
+    torch::TensorArg arg_kernel(kernel, "kernel", 1);
+    torch::TensorArg arg_bias(bias, "bias", 2);
+    torch::TensorArg arg_output(output, "output", 3);
+
+    // Check same device
+    at::checkAllSameGPU("conv_relu_forward", {arg_input, arg_kernel, arg_bias, arg_output});
+
     // Check data type
     AT_ASSERTM(input.type() == kernel.type(), "input and kernel must have same type");
     AT_ASSERTM(input.type() == bias.type(), "input and bias must have same type");

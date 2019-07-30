@@ -12,6 +12,7 @@
 #include "THC/THCDeviceUtils.cuh"
 #include "device_tensor.h"
 
+using at::OptionalDeviceGuard;
 
 __device__ __forceinline__ int
 reflect(int i, int dimi) {
@@ -585,7 +586,8 @@ at::Tensor conv_cuda_forward(at::Tensor input_t,
 			     int dilation,
 			     int implementation,
 			     int block_size) {
-    AT_DISPATCH_FLOATING_TYPES(input_t.type(), "conv_cuda_forward", ([&] {
+    OptionalDeviceGuard device_guard(device_of(input_t));
+    AT_DISPATCH_FLOATING_TYPES(input_t.scalar_type(), "conv_cuda_forward", ([&] {
         // Create device tensors:
         dTensor4R input_d = toDeviceTensorR<scalar_t,4>(input_t);
 	dTensor4R kernel_d = toDeviceTensorR<scalar_t,4>(kernel_t);
@@ -621,7 +623,8 @@ void conv_cuda_backward_x(at::Tensor grad_output_t,
 			  int dilation,
 			  int implementation,
 			  int block_size) {
-   AT_DISPATCH_FLOATING_TYPES(grad_output_t.type(), "conv_cuda_backward_x", ([&] {
+    OptionalDeviceGuard device_guard(at::device_of(grad_output_t));
+    AT_DISPATCH_FLOATING_TYPES(grad_output_t.scalar_type(), "conv_cuda_backward_x", ([&] {
         // Create device tensors:
         dTensor4R grad_output_d = toDeviceTensorR<scalar_t,4>(grad_output_t);
         dTensor4R grad_input_d = toDeviceTensorR<scalar_t,4>(grad_input_t);
@@ -645,7 +648,8 @@ void conv_cuda_backward_k(at::Tensor grad_output, at::Tensor input,
 			  at::Tensor grad_kernel,
 			  int dilation, int implementation, int block_size)
 {
-   AT_DISPATCH_FLOATING_TYPES(grad_output.type(), "conv_cuda_backward_k", ([&] {
+    OptionalDeviceGuard device_guard(at::device_of(grad_output));
+    AT_DISPATCH_FLOATING_TYPES(grad_output.scalar_type(), "conv_cuda_backward_k", ([&] {
         // Create device tensors:
         dTensor4R grad_output_d = toDeviceTensorR<scalar_t,4>(grad_output);
         dTensor4R input_d = toDeviceTensorR<scalar_t,4>(input);
@@ -670,7 +674,9 @@ void conv_cuda_backward_bias(at::Tensor grad_output,
 			     at::Tensor grad_bias,
 			     int implementation, int block_size)
 {
-   AT_DISPATCH_FLOATING_TYPES(grad_output.type(), "conv_cuda_backward_bias", ([&] {
+    OptionalDeviceGuard device_guard(at::device_of(grad_output));
+
+    AT_DISPATCH_FLOATING_TYPES(grad_output.scalar_type(), "conv_cuda_backward_bias", ([&] {
         // Create device tensors:
         dTensor4R grad_output_d = toDeviceTensorR<scalar_t,4>(grad_output);
 	dTensor1R grad_bias_d = toDeviceTensorR<scalar_t,1>(grad_bias);

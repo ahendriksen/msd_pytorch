@@ -31,6 +31,24 @@ def test_params_change():
         assert not torch_equal(p0, p1)
 
 
+def test_data_parallel():
+    """Check that msd_model is compatible with multi-GPU approaches
+
+    Specifically, `torch.nn.DataParallel`.
+    """
+
+    shape = (100, 100)
+    num_labels = 3
+    inp = torch.zeros(4, 1, *shape, dtype=torch.float32, device=torch.device("cuda:0"))
+    tgt = torch.randint(
+        low=0, high=num_labels, size=(4, 1, *shape), device=torch.device("cuda:0")
+    )
+
+    model = MSDSegmentationModel(1, num_labels, 11, 1, parallel=True)
+    model.forward(inp, tgt)
+    model.learn(inp, tgt)
+
+
 def test_api_surface(tmp_path):
     ###########################################################################
     #                              Create network                             #

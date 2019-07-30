@@ -12,6 +12,7 @@
 #include "THC/THCDeviceUtils.cuh"
 #include "device_tensor.h"
 
+using at::OptionalDeviceGuard;
 
 __device__ __forceinline__ int
 reflect(int i, int dimi) {
@@ -642,7 +643,10 @@ at::Tensor conv_relu_cuda_forward(at::Tensor input_t,
 			     int dilation,
 			     int implementation,
 			     int block_size) {
-    AT_DISPATCH_FLOATING_TYPES(input_t.type(), "conv_relu_cuda_forward", ([&] {
+    OptionalDeviceGuard device_guard(device_of(input_t));
+    cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+
+    AT_DISPATCH_FLOATING_TYPES(input_t.scalar_type(), "conv_relu_cuda_forward", ([&] {
         // Create device tensors:
         dTensor4R input_d = toDeviceTensorR<scalar_t,4>(input_t);
 	dTensor4R kernel_d = toDeviceTensorR<scalar_t,4>(kernel_t);
@@ -654,16 +658,16 @@ at::Tensor conv_relu_cuda_forward(at::Tensor input_t,
         dim3 blockSize(block_size, block_size);
     	auto buffer_sz = kernel_t.numel() * sizeof(scalar_t);
 	if (implementation == 2) {
-	    conv_relu2<scalar_t><<<gridSize, blockSize, buffer_sz>>>
+	    conv_relu2<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
 		(input_d, kernel_d, bias_d, out_d, dilation);
 	} else if (implementation == 3) {
-	    conv_relu3<scalar_t><<<gridSize, blockSize, buffer_sz>>>
+	    conv_relu3<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
 		(input_d, kernel_d, bias_d, out_d, dilation);
 	} else if (implementation == 4) {
-	    conv_relu4<scalar_t><<<gridSize, blockSize, buffer_sz>>>
+	    conv_relu4<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
 		(input_d, kernel_d, bias_d, out_d, dilation);
 	} else if (implementation == 5) {
-	    conv_relu5<scalar_t><<<gridSize, blockSize, buffer_sz>>>
+	    conv_relu5<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
 		(input_d, kernel_d, bias_d, out_d, dilation);
 	}
 
@@ -679,7 +683,10 @@ void conv_relu_cuda_backward_x(at::Tensor output_t,
 			       int dilation,
 			       int implementation,
 			       int block_size) {
-   AT_DISPATCH_FLOATING_TYPES(output_t.type(), "conv_relu_cuda_backward_x", ([&] {
+    OptionalDeviceGuard device_guard(device_of(grad_output_t));
+    cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+
+    AT_DISPATCH_FLOATING_TYPES(output_t.scalar_type(), "conv_relu_cuda_backward_x", ([&] {
         // Create device tensors:
         dTensor4R output_d = toDeviceTensorR<scalar_t,4>(output_t);
         dTensor4R grad_output_d = toDeviceTensorR<scalar_t,4>(grad_output_t);
@@ -690,10 +697,10 @@ void conv_relu_cuda_backward_x(at::Tensor output_t,
         dim3 blockSize(block_size, block_size);
     	auto buffer_sz = kernel_t.numel() * sizeof(scalar_t);
 	if (implementation == 0) {
-	    conv_relu_backward_x0<scalar_t><<<gridSize, blockSize, buffer_sz>>>
+	    conv_relu_backward_x0<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
 		(output_d, grad_output_d, kernel_d, grad_input_d, dilation);
 	} else if (implementation == 1) {
-	    conv_relu_backward_x1<scalar_t><<<gridSize, blockSize, buffer_sz>>>
+	    conv_relu_backward_x1<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
 		(output_d, grad_output_d, kernel_d, grad_input_d, dilation);
 	}
     	THCudaCheck(cudaGetLastError());
@@ -704,7 +711,10 @@ void conv_relu_cuda_backward_k(at::Tensor output, at::Tensor grad_output, at::Te
 			       at::Tensor grad_kernel,
 			       int dilation, int implementation, int block_size)
 {
-   AT_DISPATCH_FLOATING_TYPES(grad_output.type(), "conv_relu_cuda_backward_k", ([&] {
+    OptionalDeviceGuard device_guard(device_of(grad_output));
+    cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+
+    AT_DISPATCH_FLOATING_TYPES(grad_output.scalar_type(), "conv_relu_cuda_backward_k", ([&] {
         // Create device tensors:
         dTensor4R output_d = toDeviceTensorR<scalar_t,4>(output);
         dTensor4R grad_output_d = toDeviceTensorR<scalar_t,4>(grad_output);
@@ -714,10 +724,10 @@ void conv_relu_cuda_backward_k(at::Tensor output, at::Tensor grad_output, at::Te
     		      THCCeilDiv((int) grad_output_d.getSize(2), block_size));
         dim3 blockSize(block_size, block_size);
 	if (implementation == 0) {
-	    conv_relu_backward_k0<scalar_t><<<gridSize, blockSize>>>
+	    conv_relu_backward_k0<scalar_t><<<gridSize, blockSize, 0, stream>>>
 		(output_d, grad_output_d, input_d, grad_kernel_d, dilation);
 	} else if (implementation == 1) {
-	    conv_relu_backward_k1<scalar_t><<<gridSize, blockSize>>>
+	    conv_relu_backward_k1<scalar_t><<<gridSize, blockSize, 0, stream>>>
 		(output_d, grad_output_d, input_d, grad_kernel_d, dilation);
 	}
 
@@ -731,7 +741,10 @@ void conv_relu_cuda_backward_bias(at::Tensor output,
 				  at::Tensor grad_bias,
 				  int implementation, int block_size)
 {
-   AT_DISPATCH_FLOATING_TYPES(grad_output.type(), "conv_relu_cuda_backward_bias", ([&] {
+    OptionalDeviceGuard device_guard(device_of(grad_output));
+    cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+
+    AT_DISPATCH_FLOATING_TYPES(grad_output.scalar_type(), "conv_relu_cuda_backward_bias", ([&] {
         // Create device tensors:
         dTensor4R output_d = toDeviceTensorR<scalar_t,4>(output);
         dTensor4R grad_output_d = toDeviceTensorR<scalar_t,4>(grad_output);
@@ -740,10 +753,10 @@ void conv_relu_cuda_backward_bias(at::Tensor output,
     		      THCCeilDiv((int) grad_output_d.getSize(2), block_size));
         dim3 blockSize(block_size, block_size);
 	if (implementation == 0) {
-	    conv_relu_backward_bias0<scalar_t><<<gridSize, blockSize>>>
+	    conv_relu_backward_bias0<scalar_t><<<gridSize, blockSize, 0, stream>>>
 		(output_d, grad_output_d, grad_bias_d);
 	} else if (implementation == 1) {
-	    conv_relu_backward_bias1<scalar_t><<<gridSize, blockSize>>>
+	    conv_relu_backward_bias1<scalar_t><<<gridSize, blockSize, 0, stream>>>
 		(output_d, grad_output_d, grad_bias_d);
 	}
     	THCudaCheck(cudaGetLastError());
