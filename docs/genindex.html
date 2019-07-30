@@ -186,6 +186,10 @@
 </li>
         <li><a href="msd_pytorch.html#msd_pytorch.image_dataset.ImageStack.__init__">(msd_pytorch.image_dataset.ImageStack method)</a>
 </li>
+        <li><a href="msd_pytorch.html#msd_pytorch.msd_block.MSDBlock2d.__init__">(msd_pytorch.msd_block.MSDBlock2d method)</a>
+</li>
+        <li><a href="msd_pytorch.html#msd_pytorch.msd_block.MSDModule2d.__init__">(msd_pytorch.msd_block.MSDModule2d method)</a>
+</li>
         <li><a href="msd_pytorch.html#msd_pytorch.msd_model.MSDModel.__init__">(msd_pytorch.msd_model.MSDModel method)</a>
 </li>
         <li><a href="msd_pytorch.html#msd_pytorch.msd_module.MSDFinalLayer.__init__">(msd_pytorch.msd_module.MSDFinalLayer method)</a>
@@ -225,6 +229,8 @@
 
       <ul>
         <li><a href="msd_pytorch.html#msd_pytorch.conv_relu.ConvRelu2dInPlaceFunction.backward">(msd_pytorch.conv_relu.ConvRelu2dInPlaceFunction static method)</a>
+</li>
+        <li><a href="msd_pytorch.html#msd_pytorch.msd_block.MSDBlockImpl2d.backward">(msd_pytorch.msd_block.MSDBlockImpl2d static method)</a>
 </li>
         <li><a href="msd_pytorch.html#msd_pytorch.relu_inplace.ReLUInplaceFunction.backward">(msd_pytorch.relu_inplace.ReLUInplaceFunction static method)</a>
 </li>
@@ -289,6 +295,12 @@
         <li><a href="msd_pytorch.html#msd_pytorch.conv_relu.ConvRelu2dInPlaceFunction.forward">(msd_pytorch.conv_relu.ConvRelu2dInPlaceFunction static method)</a>
 </li>
         <li><a href="msd_pytorch.html#msd_pytorch.conv_relu.ConvRelu2dInPlaceModule.forward">(msd_pytorch.conv_relu.ConvRelu2dInPlaceModule method)</a>
+</li>
+        <li><a href="msd_pytorch.html#msd_pytorch.msd_block.MSDBlock2d.forward">(msd_pytorch.msd_block.MSDBlock2d method)</a>
+</li>
+        <li><a href="msd_pytorch.html#msd_pytorch.msd_block.MSDBlockImpl2d.forward">(msd_pytorch.msd_block.MSDBlockImpl2d static method)</a>
+</li>
+        <li><a href="msd_pytorch.html#msd_pytorch.msd_block.MSDModule2d.forward">(msd_pytorch.msd_block.MSDModule2d method)</a>
 </li>
         <li><a href="msd_pytorch.html#msd_pytorch.msd_model.MSDModel.forward">(msd_pytorch.msd_model.MSDModel method)</a>
 </li>
@@ -381,19 +393,27 @@
 </li>
       <li><a href="msd_pytorch.html#module-msd_pytorch.main">msd_pytorch.main (module)</a>
 </li>
+      <li><a href="msd_pytorch.html#module-msd_pytorch.msd_block">msd_pytorch.msd_block (module)</a>
+</li>
       <li><a href="msd_pytorch.html#module-msd_pytorch.msd_model">msd_pytorch.msd_model (module)</a>
 </li>
       <li><a href="msd_pytorch.html#module-msd_pytorch.msd_module">msd_pytorch.msd_module (module)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="msd_pytorch.html#module-msd_pytorch.msd_regression_model">msd_pytorch.msd_regression_model (module)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="msd_pytorch.html#module-msd_pytorch.msd_segmentation_model">msd_pytorch.msd_segmentation_model (module)</a>
 </li>
       <li><a href="msd_pytorch.html#module-msd_pytorch.relu_inplace">msd_pytorch.relu_inplace (module)</a>
 </li>
       <li><a href="msd_pytorch.html#module-msd_pytorch.stitch">msd_pytorch.stitch (module)</a>
+</li>
+      <li><a href="msd_pytorch.html#msd_pytorch.msd_block.MSDBlock2d">MSDBlock2d (class in msd_pytorch.msd_block)</a>
+</li>
+      <li><a href="msd_pytorch.html#msd_pytorch.msd_block.msdblock2d">msdblock2d() (in module msd_pytorch.msd_block)</a>
+</li>
+      <li><a href="msd_pytorch.html#msd_pytorch.msd_block.MSDBlockImpl2d">MSDBlockImpl2d (class in msd_pytorch.msd_block)</a>
 </li>
       <li><a href="msd_pytorch.html#msd_pytorch.msd_module.MSDFinalLayer">MSDFinalLayer (class in msd_pytorch.msd_module)</a>
 </li>
@@ -402,6 +422,8 @@
       <li><a href="msd_pytorch.html#msd_pytorch.msd_model.MSDModel">MSDModel (class in msd_pytorch.msd_model)</a>
 </li>
       <li><a href="msd_pytorch.html#msd_pytorch.msd_module.MSDModule">MSDModule (class in msd_pytorch.msd_module)</a>
+</li>
+      <li><a href="msd_pytorch.html#msd_pytorch.msd_block.MSDModule2d">MSDModule2d (class in msd_pytorch.msd_block)</a>
 </li>
       <li><a href="msd_pytorch.html#msd_pytorch.msd_regression_model.MSDRegressionModel">MSDRegressionModel (class in msd_pytorch.msd_regression_model)</a>
 </li>
@@ -435,12 +457,20 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="msd_pytorch.html#msd_pytorch.main.regression">regression() (in module msd_pytorch.main)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="msd_pytorch.html#msd_pytorch.relu_inplace.ReLUInplaceFunction">ReLUInplaceFunction (class in msd_pytorch.relu_inplace)</a>
 </li>
       <li><a href="msd_pytorch.html#msd_pytorch.relu_inplace.ReLUInplaceModule">ReLUInplaceModule (class in msd_pytorch.relu_inplace)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="msd_pytorch.html#msd_pytorch.msd_block.MSDBlock2d.reset_parameters">reset_parameters() (msd_pytorch.msd_block.MSDBlock2d method)</a>
+
+      <ul>
+        <li><a href="msd_pytorch.html#msd_pytorch.msd_block.MSDModule2d.reset_parameters">(msd_pytorch.msd_block.MSDModule2d method)</a>
+</li>
+        <li><a href="msd_pytorch.html#msd_pytorch.msd_module.MSDFinalLayer.reset_parameters">(msd_pytorch.msd_module.MSDFinalLayer method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 

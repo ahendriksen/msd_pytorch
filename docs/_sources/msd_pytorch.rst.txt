@@ -52,6 +52,14 @@ msd\_pytorch.main module
     :undoc-members:
     :show-inheritance:
 
+msd\_pytorch.msd\_block module
+------------------------------
+
+.. automodule:: msd_pytorch.msd_block
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 msd\_pytorch.msd\_model module
 ------------------------------
 

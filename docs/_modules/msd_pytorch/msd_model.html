@@ -146,7 +146,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for msd_pytorch.msd_model</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">msd_pytorch.msd_module</span> <span class="k">import</span> <span class="n">MSDModule</span>
+<span></span><span class="kn">from</span> <span class="nn">msd_pytorch.msd_block</span> <span class="k">import</span> <span class="n">MSDModule2d</span>
 <span class="kn">from</span> <span class="nn">torch.autograd</span> <span class="k">import</span> <span class="n">Variable</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span> <span class="k">as</span> <span class="nn">t</span>
@@ -232,7 +232,7 @@
         <span class="c1"># network is saved.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scale_in</span> <span class="o">=</span> <span class="n">scaling_module</span><span class="p">(</span><span class="n">c_in</span><span class="p">,</span> <span class="n">c_in</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scale_out</span> <span class="o">=</span> <span class="n">scaling_module</span><span class="p">(</span><span class="n">c_out</span><span class="p">,</span> <span class="n">c_out</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">msd</span> <span class="o">=</span> <span class="n">MSDModule</span><span class="p">(</span><span class="n">c_in</span><span class="p">,</span> <span class="n">c_out</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">dilations</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">msd</span> <span class="o">=</span> <span class="n">MSDModule2d</span><span class="p">(</span><span class="n">c_in</span><span class="p">,</span> <span class="n">c_out</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">dilations</span><span class="p">)</span></div>
 
         <span class="c1"># It is the task of any subclass to initialize `self.net` and</span>
         <span class="c1"># call `init_optimizer` to set the trainable parameters.</span>
@@ -339,6 +339,8 @@
         <span class="k">if</span> <span class="n">target</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_target</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>
 

@@ -172,6 +172,7 @@
         <span class="n">width</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">dilations</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span>
+        <span class="n">parallel</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Create a new MSD network for segmentation.</span>
 
@@ -184,6 +185,12 @@
 <span class="sd">        A list of dilations to use. Default is ``[1, 2, ..., 10]``.  A</span>
 <span class="sd">        good alternative is ``[1, 2, 4, 8]``. The dilations are</span>
 <span class="sd">        repeated when there are more layers than supplied dilations.</span>
+
+<span class="sd">        :param parallel: `bool`</span>
+
+<span class="sd">        Whether or not to execute the model on multiple GPUs.  Note</span>
+<span class="sd">        that the batch size must be a multiple of the number of</span>
+<span class="sd">        available GPUs.</span>
 
 <span class="sd">        :returns:</span>
 <span class="sd">        :rtype:</span>
@@ -199,6 +206,9 @@
         <span class="n">net_trained</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msd</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">LogSoftmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scale_in</span><span class="p">,</span> <span class="n">net_trained</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">parallel</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">DataParallel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="p">)</span>
 
         <span class="c1"># Train all parameters apart from self.scale_in.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">init_optimizer</span><span class="p">(</span><span class="n">net_trained</span><span class="p">)</span></div>

@@ -174,6 +174,7 @@
         <span class="o">*</span><span class="p">,</span>
         <span class="n">dilations</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span>
         <span class="n">loss</span><span class="o">=</span><span class="s2">&quot;L2&quot;</span><span class="p">,</span>
+        <span class="n">parallel</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Create a new MSD network for regression.</span>
 
@@ -195,6 +196,12 @@
 <span class="sd">        * &quot;L1&quot; - ``nn.L1Loss()``</span>
 <span class="sd">        * &quot;L2&quot; - ``nn.MSELoss()``</span>
 
+<span class="sd">        :param parallel: `bool`</span>
+
+<span class="sd">        Whether or not to execute the model on multiple GPUs.  Note</span>
+<span class="sd">        that the batch size must be a multiple of the number of</span>
+<span class="sd">        available GPUs.</span>
+
 <span class="sd">        :returns:</span>
 <span class="sd">        :rtype:</span>
 
@@ -210,6 +217,8 @@
         <span class="c1"># Define the whole network:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scale_in</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">msd</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_out</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">parallel</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">DataParallel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="p">)</span>
 
         <span class="c1"># Train only MSD parameters:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">init_optimizer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msd</span><span class="p">)</span></div></div>

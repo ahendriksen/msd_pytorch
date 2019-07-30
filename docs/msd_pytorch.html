@@ -92,6 +92,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#module-msd_pytorch.errors">msd_pytorch.errors module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-msd_pytorch.image_dataset">msd_pytorch.image_dataset module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-msd_pytorch.main">msd_pytorch.main module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-msd_pytorch.msd_block">msd_pytorch.msd_block module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-msd_pytorch.msd_model">msd_pytorch.msd_model module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-msd_pytorch.msd_module">msd_pytorch.msd_module module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-msd_pytorch.msd_regression_model">msd_pytorch.msd_regression_model module</a></li>
@@ -637,17 +638,159 @@ RuntimeError.</p>
 
 <dl class="function">
 <dt id="msd_pytorch.main.regression">
-<code class="descclassname">msd_pytorch.main.</code><code class="descname">regression</code><span class="sig-paren">(</span><em>msd</em>, <em>epochs</em>, <em>batch_size</em>, <em>train_input_glob</em>, <em>train_target_glob</em>, <em>val_input_glob</em>, <em>val_target_glob</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/main.html#regression"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.main.regression" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">msd_pytorch.main.</code><code class="descname">regression</code><span class="sig-paren">(</span><em>msd</em>, <em>epochs</em>, <em>batch_size</em>, <em>train_input_glob</em>, <em>train_target_glob</em>, <em>val_input_glob</em>, <em>val_target_glob</em>, <em>weights_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/main.html#regression"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.main.regression" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="msd_pytorch.main.segmentation">
-<code class="descclassname">msd_pytorch.main.</code><code class="descname">segmentation</code><span class="sig-paren">(</span><em>msd</em>, <em>epochs</em>, <em>labels</em>, <em>batch_size</em>, <em>train_input_glob</em>, <em>train_target_glob</em>, <em>val_input_glob</em>, <em>val_target_glob</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/main.html#segmentation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.main.segmentation" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">msd_pytorch.main.</code><code class="descname">segmentation</code><span class="sig-paren">(</span><em>msd</em>, <em>epochs</em>, <em>labels</em>, <em>batch_size</em>, <em>train_input_glob</em>, <em>train_target_glob</em>, <em>val_input_glob</em>, <em>val_target_glob</em>, <em>weights_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/main.html#segmentation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.main.segmentation" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="msd_pytorch.main.train">
-<code class="descclassname">msd_pytorch.main.</code><code class="descname">train</code><span class="sig-paren">(</span><em>model</em>, <em>epochs</em>, <em>train_dl</em>, <em>val_dl</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/main.html#train"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.main.train" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">msd_pytorch.main.</code><code class="descname">train</code><span class="sig-paren">(</span><em>model</em>, <em>epochs</em>, <em>train_dl</em>, <em>val_dl</em>, <em>weights_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/main.html#train"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.main.train" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-msd_pytorch.msd_block">
+<span id="msd-pytorch-msd-block-module"></span><h2>msd_pytorch.msd_block module<a class="headerlink" href="#module-msd_pytorch.msd_block" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="msd_pytorch.msd_block.MSDBlock2d">
+<em class="property">class </em><code class="descclassname">msd_pytorch.msd_block.</code><code class="descname">MSDBlock2d</code><span class="sig-paren">(</span><em>in_channels</em>, <em>dilations</em>, <em>width=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_block.html#MSDBlock2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_block.MSDBlock2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<dl class="method">
+<dt id="msd_pytorch.msd_block.MSDBlock2d.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>in_channels</em>, <em>dilations</em>, <em>width=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_block.html#MSDBlock2d.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_block.MSDBlock2d.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multi-scale dense block</p>
+<dl class="docutils">
+<dt>in_channels <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Number of input channels</dd>
+<dt>dilations <span class="classifier-delimiter">:</span> <span class="classifier">tuple of int</span></dt>
+<dd>Dilation for each convolution-block</dd>
+<dt>width <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Number of channels per convolution.</dd>
+</dl>
+<p>The number of output channels is in_channels + depth * width</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.msd_block.MSDBlock2d.forward">
+<code class="descname">forward</code><span class="sig-paren">(</span><em>input</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_block.html#MSDBlock2d.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_block.MSDBlock2d.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.msd_block.MSDBlock2d.reset_parameters">
+<code class="descname">reset_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_block.html#MSDBlock2d.reset_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_block.MSDBlock2d.reset_parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="msd_pytorch.msd_block.MSDBlockImpl2d">
+<em class="property">class </em><code class="descclassname">msd_pytorch.msd_block.</code><code class="descname">MSDBlockImpl2d</code><a class="reference internal" href="_modules/msd_pytorch/msd_block.html#MSDBlockImpl2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_block.MSDBlockImpl2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.autograd.function.Function</span></code></p>
+<dl class="staticmethod">
+<dt id="msd_pytorch.msd_block.MSDBlockImpl2d.backward">
+<em class="property">static </em><code class="descname">backward</code><span class="sig-paren">(</span><em>ctx</em>, <em>grad_output</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_block.html#MSDBlockImpl2d.backward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_block.MSDBlockImpl2d.backward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines a formula for differentiating the operation.</p>
+<p>This function is to be overridden by all subclasses.</p>
+<p>It must accept a context <code class="xref py py-attr docutils literal notranslate"><span class="pre">ctx</span></code> as the first argument, followed by
+as many outputs did <a class="reference internal" href="#msd_pytorch.msd_block.MSDBlockImpl2d.forward" title="msd_pytorch.msd_block.MSDBlockImpl2d.forward"><code class="xref py py-func docutils literal notranslate"><span class="pre">forward()</span></code></a> return, and it should return as many
+tensors, as there were inputs to <a class="reference internal" href="#msd_pytorch.msd_block.MSDBlockImpl2d.forward" title="msd_pytorch.msd_block.MSDBlockImpl2d.forward"><code class="xref py py-func docutils literal notranslate"><span class="pre">forward()</span></code></a>. Each argument is the
+gradient w.r.t the given output, and each returned value should be the
+gradient w.r.t. the corresponding input.</p>
+<p>The context can be used to retrieve tensors saved during the forward
+pass. It also has an attribute <code class="xref py py-attr docutils literal notranslate"><span class="pre">ctx.needs_input_grad</span></code> as a tuple
+of booleans representing whether each input needs gradient. E.g.,
+<a class="reference internal" href="#msd_pytorch.msd_block.MSDBlockImpl2d.backward" title="msd_pytorch.msd_block.MSDBlockImpl2d.backward"><code class="xref py py-func docutils literal notranslate"><span class="pre">backward()</span></code></a> will have <code class="docutils literal notranslate"><span class="pre">ctx.needs_input_grad[0]</span> <span class="pre">=</span> <span class="pre">True</span></code> if the
+first input to <a class="reference internal" href="#msd_pytorch.msd_block.MSDBlockImpl2d.forward" title="msd_pytorch.msd_block.MSDBlockImpl2d.forward"><code class="xref py py-func docutils literal notranslate"><span class="pre">forward()</span></code></a> needs gradient computated w.r.t. the
+output.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="msd_pytorch.msd_block.MSDBlockImpl2d.forward">
+<em class="property">static </em><code class="descname">forward</code><span class="sig-paren">(</span><em>ctx</em>, <em>input</em>, <em>dilations</em>, <em>bias</em>, <em>*weights</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_block.html#MSDBlockImpl2d.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_block.MSDBlockImpl2d.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs the operation.</p>
+<p>This function is to be overridden by all subclasses.</p>
+<p>It must accept a context ctx as the first argument, followed by any
+number of arguments (tensors or other types).</p>
+<p>The context can be used to store tensors that can be then retrieved
+during the backward pass.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="msd_pytorch.msd_block.MSDModule2d">
+<em class="property">class </em><code class="descclassname">msd_pytorch.msd_block.</code><code class="descname">MSDModule2d</code><span class="sig-paren">(</span><em>c_in, c_out, depth, width, dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_block.html#MSDModule2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_block.MSDModule2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<dl class="method">
+<dt id="msd_pytorch.msd_block.MSDModule2d.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>c_in, c_out, depth, width, dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_block.html#MSDModule2d.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_block.MSDModule2d.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a 2-dimensional MSD Module</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>c_in</strong> – # of input channels</li>
+<li><strong>c_out</strong> – # of output channels</li>
+<li><strong>depth</strong> – # of layers</li>
+<li><strong>width</strong> – # the width of the module</li>
+<li><strong>dilations</strong> – <cite>list(int)</cite></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>A list of dilations to use. Default is <code class="docutils literal notranslate"><span class="pre">[1,</span> <span class="pre">2,</span> <span class="pre">...,</span> <span class="pre">10]</span></code>.  A
+good alternative is <code class="docutils literal notranslate"><span class="pre">[1,</span> <span class="pre">2,</span> <span class="pre">4,</span> <span class="pre">8]</span></code>. The dilations are
+repeated.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">an MSD module</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#msd_pytorch.msd_block.MSDModule2d" title="msd_pytorch.msd_block.MSDModule2d">MSDModule2d</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.msd_block.MSDModule2d.forward">
+<code class="descname">forward</code><span class="sig-paren">(</span><em>input</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_block.html#MSDModule2d.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_block.MSDModule2d.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="msd_pytorch.msd_block.MSDModule2d.reset_parameters">
+<code class="descname">reset_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_block.html#MSDModule2d.reset_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_block.MSDModule2d.reset_parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="msd_pytorch.msd_block.msdblock2d">
+<code class="descclassname">msd_pytorch.msd_block.</code><code class="descname">msdblock2d</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#msd_pytorch.msd_block.msdblock2d" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -1055,6 +1198,11 @@ registered hooks while the latter silently ignores them.</p>
 </div>
 </dd></dl>
 
+<dl class="method">
+<dt id="msd_pytorch.msd_module.MSDFinalLayer.reset_parameters">
+<code class="descname">reset_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_module.html#MSDFinalLayer.reset_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_module.MSDFinalLayer.reset_parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -1248,7 +1396,7 @@ has index zero.</li>
 <span id="msd-pytorch-msd-regression-model-module"></span><h2>msd_pytorch.msd_regression_model module<a class="headerlink" href="#module-msd_pytorch.msd_regression_model" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="msd_pytorch.msd_regression_model.MSDRegressionModel">
-<em class="property">class </em><code class="descclassname">msd_pytorch.msd_regression_model.</code><code class="descname">MSDRegressionModel</code><span class="sig-paren">(</span><em>c_in, c_out, depth, width, *, dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], loss='L2'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_regression_model.html#MSDRegressionModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_regression_model.MSDRegressionModel" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">msd_pytorch.msd_regression_model.</code><code class="descname">MSDRegressionModel</code><span class="sig-paren">(</span><em>c_in, c_out, depth, width, *, dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], loss='L2', parallel=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_regression_model.html#MSDRegressionModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_regression_model.MSDRegressionModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#msd_pytorch.msd_model.MSDModel" title="msd_pytorch.msd_model.MSDModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">msd_pytorch.msd_model.MSDModel</span></code></a></p>
 <p>An MSD network for regression.</p>
 <p>This class provides helper methods for using the MSD network
@@ -1258,7 +1406,7 @@ module for regression.</p>
 the helper methods and attributes.</p>
 <dl class="method">
 <dt id="msd_pytorch.msd_regression_model.MSDRegressionModel.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>c_in, c_out, depth, width, *, dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], loss='L2'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_regression_model.html#MSDRegressionModel.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_regression_model.MSDRegressionModel.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>c_in, c_out, depth, width, *, dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], loss='L2', parallel=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_regression_model.html#MSDRegressionModel.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_regression_model.MSDRegressionModel.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new MSD network for regression.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1296,6 +1444,17 @@ used. Currently, the following losses are supported:</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>parallel</strong> – <cite>bool</cite></td>
+</tr>
+</tbody>
+</table>
+<p>Whether or not to execute the model on multiple GPUs.  Note
+that the batch size must be a multiple of the number of
+available GPUs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"></td>
@@ -1311,7 +1470,7 @@ used. Currently, the following losses are supported:</p>
 <span id="msd-pytorch-msd-segmentation-model-module"></span><h2>msd_pytorch.msd_segmentation_model module<a class="headerlink" href="#module-msd_pytorch.msd_segmentation_model" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="msd_pytorch.msd_segmentation_model.MSDSegmentationModel">
-<em class="property">class </em><code class="descclassname">msd_pytorch.msd_segmentation_model.</code><code class="descname">MSDSegmentationModel</code><span class="sig-paren">(</span><em>c_in, num_labels, depth, width, *, dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_segmentation_model.html#MSDSegmentationModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_segmentation_model.MSDSegmentationModel" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">msd_pytorch.msd_segmentation_model.</code><code class="descname">MSDSegmentationModel</code><span class="sig-paren">(</span><em>c_in, num_labels, depth, width, *, dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], parallel=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_segmentation_model.html#MSDSegmentationModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_segmentation_model.MSDSegmentationModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#msd_pytorch.msd_model.MSDModel" title="msd_pytorch.msd_model.MSDModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">msd_pytorch.msd_model.MSDModel</span></code></a></p>
 <p>An MSD network for segmentation.</p>
 <p>This class provides helper methods for using the MSD network
@@ -1321,7 +1480,7 @@ module for segmentation.</p>
 the helper methods and attributes.</p>
 <dl class="method">
 <dt id="msd_pytorch.msd_segmentation_model.MSDSegmentationModel.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>c_in, num_labels, depth, width, *, dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_segmentation_model.html#MSDSegmentationModel.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_segmentation_model.MSDSegmentationModel.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>c_in, num_labels, depth, width, *, dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], parallel=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msd_pytorch/msd_segmentation_model.html#MSDSegmentationModel.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msd_pytorch.msd_segmentation_model.MSDSegmentationModel.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new MSD network for segmentation.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1341,6 +1500,17 @@ the helper methods and attributes.</p>
 <p>A list of dilations to use. Default is <code class="docutils literal notranslate"><span class="pre">[1,</span> <span class="pre">2,</span> <span class="pre">...,</span> <span class="pre">10]</span></code>.  A
 good alternative is <code class="docutils literal notranslate"><span class="pre">[1,</span> <span class="pre">2,</span> <span class="pre">4,</span> <span class="pre">8]</span></code>. The dilations are
 repeated when there are more layers than supplied dilations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>parallel</strong> – <cite>bool</cite></td>
+</tr>
+</tbody>
+</table>
+<p>Whether or not to execute the model on multiple GPUs.  Note
+that the batch size must be a multiple of the number of
+available GPUs.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

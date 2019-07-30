@@ -127,6 +127,7 @@ examples folder.
 ## Authors and contributors
 
 * **Allard Hendriksen** - *Initial work*
+* **Jonas Adler** - *Discussions and code*
 
 See also the list of [contributors](https://github.com/ahendriksen/msd_pytorch/contributors) who participated in this project.
 

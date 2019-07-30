@@ -1,0 +1,420 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>msd_pytorch.msd_block &mdash; Mixed-scale Dense Networks for PyTorch  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Mixed-scale Dense Networks for PyTorch
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">Mixed-scale Dense Networks for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">msd_pytorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../CHANGELOG.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Mixed-scale Dense Networks for PyTorch</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>msd_pytorch.msd_block</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for msd_pytorch.msd_block</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">conv_relu_cuda</span> <span class="k">as</span> <span class="nn">cr_cuda</span>
+<span class="kn">from</span> <span class="nn">msd_pytorch.msd_module</span> <span class="k">import</span> <span class="n">MSDFinalLayer</span><span class="p">,</span> <span class="n">init_convolution_weights</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">IDX_WEIGHT_START</span> <span class="o">=</span> <span class="mi">3</span>
+
+
+<div class="viewcode-block" id="MSDBlockImpl2d"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_block.MSDBlockImpl2d">[docs]</a><span class="k">class</span> <span class="nc">MSDBlockImpl2d</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
+<div class="viewcode-block" id="MSDBlockImpl2d.forward"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_block.MSDBlockImpl2d.forward">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">dilations</span><span class="p">,</span> <span class="n">bias</span><span class="p">,</span> <span class="o">*</span><span class="n">weights</span><span class="p">):</span>
+        <span class="n">depth</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dilations</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">depth</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">weights</span><span class="p">),</span> <span class="s2">&quot;number of weights does not match depth&quot;</span>
+
+        <span class="n">num_out_channels</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">weights</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">bias</span><span class="p">)</span> <span class="o">==</span> <span class="n">num_out_channels</span>
+        <span class="p">),</span> <span class="s2">&quot;number of biases does not match number of output channels from weights&quot;</span>
+
+        <span class="n">ctx</span><span class="o">.</span><span class="n">dilations</span> <span class="o">=</span> <span class="n">dilations</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">depth</span> <span class="o">=</span> <span class="n">depth</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">new_empty</span><span class="p">(</span>
+            <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">num_out_channels</span><span class="p">,</span> <span class="o">*</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Copy input into result buffer</span>
+        <span class="n">result</span><span class="p">[:,</span> <span class="p">:</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">input</span>
+
+        <span class="n">result_start</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">bias_start</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">depth</span><span class="p">):</span>
+            <span class="c1"># Extract variables</span>
+            <span class="n">sub_input</span> <span class="o">=</span> <span class="n">result</span><span class="p">[:,</span> <span class="p">:</span><span class="n">result_start</span><span class="p">]</span>
+            <span class="n">sub_weight</span> <span class="o">=</span> <span class="n">weights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">blocksize</span> <span class="o">=</span> <span class="n">sub_weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">sub_bias</span> <span class="o">=</span> <span class="n">bias</span><span class="p">[</span><span class="n">bias_start</span> <span class="p">:</span> <span class="n">bias_start</span> <span class="o">+</span> <span class="n">blocksize</span><span class="p">]</span>
+            <span class="n">sub_result</span> <span class="o">=</span> <span class="n">result</span><span class="p">[:,</span> <span class="n">result_start</span> <span class="p">:</span> <span class="n">result_start</span> <span class="o">+</span> <span class="n">blocksize</span><span class="p">]</span>
+            <span class="n">dilation</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">dilations</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+            <span class="c1"># Compute convolution. conv_relu_forward computes the</span>
+            <span class="c1"># convolution and relu in one pass and stores the</span>
+            <span class="c1"># output in sub_result.</span>
+            <span class="n">cr_cuda</span><span class="o">.</span><span class="n">conv_relu_forward</span><span class="p">(</span>
+                <span class="n">sub_input</span><span class="p">,</span> <span class="n">sub_weight</span><span class="p">,</span> <span class="n">sub_bias</span><span class="p">,</span> <span class="n">sub_result</span><span class="p">,</span> <span class="n">dilation</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Update steps etc</span>
+            <span class="n">result_start</span> <span class="o">+=</span> <span class="n">blocksize</span>
+            <span class="n">bias_start</span> <span class="o">+=</span> <span class="n">blocksize</span>
+
+        <span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="n">bias</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="o">*</span><span class="n">weights</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="MSDBlockImpl2d.backward"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_block.MSDBlockImpl2d.backward">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">):</span>
+        <span class="n">bias</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="o">*</span><span class="n">weights</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
+        <span class="n">depth</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">depth</span>
+
+        <span class="n">grad_bias</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">bias</span><span class="p">)</span>
+        <span class="c1"># XXX: Could we just overwrite grad_output instead of clone?</span>
+        <span class="n">gradients</span> <span class="o">=</span> <span class="n">grad_output</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+        <span class="n">grad_weights</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">result_end</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">bias_end</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bias</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">depth</span><span class="p">):</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">depth</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">i</span>
+            <span class="c1"># Get subsets</span>
+            <span class="n">sub_weight</span> <span class="o">=</span> <span class="n">weights</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+            <span class="n">blocksize</span> <span class="o">=</span> <span class="n">sub_weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">result_start</span> <span class="o">=</span> <span class="n">result_end</span> <span class="o">-</span> <span class="n">blocksize</span>
+            <span class="n">bias_start</span> <span class="o">=</span> <span class="n">bias_end</span> <span class="o">-</span> <span class="n">blocksize</span>
+
+            <span class="n">sub_grad_output</span> <span class="o">=</span> <span class="n">gradients</span><span class="p">[:,</span> <span class="n">result_start</span><span class="p">:</span><span class="n">result_end</span><span class="p">]</span>
+            <span class="n">sub_grad_input</span> <span class="o">=</span> <span class="n">gradients</span><span class="p">[:,</span> <span class="p">:</span><span class="n">result_start</span><span class="p">]</span>
+            <span class="n">sub_result</span> <span class="o">=</span> <span class="n">result</span><span class="p">[:,</span> <span class="n">result_start</span><span class="p">:</span><span class="n">result_end</span><span class="p">]</span>
+            <span class="n">sub_input</span> <span class="o">=</span> <span class="n">result</span><span class="p">[:,</span> <span class="p">:</span><span class="n">result_start</span><span class="p">]</span>
+
+            <span class="n">dilation</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">dilations</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+
+            <span class="c1"># Gradient w.r.t. input: conv_relu_backward_x computes the</span>
+            <span class="c1"># gradient wrt sub_input and adds the gradient to</span>
+            <span class="c1"># sub_grad_input.</span>
+            <span class="n">cr_cuda</span><span class="o">.</span><span class="n">conv_relu_backward_x</span><span class="p">(</span>
+                <span class="n">sub_result</span><span class="p">,</span> <span class="n">sub_grad_output</span><span class="p">,</span> <span class="n">sub_weight</span><span class="p">,</span> <span class="n">sub_grad_input</span><span class="p">,</span> <span class="n">dilation</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Gradient w.r.t weights</span>
+            <span class="k">if</span> <span class="n">ctx</span><span class="o">.</span><span class="n">needs_input_grad</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">IDX_WEIGHT_START</span><span class="p">]:</span>
+                <span class="n">sub_grad_weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">sub_weight</span><span class="p">)</span>
+                <span class="n">cr_cuda</span><span class="o">.</span><span class="n">conv_relu_backward_k</span><span class="p">(</span>
+                    <span class="n">sub_result</span><span class="p">,</span> <span class="n">sub_grad_output</span><span class="p">,</span> <span class="n">sub_input</span><span class="p">,</span> <span class="n">sub_grad_weight</span><span class="p">,</span> <span class="n">dilation</span>
+                <span class="p">)</span>
+                <span class="n">grad_weights</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">sub_grad_weight</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">grad_weights</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="c1"># Gradient of Bias</span>
+            <span class="k">if</span> <span class="n">ctx</span><span class="o">.</span><span class="n">needs_input_grad</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
+                <span class="n">sub_grad_bias</span> <span class="o">=</span> <span class="n">grad_bias</span><span class="p">[</span><span class="n">bias_start</span><span class="p">:</span><span class="n">bias_end</span><span class="p">]</span>
+                <span class="n">cr_cuda</span><span class="o">.</span><span class="n">conv_relu_backward_bias</span><span class="p">(</span>
+                    <span class="n">sub_result</span><span class="p">,</span> <span class="n">sub_grad_output</span><span class="p">,</span> <span class="n">sub_grad_bias</span>
+                <span class="p">)</span>
+
+            <span class="c1"># Update positions etc</span>
+            <span class="n">result_end</span> <span class="o">-=</span> <span class="n">blocksize</span>
+            <span class="n">bias_end</span> <span class="o">-=</span> <span class="n">blocksize</span>
+
+        <span class="n">grad_input</span> <span class="o">=</span> <span class="n">gradients</span><span class="p">[:,</span> <span class="p">:</span> <span class="n">weights</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">grad_input</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">grad_bias</span><span class="p">,</span> <span class="o">*</span><span class="n">grad_weights</span><span class="p">)</span></div></div>
+
+
+<span class="n">msdblock2d</span> <span class="o">=</span> <span class="n">MSDBlockImpl2d</span><span class="o">.</span><span class="n">apply</span>
+
+
+<div class="viewcode-block" id="MSDBlock2d"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_block.MSDBlock2d">[docs]</a><span class="k">class</span> <span class="nc">MSDBlock2d</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="viewcode-block" id="MSDBlock2d.__init__"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_block.MSDBlock2d.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">dilations</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Multi-scale dense block</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        in_channels : int</span>
+<span class="sd">            Number of input channels</span>
+<span class="sd">        dilations : tuple of int</span>
+<span class="sd">            Dilation for each convolution-block</span>
+<span class="sd">        width : int</span>
+<span class="sd">            Number of channels per convolution.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        The number of output channels is in_channels + depth * width</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="n">width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dilations</span> <span class="o">=</span> <span class="n">dilations</span>
+
+        <span class="n">depth</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dilations</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">depth</span> <span class="o">*</span> <span class="n">width</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">depth</span><span class="p">):</span>
+            <span class="n">n_in</span> <span class="o">=</span> <span class="n">in_channels</span> <span class="o">+</span> <span class="n">width</span> <span class="o">*</span> <span class="n">i</span>
+
+            <span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">n_in</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span><span class="p">))</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">register_parameter</span><span class="p">(</span><span class="s2">&quot;weight</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">weight</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">weight</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_parameters</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="MSDBlock2d.reset_parameters"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_block.MSDBlock2d.reset_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">reset_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">weight</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">:</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">kaiming_uniform_</span><span class="p">(</span><span class="n">weight</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># TODO: improve</span>
+            <span class="n">fan_in</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">_calculate_fan_in_and_fan_out</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">bound</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">fan_in</span><span class="p">)</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">uniform_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> <span class="o">-</span><span class="n">bound</span><span class="p">,</span> <span class="n">bound</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MSDBlock2d.forward"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_block.MSDBlock2d.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+        <span class="c1"># This is a bit of a hack, since we require but cannot assume</span>
+        <span class="c1"># that self.parameters() remains sorted in the order that we</span>
+        <span class="c1"># added the parameters.</span>
+        <span class="c1">#</span>
+        <span class="c1"># However, we need to obtain weights in this way, because</span>
+        <span class="c1"># self.weights may become obsolete when used in multi-gpu</span>
+        <span class="c1"># settings when the weights are automatically transferred (by,</span>
+        <span class="c1"># e.g., torch.nn.DataParallel). In that case, self.weights may</span>
+        <span class="c1"># continue to point to the weight parameters on the original</span>
+        <span class="c1"># device, even when the weight parameters have been</span>
+        <span class="c1"># transferred to a different gpu.</span>
+        <span class="n">bias</span><span class="p">,</span> <span class="o">*</span><span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">MSDBlockImpl2d</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dilations</span><span class="p">,</span> <span class="n">bias</span><span class="p">,</span> <span class="o">*</span><span class="n">weights</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="MSDModule2d"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_block.MSDModule2d">[docs]</a><span class="k">class</span> <span class="nc">MSDModule2d</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="viewcode-block" id="MSDModule2d.__init__"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_block.MSDModule2d.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">c_in</span><span class="p">,</span> <span class="n">c_out</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">dilations</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a 2-dimensional MSD Module</span>
+
+<span class="sd">        :param c_in: # of input channels</span>
+<span class="sd">        :param c_out: # of output channels</span>
+<span class="sd">        :param depth: # of layers</span>
+<span class="sd">        :param width: # the width of the module</span>
+<span class="sd">        :param dilations: `list(int)`</span>
+
+<span class="sd">        A list of dilations to use. Default is ``[1, 2, ..., 10]``.  A</span>
+<span class="sd">        good alternative is ``[1, 2, 4, 8]``. The dilations are</span>
+<span class="sd">        repeated.</span>
+
+<span class="sd">        :returns: an MSD module</span>
+<span class="sd">        :rtype: MSDModule2d</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">MSDModule2d</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_in</span> <span class="o">=</span> <span class="n">c_in</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_out</span> <span class="o">=</span> <span class="n">c_out</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">depth</span> <span class="o">=</span> <span class="n">depth</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="n">width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dilations</span> <span class="o">=</span> <span class="p">[</span><span class="n">dilations</span><span class="p">[</span><span class="n">i</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">dilations</span><span class="p">)]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">depth</span><span class="p">)]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">msd_block</span> <span class="o">=</span> <span class="n">MSDBlock2d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c_in</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dilations</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">final_layer</span> <span class="o">=</span> <span class="n">MSDFinalLayer</span><span class="p">(</span><span class="n">c_in</span><span class="o">=</span><span class="n">c_in</span> <span class="o">+</span> <span class="n">width</span> <span class="o">*</span> <span class="n">depth</span><span class="p">,</span> <span class="n">c_out</span><span class="o">=</span><span class="n">c_out</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_parameters</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="MSDModule2d.reset_parameters"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_block.MSDModule2d.reset_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">reset_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Initialize weights for hidden layers:</span>
+        <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">msd_block</span><span class="o">.</span><span class="n">weights</span><span class="p">:</span>
+            <span class="n">init_convolution_weights</span><span class="p">(</span>
+                <span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">c_in</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">c_out</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">depth</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">msd_block</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">final_layer</span><span class="o">.</span><span class="n">reset_parameters</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="MSDModule2d.forward"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_block.MSDModule2d.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">msd_block</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">final_layer</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Allard Hendriksen
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
