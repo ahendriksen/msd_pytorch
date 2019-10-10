@@ -251,6 +251,24 @@ class MSDModel:
 
         return validation_loss / len(dataloader)
 
+    def apply(self, dataloader):
+        """Calculate test score for dataset.
+
+        Calculates the mean loss per ``(input, target)`` pair in
+        ``dataloader``. The loss function that is used depends on
+        whether the model is doing regression or segmentation.
+
+        :param dataloader: A dataloader for a dataset to calculate the loss on.
+        :returns:
+        :rtype:
+
+        """
+        test_loss = 0
+        for (input, target) in dataloader:
+            test_loss += self.forward(input, target)
+
+        return test_loss / len(dataloader)
+
     def print(self):
         """Print the network.
         """
