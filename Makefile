@@ -90,4 +90,4 @@ install_dev:
 
 conda_package:
 	conda install conda-build conda-verify -y
-	conda build conda/ -c pytorch -c conda-forge -c aahendriksen
+	conda build conda/ -c defaults -c pytorch -c conda-forge -c aahendriksen

@@ -10,8 +10,6 @@ source:
 
 build:
     number: '12'
-    script_env:
-      - TMP_NVCC_LOCATION         # Used to store multiple versions of the CUDA toolkit
     entry_points:
       - msd=msd_pytorch.main:main_function
 

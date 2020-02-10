@@ -1,10 +1,7 @@
 c_compiler_version:    # [linux]
-  - 5.4                # [linux]
+  - 7.3                # [linux]
 cxx_compiler_version:  # [linux]
-  - 5.4                # [linux]
+  - 7.3                # [linux]
 python:
   - 3.6
   - 3.7
-cudatoolkit:
-  - 10.0
-  - 9.0
