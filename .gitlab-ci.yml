@@ -18,7 +18,45 @@ build-9.2:
     - conda install -y conda-build conda-verify
     - conda build conda/ -c defaults -c pytorch -c conda-forge -c aahendriksen -m conda/cuda-${cudatoolkit}.yaml
     - mkdir -p artifacts
-    - mv /root/miniconda3/conda-bld/linux-64/*.bz2 artifacts/
+    - mv /root/miniconda3/conda-bld/linux-64/msd_pytorch*.bz2 artifacts/
+  artifacts:
+    paths:
+    - artifacts/
+    expire_in: 7 days
+
+build-10.0:
+  stage: build
+  image: pytorch/manylinux-cuda100
+  variables:
+    cudatoolkit: "10.0"
+  script:
+    - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O install_conda.sh
+    - bash install_conda.sh -b
+    - export PATH="$HOME/miniconda3/bin:$PATH"
+    - conda install -y -c pytorch pytorch=1.1
+    - conda install -y conda-build conda-verify
+    - conda build conda/ -c defaults -c pytorch -c conda-forge -c aahendriksen -m conda/cuda-${cudatoolkit}.yaml
+    - mkdir -p artifacts
+    - mv /root/miniconda3/conda-bld/linux-64/msd_pytorch*.bz2 artifacts/
+  artifacts:
+    paths:
+    - artifacts/
+    expire_in: 7 days
+
+build-10.1:
+  stage: build
+  image: pytorch/manylinux-cuda101
+  variables:
+    cudatoolkit: "10.1"
+  script:
+    - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O install_conda.sh
+    - bash install_conda.sh -b
+    - export PATH="$HOME/miniconda3/bin:$PATH"
+    - conda install -y -c pytorch pytorch=1.1
+    - conda install -y conda-build conda-verify
+    - conda build conda/ -c defaults -c pytorch -c conda-forge -c aahendriksen -m conda/cuda-${cudatoolkit}.yaml
+    - mkdir -p artifacts
+    - mv /root/miniconda3/conda-bld/linux-64/msd_pytorch*.bz2 artifacts/
   artifacts:
     paths:
     - artifacts/
