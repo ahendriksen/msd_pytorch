@@ -9,7 +9,7 @@ build-9.2:
   stage: build
   image: pytorch/manylinux-cuda92
   variables:
-    cudatoolkit: 9.2
+    cudatoolkit: "9.2"
   script:
     - cd ~
     - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O conda.sh
