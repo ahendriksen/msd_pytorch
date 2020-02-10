@@ -19,7 +19,6 @@ with open(os.path.join('msd_pytorch', 'VERSION')) as version_file:
 requirements = [
     # Add your project's requirements here, e.g.,
     'sacred>=0.7.2',
-    "torchvision",
     "tifffile",
     "imageio"
 ]

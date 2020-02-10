@@ -22,7 +22,6 @@ requirements:
         - setuptools
         - pytorch==1.1.0
         - cudatoolkit {{cudatoolkit}}
-        - torchvision
         {% for dep in data['setup_requires'] %}
         - {{ dep.lower() }}
         {% endfor %}
