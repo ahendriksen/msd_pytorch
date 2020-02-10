@@ -1,0 +1,40 @@
+
+
+stages:
+  - build
+  - publish
+
+
+build-9.2:
+  stage: build
+  image: pytorch/manylinux-cuda92
+  variables:
+    cudatoolkit: 9.2
+  script:
+    - cd ~
+    - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O conda.sh
+    - bash conda.sh -b
+    - export PATH="$HOME/miniconda3/bin:$PATH"
+    - conda install -y -c pytorch pytorch=1.1
+    - conda install -y conda-build conda-verify
+    - conda build conda/ -c defaults -c pytorch -c conda-forge -c aahendriksen -m conda/cuda-${cudatoolkit}.yaml
+    - mkdir -p artifacts
+    - mv /root/miniconda3/conda-bld/linux-64/*.bz2 artifacts/
+  artifacts:
+    paths:
+    - artifacts/
+    expire_in: 7 days
+
+publish:
+  stage: publish
+  only:
+  - tags
+  variables:
+    ANACONDA_USERNAME: $ANACONDA_USERNAME
+    ANACONDA_PASSWORD: $ANACONDA_PASSWORD
+  script:
+    - conda install -yq anaconda-client
+    - set +x
+    - anaconda login --username "$ANACONDA_USERNAME" --password "$ANACONDA_PASSWORD"
+    - set -x
+    - anaconda upload artifacts/*.bz2
