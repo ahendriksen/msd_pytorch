@@ -1,17 +1,72 @@
-
-
 stages:
   - build
   - publish
 
-
-build:
+build-9.2:
   stage: build
-  image: pytorch/conda-cuda
+  image: pytorch/manylinux-cuda92
+  variables:
+    cudatoolkit: "9.2"
+    # See:
+    # pytorch commit cd207737017db8c81584763207df20bc6110ed75
+    # https://en.wikipedia.org/wiki/CUDA#GPUs_supported
+    # https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#options-for-steering-gpu-code-generation-gpu-architecture
+    TORCH_CUDA_ARCH_LIST: "3.5 5.2 6.0 6.1"
   script:
-    - conda install -y -c pytorch pytorch=1.1 python=3.7
+    - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O install_conda.sh
+    - bash install_conda.sh -b
+    - export PATH="$HOME/miniconda3/bin:$PATH"
+    - conda install -y -c pytorch pytorch=1.1
     - conda install -y conda-build conda-verify
-    - conda build conda/ -c defaults -c pytorch -c conda-forge -c aahendriksen
+    - conda build conda/ -c defaults -c pytorch -c conda-forge -c aahendriksen -m conda/cuda-${cudatoolkit}.yaml
+    - mkdir -p artifacts
+    - mv /root/miniconda3/conda-bld/linux-64/msd_pytorch*.bz2 artifacts/
+  artifacts:
+    paths:
+    - artifacts/
+    expire_in: 7 days
+
+build-10.0:
+  stage: build
+  image: pytorch/manylinux-cuda100
+  variables:
+    cudatoolkit: "10.0"
+    # See:
+    # pytorch commit cd207737017db8c81584763207df20bc6110ed75
+    # https://en.wikipedia.org/wiki/CUDA#GPUs_supported
+    # https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#options-for-steering-gpu-code-generation-gpu-architecture
+    TORCH_CUDA_ARCH_LIST: "3.5 5.2 6.0 6.1 7.0+PTX"
+  script:
+    - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O install_conda.sh
+    - bash install_conda.sh -b
+    - export PATH="$HOME/miniconda3/bin:$PATH"
+    - conda install -y -c pytorch pytorch=1.1
+    - conda install -y conda-build conda-verify
+    - conda build conda/ -c defaults -c pytorch -c conda-forge -c aahendriksen -m conda/cuda-${cudatoolkit}.yaml
+    - mkdir -p artifacts
+    - mv /root/miniconda3/conda-bld/linux-64/msd_pytorch*.bz2 artifacts/
+  artifacts:
+    paths:
+    - artifacts/
+    expire_in: 7 days
+
+build-10.1:
+  stage: build
+  image: pytorch/manylinux-cuda101
+  variables:
+    cudatoolkit: "10.1"
+    # See:
+    # pytorch commit cd207737017db8c81584763207df20bc6110ed75
+    # https://en.wikipedia.org/wiki/CUDA#GPUs_supported
+    # https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#options-for-steering-gpu-code-generation-gpu-architecture
+    TORCH_CUDA_ARCH_LIST: "3.5 5.2 6.0 6.1 7.0+PTX"
+  script:
+    - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O install_conda.sh
+    - bash install_conda.sh -b
+    - export PATH="$HOME/miniconda3/bin:$PATH"
+    - conda install -y -c pytorch pytorch=1.1
+    - conda install -y conda-build conda-verify
+    - conda build conda/ -c defaults -c pytorch -c conda-forge -c aahendriksen -m conda/cuda-${cudatoolkit}.yaml
     - mkdir -p artifacts
     - mv /root/miniconda3/conda-bld/linux-64/msd_pytorch*.bz2 artifacts/
   artifacts:

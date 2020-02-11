@@ -10,6 +10,10 @@ source:
 
 build:
     number: '12'
+    script_env:
+      # Used to store multiple versions of the CUDA architecture;
+      # Is used by torch from version 1.3 onwards..
+      - TORCH_CUDA_ARCH_LIST
     entry_points:
       - msd=msd_pytorch.main:main_function
 
@@ -20,14 +24,14 @@ requirements:
     host:
         - python
         - setuptools
-        - pytorch==1.1.0
+        - pytorch {{pytorch}}
         - cudatoolkit {{cudatoolkit}}
         {% for dep in data['setup_requires'] %}
         - {{ dep.lower() }}
         {% endfor %}
     run:
         - python
-        - pytorch=1.1.0
+        - {{ pin_compatible('pytorch', max_pin='x.x') }}
         - {{ pin_compatible('cudatoolkit', max_pin='x.x') }}
         # dependencies are defined in setup.py
         {% for dep in data['install_requires'] %}
