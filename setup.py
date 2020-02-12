@@ -118,10 +118,6 @@ setup(
     include_package_data=True,
     keywords='msd_pytorch',
     name='msd_pytorch',
-    entry_points='''
-        [console_scripts]
-        msd=msd_pytorch.main:main_function
-    ''',
     packages=find_packages(include=['msd_pytorch']),
     setup_requires=setup_requirements,
     test_suite='msd_pytorch.tests',

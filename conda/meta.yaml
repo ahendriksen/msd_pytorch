@@ -14,8 +14,6 @@ build:
       # Used to store multiple versions of the CUDA architecture;
       # Is used by torch from version 1.3 onwards..
       - TORCH_CUDA_ARCH_LIST
-    entry_points:
-      - msd=msd_pytorch.main:main_function
 
 requirements:
     build:

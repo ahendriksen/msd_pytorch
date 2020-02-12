@@ -63,60 +63,6 @@ Or, if the standard C++ compiler is compatible with CUDA:
 pip install -e .[dev]
 ```
 
-### Using the tools
-
-The msd_pytorch package ships with some command-line tools to make
-your life easier. If you have input and target images in directories
-`./train/input/` and `./train/target/`, then you can train a network
-to do regression with the following command in your terminal:
-
-``` shell
-msd regression -p with train_input_glob='./train/input/*' train_target_glob='./train/target/*' epochs=10 msd.depth=30
-```
-
-Similarly, segmentation is possible using the following command:
-``` shell
-msd segmentation -p with train_input_glob='./train/input/*' train_target_glob='./train/target/*' epochs=10 msd.depth=30 labels=[0,1,2,3]
-```
-
-More command-line arguments are available
-
-``` yaml
-epochs = 1                         # The number of epochs to train for
-labels = [0, 1]                    # The labels that you expect in your segmentation targets (if you are doing segmentation)
-train_input_glob = ''              # The glob pattern for the training set input data
-train_target_glob = ''             # The glob pattern for the training set target data
-val_input_glob = ''                # The glob pattern for the validation set input data
-val_target_glob = ''               # The glob pattern for the validation set input data
-msd:
-  c_in = 1                         # Number of input channels
-  c_out = 1                        # Number of output channels (for regression; see `labels` for segmentation)
-  depth = 10                       # The depth of the network
-  width = 1                        # The width of the network
-  dilations = [1, 2, ..., 10]      # The dilation-scheme that is used in the network
-  loss = 'L2'                      # Which loss to use for regression (options: "L1" or "L2")
-```
-
-The path specification for the images is a path with optional glob
-pattern describing the image file paths. Tildes and other HOME
-directory specifications are expanded with `os.path.expanduser` and
-symlinks are resolved.
-
-If the path points to a directory, then all files in the directory are
-included. If the path points to file, then that single file is
-included.
-
-Alternatively, one may specify a "glob pattern" to match
-specific files in the directory.
-
-Examples:
-
-* `"~/train_images/"`
-* `"~/train_images/cats*.png"`
-* `"~/train_images/*.tif"`
-* `"~/train_images/scan*"`
-* `"~/train_images/just_one_image.jpeg"`
-
 ### Running the examples
 
 To learn more about the functionality of the package check out our
