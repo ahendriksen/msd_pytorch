@@ -84,7 +84,7 @@ install: clean ## install the package to the active Python's site-packages
 	python setup.py install
 
 install_dev:
-	# conda install pytorch=1.0.1 torchvision cudatoolkit=10.0 -c pytorch
+	# conda install pytorch=1.0.1 cudatoolkit=10.0 -c pytorch
 	# https://stackoverflow.com/a/28842733
 	pip install -e .[dev]
 

@@ -42,8 +42,8 @@ PyTorch.
 To install PyTorch, we recommend using conda. Install PyTorch with
 either of these versions of cudatoolkit:
 ``` shell
-conda install pytorch=1.1.0 torchvision cudatoolkit=10.0 -c pytorch
-conda install pytorch=1.1.0 torchvision cudatoolkit=9.0  -c pytorch
+conda install pytorch=1.1.0 cudatoolkit=10.0 -c pytorch
+conda install pytorch=1.1.0 cudatoolkit=9.0  -c pytorch
 ```
 
 To get the source code, simply clone this GitHub project.
