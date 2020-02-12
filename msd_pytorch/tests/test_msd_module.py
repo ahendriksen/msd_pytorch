@@ -2,7 +2,6 @@ from . import torch_equal
 from pytest import approx
 from msd_pytorch.conv import Conv2dInPlaceModule
 from msd_pytorch.msd_module import MSDModule, MSDFinalLayer
-from msd_pytorch.relu_inplace import ReLUInplaceFunction
 from msd_pytorch.stitch import stitchCopy
 from torch.autograd import Variable
 import msd_pytorch.stitch as stitch
@@ -119,71 +118,6 @@ def test_with_tail():
     loss.backward()
 
     assert output.abs().sum().item() != approx(0.0)
-
-
-def test_backward():
-    dbg = False
-
-    def dbg_print(*args):
-        if dbg:
-            print(*args)
-
-    d = 3
-    input_size = (20, 20)
-    # Prepare layer and gradient storage
-    L = t.zeros(1, d + 1, *input_size).cuda()
-    G = t.zeros(1, d + 1, *input_size).cuda()
-
-    cs = [
-        Conv2dInPlaceModule(None, i + 1, 1, kernel_size=3, dilation=1) for i in range(d)
-    ]
-    relu = nn.ReLU(inplace=True)
-    relu = ReLUInplaceFunction.apply
-
-    for i, c in enumerate(cs):
-        c.weight.data.fill_(i + 1)
-        c.bias.data.fill_(i % 2)
-
-    x = t.Tensor(1, 1, *input_size).fill_(2).cuda()
-    x.requires_grad = True
-
-    dbg_print("A", L._version)
-    output = stitchCopy(x, L, G, 0)
-    dbg_print("B", L._version, output._version, output.grad_fn)
-
-    conv = cs[0]
-    conv.output = L.narrow(1, 1, 1)  # narrow(L, 1, 1, 1)
-    dbg_print("C", L._version, output._version, output.grad_fn)
-    output = conv(x)
-    dbg_print("D", L._version, output._version, output.grad_fn)
-    output = relu(output)
-    dbg_print("E", L._version, output._version, output.grad_fn)
-    output = stitch.stitchLazy(output, L, G, 1)
-    dbg_print("F", L._version, output._version, output.grad_fn)
-
-    conv = cs[1]
-    conv.output = L.narrow(1, 2, 1)  # narrow(L, 1, 2, 1)
-    dbg_print("G", L._version, output._version, output.grad_fn)
-    output = conv(output)
-    dbg_print("H", L._version, output._version, output.grad_fn)
-    output = relu(output)
-    dbg_print("I", L._version, output._version, output.grad_fn)
-    output = stitch.stitchLazy(output, L, G, 2)
-    dbg_print("J", L._version, output._version, output.grad_fn)
-
-    conv = cs[2]
-    dbg_print("K", L._version, output._version, output.grad_fn)
-    conv.output = L.narrow(1, 3, 1)  #
-    dbg_print("L", L._version, output._version, output.grad_fn)
-    output = conv(output)
-    dbg_print("M", L._version, output._version, output.grad_fn)
-    output = relu(output)
-    dbg_print("N", L._version, output._version, output.grad_fn)
-    output = stitch.stitchLazy(output, L, G, 3)
-    dbg_print("O", L._version, output._version, output.grad_fn)
-
-    output.backward(t.ones_like(output))
-    dbg_print(x.grad.shape)
 
 
 def test_parameters_change():

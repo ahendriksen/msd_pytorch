@@ -153,17 +153,6 @@ setup(
                 'nvcc': __nvcc_args(),
             },
         ),
-        CUDAExtension(
-            name='relu_cuda',
-            sources=[
-                'msd_pytorch/relu.cpp',
-                'msd_pytorch/relu_cuda.cu'
-            ],
-            extra_compile_args={
-                'cxx': [],
-                'nvcc': __nvcc_args(),
-            },
-        ),
     ],
     cmdclass={
         'build_ext': BuildExtension,

@@ -2,11 +2,8 @@ import torch.nn as nn
 from msd_pytorch.conv import Conv2dInPlaceModule
 from msd_pytorch.conv_relu import ConvRelu2dInPlaceModule
 from msd_pytorch.stitch import stitchLazy, StitchCopyModule, StitchBuffer
-from msd_pytorch.relu_inplace import ReLUInplaceModule
 from math import sqrt
 import numpy as np
-
-use_conv_relu = True
 
 
 def units_in_front(c_in, width, layer_depth):
@@ -100,24 +97,14 @@ class MSDLayerModule(nn.Module):
         # Set output to None for the Conv2dInPlaceModule for now. We
         # set it in the forward pass.
         output = None
-        if use_conv_relu:
-            self.convolution = ConvRelu2dInPlaceModule(
-                output, in_front, width, kernel_size=3, dilation=dilation
-            )
-        else:
-            self.convolution = Conv2dInPlaceModule(
-                output, in_front, width, kernel_size=3, dilation=dilation
-            )
-            # Add the relu to get a nice printout for the network from
-            # pytorch.
-            self.relu = ReLUInplaceModule()
+        self.convolution = ConvRelu2dInPlaceModule(
+            output, in_front, width, kernel_size=3, dilation=dilation
+        )
 
     def forward(self, input):
         # Set output
         self.convolution.output = self.buffer.L.narrow(1, self.in_front, self.width)
         output = self.convolution(input)
-        if not use_conv_relu:
-            output = self.relu(output)
         output = stitchLazy(output, self.buffer.L, self.buffer.G, self.in_front)
         return output
 
