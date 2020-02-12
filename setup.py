@@ -3,9 +3,11 @@
 
 """The setup script."""
 
+from distutils.core import Command
 from setuptools import setup, find_packages
 from torch.utils.cpp_extension import BuildExtension, CUDAExtension
 import os.path
+import os
 
 with open('README.md') as readme_file:
     readme = readme_file.read()
@@ -51,6 +53,42 @@ dev_requirements = [
     'pytest',
     'pytest-runner'
 ]
+
+
+class EmitNinjaCommand(Command):
+    """A custom command to emit Ninja build files."""
+
+    user_options = []
+    description = 'emit ninja build file'
+
+    def initialize_options(self):
+        """Set default values for options."""
+        # Each user option must be listed here with their default value.
+        pass
+
+    def finalize_options(self):
+        """Post-process options."""
+        pass
+
+    def run(self):
+        """Run command."""
+        from torch.utils.cpp_extension import _write_ninja_file_and_build
+        for e in self.distribution.ext_modules:
+            output_dir = f"./ninja_{e.name}"
+            os.makedirs(output_dir, exist_ok=True)
+
+            _write_ninja_file_and_build(
+                name=e.name,
+                sources=e.sources,
+                extra_cflags=None,       # TODO:
+                extra_cuda_cflags=None,  # TODO:
+                extra_ldflags=e.extra_link_args,
+                extra_include_paths=e.include_dirs,
+                build_directory=output_dir,
+                verbose=True,
+                with_cuda=None,     # auto-detects CUDA
+            )
+
 
 
 def __nvcc_args():
@@ -128,6 +166,7 @@ setup(
         ),
     ],
     cmdclass={
-        'build_ext': BuildExtension
+        'build_ext': BuildExtension,
+        'emit_ninja': EmitNinjaCommand,
     },
 )
