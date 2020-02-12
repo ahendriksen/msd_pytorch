@@ -8,7 +8,7 @@ import torch
 from torch.autograd import Variable
 from torch.autograd import gradcheck
 import torch.nn as nn
-import conv_cuda
+import msd_custom_convolutions as cc
 
 
 def test_conv2d():
@@ -74,7 +74,7 @@ def test_dtype_check():
     k = torch.zeros(1, 1, 3, 3, dtype=d1).cuda()
 
     with pytest.raises(RuntimeError) as e_info:
-        conv_cuda.conv_forward(x, k, bias, y, dilation)
+        cc.conv_forward(x, k, bias, y, dilation)
 
 
 def test_conv():
@@ -91,7 +91,7 @@ def test_conv():
         bias = torch.zeros(1, dtype=dtype).cuda()
         k = torch.zeros(1, 1, 3, 3, dtype=dtype).cuda()
 
-        conv_cuda.conv_forward(x, k, bias, y, dilation, implementation)
+        cc.conv_forward(x, k, bias, y, dilation, implementation)
         assert y.sum().item() == approx(0.0)
 
 
@@ -133,7 +133,7 @@ def test_conv_values():
         k = torch.randn(C_out, C_in, 3, 3, dtype=dtype).cuda()
         bias = torch.randn(C_out, dtype=dtype).cuda()
         y = torch.zeros(B, C_out, *shape, dtype=dtype).cuda()
-        conv_cuda.conv_forward(x, k, bias, y, dilation, impl)
+        cc.conv_forward(x, k, bias, y, dilation, impl)
 
         # Execute pytorch convolution:
         conv_torch = torch.nn.Conv2d(
@@ -217,12 +217,12 @@ def test_conv_backward_x():
         def A(x, k):
             y = torch.zeros(B, k.size(0), *x.shape[2:], dtype=dtype).cuda()
             bias = torch.zeros(k.size(0), dtype=dtype).cuda()
-            conv_cuda.conv_forward(x, k, bias, y, dilation)
+            cc.conv_forward(x, k, bias, y, dilation)
             return y
 
         def AT(y, k):
             x = torch.zeros(B, k.size(1), *y.shape[2:], dtype=dtype).cuda()
-            conv_cuda.conv_backward_x(y, k, x, dilation, implementation)
+            cc.conv_backward_x(y, k, x, dilation, implementation)
             return x
 
         def dot(x, y):
@@ -266,12 +266,12 @@ def test_conv_backward_k():
             y = torch.zeros(B, k.size(0), *x.shape[2:], dtype=dtype).cuda()
             bias = torch.zeros(k.size(0), dtype=dtype).cuda()
             assert x.size(0) == y.size(0), f"{x.shape} , {y.shape}"
-            conv_cuda.conv_forward(x, k, bias, y, dilation)
+            cc.conv_forward(x, k, bias, y, dilation)
             return y
 
         def AT(y, x):
             k_grad = torch.zeros(y.size(1), x.size(1), 3, 3, dtype=dtype).cuda()
-            conv_cuda.conv_backward_k(y, x, k_grad, dilation, implementation)
+            cc.conv_backward_k(y, x, k_grad, dilation, implementation)
             return k_grad
 
         def dot(x, y):
@@ -299,7 +299,7 @@ def test_conv_backward_bias():
     for implementation in [0, 1]:
         grad = torch.randn(B, C_OUT, H, W, dtype=dtype).cuda()
         g_bias = torch.zeros(C_OUT, dtype=dtype).cuda()
-        conv_cuda.conv_backward_bias(grad, g_bias, implementation)
+        cc.conv_backward_bias(grad, g_bias, implementation)
 
         ref_g_bias = grad.sum((0, 2, 3))
         assert ref_g_bias.shape == g_bias.shape

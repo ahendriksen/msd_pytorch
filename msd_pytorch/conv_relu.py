@@ -2,14 +2,14 @@ import torch.nn as nn
 import torch as t
 from torch.autograd import Function
 from torch.nn import Parameter
-import conv_relu_cuda
+import msd_custom_convolutions as cc
 
 
 class ConvRelu2dInPlaceFunction(Function):
     @staticmethod
     def forward(ctx, input, weight, bias, output, stride, dilation):
         ctx.dilation = dilation
-        conv_relu_cuda.conv_relu_forward(input, weight, bias, output.data, dilation)
+        cc.conv_relu_forward(input, weight, bias, output.data, dilation)
         ctx.save_for_backward(input, output, weight, bias)
         return output
 
@@ -24,17 +24,17 @@ class ConvRelu2dInPlaceFunction(Function):
 
         # Input
         grad_input = t.zeros_like(input)
-        conv_relu_cuda.conv_relu_backward_x(
+        cc.conv_relu_backward_x(
             output, grad_output, weight, grad_input, dilation
         )
         # Weight
         grad_weight = t.zeros_like(weight)
-        conv_relu_cuda.conv_relu_backward_k(
+        cc.conv_relu_backward_k(
             output, grad_output, input, grad_weight, dilation
         )
         # Bias
         grad_bias = t.zeros_like(bias)
-        conv_relu_cuda.conv_relu_backward_bias(output, grad_output, grad_bias)
+        cc.conv_relu_backward_bias(output, grad_output, grad_bias)
 
         return grad_input, grad_weight, grad_bias, None, None, None, None
 

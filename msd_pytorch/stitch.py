@@ -191,7 +191,7 @@ class StitchLazyFunction(Function):
     does not copy the output of the previous layer into ``L``. Hence the
     name. ``StitchLazyFunction`` supposes that the output of the the
     previous layer has already been copied into ``L``. This can be
-    accomplished with ``conv_cuda.conv2dInPlace``, for instance.
+    accomplished with ``msd_custom_convolutions.conv2dInPlace``, for instance.
 
     The buffer ``L`` is a tensor of dimensions `B x C x ?` where
 

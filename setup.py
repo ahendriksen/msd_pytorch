@@ -132,21 +132,11 @@ setup(
     zip_safe=False,
     ext_modules=[
         CUDAExtension(
-            name='conv_cuda',
+            name='msd_custom_convolutions',
             sources=[
-                'msd_pytorch/conv.cpp',
-                'msd_pytorch/conv_cuda.cu',
-            ],
-            extra_compile_args={
-                'cxx': [],
-                'nvcc': __nvcc_args(),
-            },
-        ),
-        CUDAExtension(
-            name='conv_relu_cuda',
-            sources=[
-                'msd_pytorch/conv_relu.cpp',
-                'msd_pytorch/conv_relu_cuda.cu',
+                'msd_pytorch/msd_custom_convolutions.cpp',
+                'msd_pytorch/msd_custom_convolutions/conv_cuda.cu',
+                'msd_pytorch/msd_custom_convolutions/conv_relu_cuda.cu',
             ],
             extra_compile_args={
                 'cxx': [],

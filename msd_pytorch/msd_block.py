@@ -1,5 +1,5 @@
 import torch
-import conv_relu_cuda as cr_cuda
+import msd_custom_convolutions as cc
 from msd_pytorch.msd_module import MSDFinalLayer, init_convolution_weights
 import numpy as np
 
@@ -42,7 +42,7 @@ class MSDBlockImpl2d(torch.autograd.Function):
             # Compute convolution. conv_relu_forward computes the
             # convolution and relu in one pass and stores the
             # output in sub_result.
-            cr_cuda.conv_relu_forward(
+            cc.conv_relu_forward(
                 sub_input, sub_weight, sub_bias, sub_result, dilation
             )
 
@@ -85,14 +85,14 @@ class MSDBlockImpl2d(torch.autograd.Function):
             # Gradient w.r.t. input: conv_relu_backward_x computes the
             # gradient wrt sub_input and adds the gradient to
             # sub_grad_input.
-            cr_cuda.conv_relu_backward_x(
+            cc.conv_relu_backward_x(
                 sub_result, sub_grad_output, sub_weight, sub_grad_input, dilation
             )
 
             # Gradient w.r.t weights
             if ctx.needs_input_grad[i + IDX_WEIGHT_START]:
                 sub_grad_weight = torch.zeros_like(sub_weight)
-                cr_cuda.conv_relu_backward_k(
+                cc.conv_relu_backward_k(
                     sub_result, sub_grad_output, sub_input, sub_grad_weight, dilation
                 )
                 grad_weights.insert(0, sub_grad_weight)
@@ -101,7 +101,7 @@ class MSDBlockImpl2d(torch.autograd.Function):
             # Gradient of Bias
             if ctx.needs_input_grad[2]:
                 sub_grad_bias = grad_bias[bias_start:bias_end]
-                cr_cuda.conv_relu_backward_bias(
+                cc.conv_relu_backward_bias(
                     sub_result, sub_grad_output, sub_grad_bias
                 )
 

@@ -8,7 +8,7 @@ import torch
 from torch.autograd import Variable
 from torch.autograd import gradcheck
 import torch.nn as nn
-import conv_relu_cuda
+import msd_custom_convolutions as cc
 
 
 def test_conv2d():
@@ -82,7 +82,7 @@ def test_dtype_check():
     k = torch.zeros(1, 1, 3, 3, dtype=d1).cuda()
 
     with pytest.raises(RuntimeError):
-        conv_relu_cuda.conv_relu_forward(x, k, bias, y, dilation)
+        cc.conv_relu_forward(x, k, bias, y, dilation)
 
 
 def test_conv():
@@ -99,7 +99,7 @@ def test_conv():
         bias = torch.zeros(1, dtype=dtype).cuda()
         k = torch.zeros(1, 1, 3, 3, dtype=dtype).cuda()
 
-        conv_relu_cuda.conv_relu_forward(x, k, bias, y, dilation, implementation)
+        cc.conv_relu_forward(x, k, bias, y, dilation, implementation)
         assert y.sum().item() == approx(0.0)
 
 
@@ -141,7 +141,7 @@ def test_conv_values():
         k = torch.randn(C_out, C_in, 3, 3, dtype=dtype).cuda()
         bias = torch.randn(C_out, dtype=dtype).cuda()
         y = torch.zeros(B, C_out, *shape, dtype=dtype).cuda()
-        conv_relu_cuda.conv_relu_forward(x, k, bias, y, dilation, impl)
+        cc.conv_relu_forward(x, k, bias, y, dilation, impl)
 
         # Execute pytorch convolution:
         conv_torch = torch.nn.Conv2d(
