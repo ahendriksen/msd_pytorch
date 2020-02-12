@@ -85,14 +85,13 @@ def test_conv():
     dtype = torch.float  # or t.double
     dilation = 1
 
-    for implementation in range(2, 6):
-        x = torch.zeros(1, 1, 5, 5, dtype=dtype).cuda()
-        y = torch.ones(1, 1, 5, 5, dtype=dtype).cuda()
-        bias = torch.zeros(1, dtype=dtype).cuda()
-        k = torch.zeros(1, 1, 3, 3, dtype=dtype).cuda()
+    x = torch.zeros(1, 1, 5, 5, dtype=dtype).cuda()
+    y = torch.ones(1, 1, 5, 5, dtype=dtype).cuda()
+    bias = torch.zeros(1, dtype=dtype).cuda()
+    k = torch.zeros(1, 1, 3, 3, dtype=dtype).cuda()
 
-        cc.conv_forward(x, k, bias, y, dilation, implementation)
-        assert y.sum().item() == approx(0.0)
+    cc.conv_forward(x, k, bias, y, dilation)
+    assert y.sum().item() == approx(0.0)
 
 
 def test_conv_values():
@@ -106,26 +105,24 @@ def test_conv_values():
 
     if intensive:
         test_params = [
-            (b, c_in, c_out, dil, size, implementation)
+            (b, c_in, c_out, dil, size)
             for b in [1, 3, 5]
             for c_in in [1, 3, 4]
             for c_out in [1, 2, 3]
             for dil in range(1, 10)
             for size in [dil * 2 + 1, 50, 1023]
-            for implementation in range(2, 6)
         ]
     else:
         test_params = [
-            (b, c_in, c_out, dil, size, implementation)
+            (b, c_in, c_out, dil, size)
             for b in [2]
             for c_in in [3]
             for c_out in [5]
             for dil in [1, 3, 10]
             for size in [dil * 2 + 1, 29, 50]
-            for implementation in range(2, 6)
         ]
 
-    for (B, C_in, C_out, dilation, size, impl) in test_params:
+    for (B, C_in, C_out, dilation, size) in test_params:
         shape = (size, 2 * size)
 
         # Execute my own implementation
@@ -133,7 +130,7 @@ def test_conv_values():
         k = torch.randn(C_out, C_in, 3, 3, dtype=dtype).cuda()
         bias = torch.randn(C_out, dtype=dtype).cuda()
         y = torch.zeros(B, C_out, *shape, dtype=dtype).cuda()
-        cc.conv_forward(x, k, bias, y, dilation, impl)
+        cc.conv_forward(x, k, bias, y, dilation)
 
         # Execute pytorch convolution:
         conv_torch = torch.nn.Conv2d(
@@ -212,29 +209,28 @@ def test_conv_backward_x():
     W = 257                 # Width
     dilation = 10           # Dilation
 
-    for implementation in [0, 1]:
-        # Define operators
-        def A(x, k):
-            y = torch.zeros(B, k.size(0), *x.shape[2:], dtype=dtype).cuda()
-            bias = torch.zeros(k.size(0), dtype=dtype).cuda()
-            cc.conv_forward(x, k, bias, y, dilation)
-            return y
+    # Define operators
+    def A(x, k):
+        y = torch.zeros(B, k.size(0), *x.shape[2:], dtype=dtype).cuda()
+        bias = torch.zeros(k.size(0), dtype=dtype).cuda()
+        cc.conv_forward(x, k, bias, y, dilation)
+        return y
 
-        def AT(y, k):
-            x = torch.zeros(B, k.size(1), *y.shape[2:], dtype=dtype).cuda()
-            cc.conv_backward_x(y, k, x, dilation, implementation)
-            return x
+    def AT(y, k):
+        x = torch.zeros(B, k.size(1), *y.shape[2:], dtype=dtype).cuda()
+        cc.conv_backward_x(y, k, x, dilation)
+        return x
 
-        def dot(x, y):
-            return (x.flatten() * y.flatten()).sum().item()
+    def dot(x, y):
+        return (x.flatten() * y.flatten()).sum().item()
 
-        # Test
-        for i in range(10):
-            f = torch.randn(B, C_IN, H, W, dtype=dtype).cuda()
-            g = torch.randn(B, C_OUT, H, W, dtype=dtype).cuda()
-            k = torch.randn(C_OUT, C_IN, 3, 3, dtype=dtype).cuda()
+    # Test
+    for i in range(10):
+        f = torch.randn(B, C_IN, H, W, dtype=dtype).cuda()
+        g = torch.randn(B, C_OUT, H, W, dtype=dtype).cuda()
+        k = torch.randn(C_OUT, C_IN, 3, 3, dtype=dtype).cuda()
 
-            assert dot(A(f, k), g) == approx(dot(f, AT(g, k)))
+        assert dot(A(f, k), g) == approx(dot(f, AT(g, k)))
 
 
 def test_conv_backward_k():
@@ -260,31 +256,30 @@ def test_conv_backward_k():
     H = 259                 # Height
     W = 523                 # Width
     dilation = 10           # Dilation
-    for implementation in [1]:
-        # Define operators
-        def A(k, x):
-            y = torch.zeros(B, k.size(0), *x.shape[2:], dtype=dtype).cuda()
-            bias = torch.zeros(k.size(0), dtype=dtype).cuda()
-            assert x.size(0) == y.size(0), f"{x.shape} , {y.shape}"
-            cc.conv_forward(x, k, bias, y, dilation)
-            return y
+    # Define operators
+    def A(k, x):
+        y = torch.zeros(B, k.size(0), *x.shape[2:], dtype=dtype).cuda()
+        bias = torch.zeros(k.size(0), dtype=dtype).cuda()
+        assert x.size(0) == y.size(0), f"{x.shape} , {y.shape}"
+        cc.conv_forward(x, k, bias, y, dilation)
+        return y
 
-        def AT(y, x):
-            k_grad = torch.zeros(y.size(1), x.size(1), 3, 3, dtype=dtype).cuda()
-            cc.conv_backward_k(y, x, k_grad, dilation, implementation)
-            return k_grad
+    def AT(y, x):
+        k_grad = torch.zeros(y.size(1), x.size(1), 3, 3, dtype=dtype).cuda()
+        cc.conv_backward_k(y, x, k_grad, dilation)
+        return k_grad
 
-        def dot(x, y):
-            return (x.flatten() * y.flatten()).sum().item()
+    def dot(x, y):
+        return (x.flatten() * y.flatten()).sum().item()
 
-        # Test
-        for i in range(10):
-            x = torch.randn(B, C_IN, H, W, dtype=dtype).cuda()
-            g = torch.randn(B, C_OUT, H, W, dtype=dtype).cuda()
+    # Test
+    for i in range(10):
+        x = torch.randn(B, C_IN, H, W, dtype=dtype).cuda()
+        g = torch.randn(B, C_OUT, H, W, dtype=dtype).cuda()
 
-            k = torch.randn(C_OUT, C_IN, 3, 3, dtype=dtype).cuda()
+        k = torch.randn(C_OUT, C_IN, 3, 3, dtype=dtype).cuda()
 
-            assert dot(A(k, x), g) == approx(dot(k, AT(g, x)))
+        assert dot(A(k, x), g) == approx(dot(k, AT(g, x)))
 
 
 def test_conv_backward_bias():
@@ -296,11 +291,11 @@ def test_conv_backward_bias():
     C_OUT = 2               # Output channels (for g)
     H = 259                 # Height
     W = 599                 # Width
-    for implementation in [0, 1]:
-        grad = torch.randn(B, C_OUT, H, W, dtype=dtype).cuda()
-        g_bias = torch.zeros(C_OUT, dtype=dtype).cuda()
-        cc.conv_backward_bias(grad, g_bias, implementation)
 
-        ref_g_bias = grad.sum((0, 2, 3))
-        assert ref_g_bias.shape == g_bias.shape
-        assert torch_equal(ref_g_bias, g_bias)
+    grad = torch.randn(B, C_OUT, H, W, dtype=dtype).cuda()
+    g_bias = torch.zeros(C_OUT, dtype=dtype).cuda()
+    cc.conv_backward_bias(grad, g_bias)
+
+    ref_g_bias = grad.sum((0, 2, 3))
+    assert ref_g_bias.shape == g_bias.shape
+    assert torch_equal(ref_g_bias, g_bias)

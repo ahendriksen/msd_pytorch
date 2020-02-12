@@ -9,3 +9,4 @@ __pycache__
 /.coverage
 *.doctree
 /docs/doctrees/*.pickle
+/ninja_msd_custom_convolutions

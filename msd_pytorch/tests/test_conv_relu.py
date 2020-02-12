@@ -93,14 +93,13 @@ def test_conv():
     dtype = torch.float  # or t.double
     dilation = 1
 
-    for implementation in [2, 3, 4, 5]:
-        x = torch.zeros(1, 1, 5, 5, dtype=dtype).cuda()
-        y = torch.ones(1, 1, 5, 5, dtype=dtype).cuda()
-        bias = torch.zeros(1, dtype=dtype).cuda()
-        k = torch.zeros(1, 1, 3, 3, dtype=dtype).cuda()
+    x = torch.zeros(1, 1, 5, 5, dtype=dtype).cuda()
+    y = torch.ones(1, 1, 5, 5, dtype=dtype).cuda()
+    bias = torch.zeros(1, dtype=dtype).cuda()
+    k = torch.zeros(1, 1, 3, 3, dtype=dtype).cuda()
 
-        cc.conv_relu_forward(x, k, bias, y, dilation, implementation)
-        assert y.sum().item() == approx(0.0)
+    cc.conv_relu_forward(x, k, bias, y, dilation)
+    assert y.sum().item() == approx(0.0)
 
 
 def test_conv_values():
@@ -114,26 +113,24 @@ def test_conv_values():
 
     if intensive:
         test_params = [
-            (b, c_in, c_out, dil, size, implementation)
+            (b, c_in, c_out, dil, size)
             for b in [1, 3, 5]
             for c_in in [1, 3, 4]
             for c_out in [1, 2, 3]
             for dil in range(1, 10)
             for size in [dil * 2 + 1, 50, 1023]
-            for implementation in range(2, 6)
         ]
     else:
         test_params = [
-            (b, c_in, c_out, dil, size, implementation)
+            (b, c_in, c_out, dil, size)
             for b in [2]
             for c_in in [3]
             for c_out in [5]
             for dil in [1, 3, 10]
             for size in [dil * 2 + 1, 29, 50]
-            for implementation in range(2, 6)
         ]
 
-    for (B, C_in, C_out, dilation, size, impl) in test_params:
+    for (B, C_in, C_out, dilation, size) in test_params:
         shape = (size, 2 * size)
 
         # Execute my own implementation
@@ -141,7 +138,7 @@ def test_conv_values():
         k = torch.randn(C_out, C_in, 3, 3, dtype=dtype).cuda()
         bias = torch.randn(C_out, dtype=dtype).cuda()
         y = torch.zeros(B, C_out, *shape, dtype=dtype).cuda()
-        cc.conv_relu_forward(x, k, bias, y, dilation, impl)
+        cc.conv_relu_forward(x, k, bias, y, dilation)
 
         # Execute pytorch convolution:
         conv_torch = torch.nn.Conv2d(
@@ -161,7 +158,6 @@ def test_conv_values():
         assert torch_equal(y1_, y_), (
             f"for shape {shape} and dilation {dilation} "
             f"and bias {bias}"
-            f"and implementation {impl}\n"
             f"Your implementation:\n{y}"
             f"\nPyTorch:\n{y1}"
         )
