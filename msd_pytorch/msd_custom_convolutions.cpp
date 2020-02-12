@@ -15,29 +15,22 @@ at::Tensor conv_cuda_forward(at::Tensor input_t,
 			     at::Tensor bias_t,
 			     at::Tensor out_t,
 			     int dilation,
-			     int implementation,
 			     int block_size);
 
 void conv_cuda_backward_x(at::Tensor grad_output_t, at::Tensor kernel_t,
 			  at::Tensor grad_input_t,
 			  int dilation,
-			  int implementation,
 			  int block_size);
 
 void conv_cuda_backward_k(at::Tensor grad_output, at::Tensor input,
 			  at::Tensor grad_kernel,
-			  int dilation, int implementation, int block_size);
-
-void conv_cuda_backward_bias(at::Tensor grad_output,
-			     at::Tensor grad_bias,
-			     int implementation, int block_size);
+			  int dilation, int block_size);
 
 at::Tensor conv_relu_cuda_forward(at::Tensor input_t,
 				  at::Tensor kernel_t,
 				  at::Tensor bias_t,
 				  at::Tensor out_t,
 				  int dilation,
-				  int implementation,
 				  int block_size);
 
 void conv_relu_cuda_backward_x(at::Tensor output_t,
@@ -45,19 +38,18 @@ void conv_relu_cuda_backward_x(at::Tensor output_t,
 			       at::Tensor kernel_t,
 			       at::Tensor grad_input_t,
 			       int dilation,
-			       int implementation,
 			       int block_size);
 
 void conv_relu_cuda_backward_k(at::Tensor output,
 			       at::Tensor grad_output,
 			       at::Tensor input,
 			       at::Tensor grad_kernel,
-			       int dilation, int implementation, int block_size);
+			       int dilation, int block_size);
 
 void conv_relu_cuda_backward_bias(at::Tensor output,
 				  at::Tensor grad_output,
 				  at::Tensor grad_bias,
-				  int implementation, int block_size);
+				  int block_size);
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                  Macros                                   //
@@ -111,8 +103,7 @@ at::Tensor conv_forward(at::Tensor input,
     AT_ASSERTM(input.size(2) == output.size(2), "Input and output shape do not match");
     AT_ASSERTM(input.size(3) == output.size(3), "Input and output shape do not match");
 
-    int implementation = 5;
-    return conv_cuda_forward(input, kernel, bias, output, dilation, implementation, block_size);
+    return conv_cuda_forward(input, kernel, bias, output, dilation, block_size);
 }
 
 void conv_backward_x(at::Tensor grad_output,
@@ -143,8 +134,7 @@ void conv_backward_x(at::Tensor grad_output,
     AT_ASSERTM(grad_input.size(2) == grad_output.size(2), "Grad_input and grad_output shape do not match");
     AT_ASSERTM(grad_input.size(3) == grad_output.size(3), "Grad_input and grad_output shape do not match");
 
-    int implementation = 1;
-    conv_cuda_backward_x(grad_output, kernel, grad_input, dilation, implementation, block_size);
+    conv_cuda_backward_x(grad_output, kernel, grad_input, dilation, block_size);
 }
 
 void conv_backward_k(at::Tensor grad_output,
@@ -176,8 +166,7 @@ void conv_backward_k(at::Tensor grad_output,
     AT_ASSERTM(input.size(2) == grad_output.size(2), "Grad_input and grad_output shape do not match");
     AT_ASSERTM(input.size(3) == grad_output.size(3), "Grad_input and grad_output shape do not match");
 
-    int implementation = 1;
-    conv_cuda_backward_k(grad_output, input, grad_kernel, dilation, implementation, block_size);
+    conv_cuda_backward_k(grad_output, input, grad_kernel, dilation, block_size);
 }
 
 void conv_backward_bias(at::Tensor grad_output,
@@ -248,8 +237,7 @@ at::Tensor conv_relu_forward(at::Tensor input,
     AT_ASSERTM(input.size(2) == output.size(2), "Input and output shape do not match");
     AT_ASSERTM(input.size(3) == output.size(3), "Input and output shape do not match");
 
-    int implementation = 5;
-    return conv_relu_cuda_forward(input, kernel, bias, output, dilation, implementation, block_size);
+    return conv_relu_cuda_forward(input, kernel, bias, output, dilation, block_size);
 }
 
 void conv_relu_backward_x(at::Tensor output,
@@ -286,8 +274,7 @@ void conv_relu_backward_x(at::Tensor output,
     AT_ASSERTM(grad_input.size(2) == grad_output.size(2), "Grad_input and grad_output shape do not match");
     AT_ASSERTM(grad_input.size(3) == grad_output.size(3), "Grad_input and grad_output shape do not match");
 
-    int implementation = 1;
-    conv_relu_cuda_backward_x(output, grad_output, kernel, grad_input, dilation, implementation, block_size);
+    conv_relu_cuda_backward_x(output, grad_output, kernel, grad_input, dilation, block_size);
 }
 
 void conv_relu_backward_k(at::Tensor output,
@@ -325,8 +312,7 @@ void conv_relu_backward_k(at::Tensor output,
     AT_ASSERTM(input.size(2) == grad_output.size(2), "Grad_input and grad_output shape do not match");
     AT_ASSERTM(input.size(3) == grad_output.size(3), "Grad_input and grad_output shape do not match");
 
-    int implementation = 1;
-    conv_relu_cuda_backward_k(output, grad_output, input, grad_kernel, dilation, implementation, block_size);
+    conv_relu_cuda_backward_k(output, grad_output, input, grad_kernel, dilation, block_size);
 }
 
 void conv_relu_backward_bias(at::Tensor output,
@@ -351,8 +337,7 @@ void conv_relu_backward_bias(at::Tensor output,
     // Check bias length == output channel
     AT_ASSERTM(grad_bias.size(0) == grad_output.size(1), "Grad_bias shape does not match grad_output channels");
 
-    int implementation = 1;
-    conv_relu_cuda_backward_bias(output, grad_output, grad_bias, implementation, block_size);
+    conv_relu_cuda_backward_bias(output, grad_output, grad_bias, block_size);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
