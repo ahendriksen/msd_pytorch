@@ -1,11 +1,25 @@
 #pragma once
 
-#include <ATen/ATen.h>
-#include "THC/THC.h"
-#include "THC/THCDeviceTensor.cuh"
+#include <torch/extension.h>
+#include <cuda.h>
+#include <cuda_runtime.h>
 
-
+/**
+   Computes ceil(a / b)
+*/
+template <typename T>
+__host__ __device__ __forceinline__ T CeilDiv(T a, T b) {
+  return (a + b - 1) / b;
 }
+
+
+#define CudaCheck(err)                                                          \
+    do {                                                                        \
+        if(err != cudaSuccess) {                                                \
+            AT_ERROR("Cuda error=", err, " : ", cudaGetErrorString(err));       \
+        }                                                                       \
+    } while(0)                                                                  \
+
 
 template<typename T, size_t N, template <typename U> class PtrTraits = torch::DefaultPtrTraits, typename index_t = int64_t>
 class UnpackableTensorAccessor : public torch::PackedTensorAccessor<T,N,PtrTraits,index_t> {

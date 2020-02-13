@@ -1,17 +1,51 @@
 // -*- eval:(c++-mode); c-file-style: "bsd"; -*-
-#include <ATen/ATen.h>
-
+#include <torch/extension.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
-
 #include <vector>
-
-#include "THC/THC.h"
-#include "THC/THCDeviceTensor.cuh"
+// THCAtomics is a private, but very useful api for adding things
+// atomatically. We use atomticAdd.
 #include "THC/THCAtomics.cuh"
-#include "THC/THCDeviceUtils.cuh"
+// For multi-device code, we have to get the correct CUDA stream to
+// run the computations on. We therefore have to use this private API.
+#include <c10/cuda/CUDAStream.h>
+
 #include "device_tensor.h"
 
+/**
+ * A OptionalDeviceGuard is an RAII class that sets a device to some value on
+ * initialization, and resets the device to its original value on destruction.
+ * Morally, a OptionalDeviceGuard is equivalent to optional<DeviceGuard>, but
+ * with extra constructors and methods as appropriate.
+ *
+ * Unlike DeviceGuard, a OptionalDeviceGuard may be uninitialized.  This occurs
+ * when you use the nullary constructor, or pass a nullopt to the constructor.
+ * Uninitialized OptionalDeviceGuards do *nothing*; they do not know what the
+ * original device was and they do not reset on destruction.  This is why
+ * original_device() and current_device() return optional<Device> rather than
+ * Device (as they do in DeviceGuard), and also is why we didn't just
+ * provide OptionalDeviceGuard by default and hide DeviceGuard from users.
+ *
+ * The semantics of an OptionalDeviceGuard are exactly explained by thinking
+ * of it as an optional<DeviceGuard>.  In particular, an initialized
+ * OptionalDeviceGuard doesn't restore device to its value at construction; it
+ * restores device to its value *at initialization*.  So if you have the
+ * program:
+ *
+ *     setDevice(1);
+ *     OptionalDeviceGuard g;
+ *     setDevice(2);
+ *     g.set_device(3);  // initializes!
+ *
+ * On destruction, g will reset device to 2, rather than 1.
+ *
+ * An uninitialized OptionalDeviceGuard is distinct from a (initialized)
+ * DeviceGuard whose original_device_ and current_device_ match, since the
+ * DeviceGuard will still reset the device to original_device_.
+ */
+// from: torch/include/c10/core/DeviceGuard.h
+// We use the OptionalDeviceGuard for multi-GPU programming to make
+// sure that the computations take place where the data is.
 using at::OptionalDeviceGuard;
 
 __device__ __forceinline__ int
@@ -343,14 +377,14 @@ at::Tensor conv_relu_cuda_forward(at::Tensor input_t,
         dTensor4R out_d = toDeviceTensorR<scalar_t,4>(out_t);
 	dTensor1R bias_d = toDeviceTensorR<scalar_t, 1>(bias_t);
 
-        dim3 gridSize(THCCeilDiv(input_d.size(3), block_size),
-                      THCCeilDiv(input_d.size(2), block_size));
+        dim3 gridSize(CeilDiv(input_d.size(3), block_size),
+                      CeilDiv(input_d.size(2), block_size));
         dim3 blockSize(block_size, block_size);
     	auto buffer_sz = kernel_t.numel() * sizeof(scalar_t);
 	conv_relu_forward<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
 	    (input_d, kernel_d, bias_d, out_d, dilation);
 
-    	THCudaCheck(cudaGetLastError());
+    	CudaCheck(cudaGetLastError());
     }));
     return out_t;
 }
@@ -370,14 +404,14 @@ void conv_relu_cuda_backward_x(at::Tensor output_t,
         dTensor4R grad_output_d = toDeviceTensorR<scalar_t,4>(grad_output_t);
         dTensor4R grad_input_d = toDeviceTensorR<scalar_t,4>(grad_input_t);
 	dTensor4R kernel_d = toDeviceTensorR<scalar_t,4>(kernel_t);
-        dim3 gridSize(THCCeilDiv((int) grad_output_d.size(3), block_size),
-                      THCCeilDiv((int) grad_output_d.size(2), block_size));
+        dim3 gridSize(CeilDiv((int) grad_output_d.size(3), block_size),
+                      CeilDiv((int) grad_output_d.size(2), block_size));
         dim3 blockSize(block_size, block_size);
     	auto buffer_sz = kernel_t.numel() * sizeof(scalar_t);
 	conv_relu_backward_x<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
 	    (output_d, grad_output_d, kernel_d, grad_input_d, dilation);
 
-    	THCudaCheck(cudaGetLastError());
+    	CudaCheck(cudaGetLastError());
     }));
 }
 
@@ -394,13 +428,13 @@ void conv_relu_cuda_backward_k(at::Tensor output, at::Tensor grad_output, at::Te
         dTensor4R grad_output_d = toDeviceTensorR<scalar_t,4>(grad_output);
         dTensor4R input_d = toDeviceTensorR<scalar_t,4>(input);
 	dTensor4R grad_kernel_d = toDeviceTensorR<scalar_t,4>(grad_kernel);
-        dim3 gridSize(THCCeilDiv((int) grad_output_d.size(3), block_size),
-                      THCCeilDiv((int) grad_output_d.size(2), block_size));
+        dim3 gridSize(CeilDiv((int) grad_output_d.size(3), block_size),
+                      CeilDiv((int) grad_output_d.size(2), block_size));
         dim3 blockSize(block_size, block_size);
 	conv_relu_backward_k<scalar_t><<<gridSize, blockSize, 0, stream>>>
 	    (output_d, grad_output_d, input_d, grad_kernel_d, dilation);
 
-    	THCudaCheck(cudaGetLastError());
+    	CudaCheck(cudaGetLastError());
     }));
 }
 
@@ -417,12 +451,12 @@ void conv_relu_cuda_backward_bias(at::Tensor output,
         dTensor4R output_d = toDeviceTensorR<scalar_t,4>(output);
         dTensor4R grad_output_d = toDeviceTensorR<scalar_t,4>(grad_output);
 	dTensor1R grad_bias_d = toDeviceTensorR<scalar_t,1>(grad_bias);
-        dim3 gridSize(THCCeilDiv((int) grad_output_d.size(3), block_size),
-                      THCCeilDiv((int) grad_output_d.size(2), block_size));
+        dim3 gridSize(CeilDiv((int) grad_output_d.size(3), block_size),
+                      CeilDiv((int) grad_output_d.size(2), block_size));
         dim3 blockSize(block_size, block_size);
 	conv_relu_backward_bias<scalar_t><<<gridSize, blockSize, 0, stream>>>
 	    (output_d, grad_output_d, grad_bias_d);
 
-    	THCudaCheck(cudaGetLastError());
+    	CudaCheck(cudaGetLastError());
     }));
 }
