@@ -11,6 +11,7 @@
 #include <c10/cuda/CUDAStream.h>
 
 #include "device_tensor.h"
+#include "utils.h"
 
 /**
  * A OptionalDeviceGuard is an RAII class that sets a device to some value on
