@@ -1,7 +1,4 @@
 #include <torch/extension.h>
-#include <vector>
-#include "ATen/TensorUtils.h"
-#include "ATen/ScalarType.h"
 #include <pybind11/pybind11.h>
 
 namespace py = pybind11;
@@ -10,71 +7,75 @@ using namespace pybind11::literals;
 ///////////////////////////////////////////////////////////////////////////////
 //                   Forward declaration of CUDA functions                   //
 ///////////////////////////////////////////////////////////////////////////////
-at::Tensor conv_cuda_forward(at::Tensor input_t,
-                             at::Tensor kernel_t,
-                             at::Tensor bias_t,
-                             at::Tensor out_t,
+torch::Tensor conv_cuda_forward(torch::Tensor input_t,
+                             torch::Tensor kernel_t,
+                             torch::Tensor bias_t,
+                             torch::Tensor out_t,
                              int dilation,
                              int block_size);
 
-void conv_cuda_backward_x(at::Tensor grad_output_t, at::Tensor kernel_t,
-                          at::Tensor grad_input_t,
+void conv_cuda_backward_x(torch::Tensor grad_output_t, torch::Tensor kernel_t,
+                          torch::Tensor grad_input_t,
                           int dilation,
                           int block_size);
 
-void conv_cuda_backward_k(at::Tensor grad_output, at::Tensor input,
-                          at::Tensor grad_kernel,
+void conv_cuda_backward_k(torch::Tensor grad_output, torch::Tensor input,
+                          torch::Tensor grad_kernel,
                           int dilation, int block_size);
 
-at::Tensor conv_relu_cuda_forward(at::Tensor input_t,
-                                  at::Tensor kernel_t,
-                                  at::Tensor bias_t,
-                                  at::Tensor out_t,
+torch::Tensor conv_relu_cuda_forward(torch::Tensor input_t,
+                                  torch::Tensor kernel_t,
+                                  torch::Tensor bias_t,
+                                  torch::Tensor out_t,
                                   int dilation,
                                   int block_size);
 
-void conv_relu_cuda_backward_x(at::Tensor output_t,
-                               at::Tensor grad_output_t,
-                               at::Tensor kernel_t,
-                               at::Tensor grad_input_t,
+void conv_relu_cuda_backward_x(torch::Tensor output_t,
+                               torch::Tensor grad_output_t,
+                               torch::Tensor kernel_t,
+                               torch::Tensor grad_input_t,
                                int dilation,
                                int block_size);
 
-void conv_relu_cuda_backward_k(at::Tensor output,
-                               at::Tensor grad_output,
-                               at::Tensor input,
-                               at::Tensor grad_kernel,
+void conv_relu_cuda_backward_k(torch::Tensor output,
+                               torch::Tensor grad_output,
+                               torch::Tensor input,
+                               torch::Tensor grad_kernel,
                                int dilation, int block_size);
 
-void conv_relu_cuda_backward_bias(at::Tensor output,
-                                  at::Tensor grad_output,
-                                  at::Tensor grad_bias,
+void conv_relu_cuda_backward_bias(torch::Tensor output,
+                                  torch::Tensor grad_output,
+                                  torch::Tensor grad_bias,
                                   int block_size);
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                  Macros                                   //
 ///////////////////////////////////////////////////////////////////////////////
 #define CHECK_CUDA(x) AT_ASSERTM(x.type().is_cuda(), #x " must be a CUDA tensor")
-#define CHECK_CONTIGUOUS(x)                                                    \
-  AT_ASSERTM(x.is_contiguous(), #x " must be contiguous")
-#define CHECK_INPUT(x)                                                         \
-  CHECK_CUDA(x);                                                               \
-  CHECK_CONTIGUOUS(x)
-
+#define CHECK_CONTIGUOUS(x) AT_ASSERTM(x.is_contiguous(), #x " must be contiguous")
+#define CHECK_INPUT(x) CHECK_CUDA(x); CHECK_CONTIGUOUS(x)
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                 Functions                                 //
 ///////////////////////////////////////////////////////////////////////////////
-at::Tensor conv_forward(at::Tensor input,
-                        at::Tensor kernel,
-                        at::Tensor bias,
-                        at::Tensor output,
+torch::Tensor conv_forward(torch::Tensor input,
+                        torch::Tensor kernel,
+                        torch::Tensor bias,
+                        torch::Tensor output,
                         int dilation,
                         int block_size) {
     CHECK_CUDA(input);
     CHECK_CUDA(output);
     CHECK_CUDA(bias);
     CHECK_INPUT(kernel);        // kernel must be contiguous.
+
+    torch::TensorArg arg_input(input, "input", 0);
+    torch::TensorArg arg_kernel(kernel, "kernel", 1);
+    torch::TensorArg arg_bias(bias, "bias", 2);
+    torch::TensorArg arg_output(output, "output", 3);
+
+    // Check same device (only for forward pass)
+    torch::checkAllSameGPU("conv_forward", {arg_input, arg_kernel, arg_bias, arg_output});
 
     // Check data type
     AT_ASSERTM(input.type() == kernel.type(), "input and kernel must have same type");
@@ -106,9 +107,9 @@ at::Tensor conv_forward(at::Tensor input,
     return conv_cuda_forward(input, kernel, bias, output, dilation, block_size);
 }
 
-void conv_backward_x(at::Tensor grad_output,
-                     at::Tensor kernel,
-                     at::Tensor grad_input,
+void conv_backward_x(torch::Tensor grad_output,
+                     torch::Tensor kernel,
+                     torch::Tensor grad_input,
                      int dilation,
                      int block_size) {
     CHECK_INPUT(kernel);        // kernel must be contiguous
@@ -137,9 +138,9 @@ void conv_backward_x(at::Tensor grad_output,
     conv_cuda_backward_x(grad_output, kernel, grad_input, dilation, block_size);
 }
 
-void conv_backward_k(at::Tensor grad_output,
-                     at::Tensor input,
-                     at::Tensor grad_kernel,
+void conv_backward_k(torch::Tensor grad_output,
+                     torch::Tensor input,
+                     torch::Tensor grad_kernel,
                      int dilation,
                      int block_size) {
 
@@ -169,8 +170,8 @@ void conv_backward_k(at::Tensor grad_output,
     conv_cuda_backward_k(grad_output, input, grad_kernel, dilation, block_size);
 }
 
-void conv_backward_bias(at::Tensor grad_output,
-                        at::Tensor grad_bias,
+void conv_backward_bias(torch::Tensor grad_output,
+                        torch::Tensor grad_bias,
                         int block_size) {
 
     CHECK_CUDA(grad_output);
@@ -186,15 +187,15 @@ void conv_backward_bias(at::Tensor grad_output,
     AT_ASSERTM(grad_bias.size(0) == grad_output.size(1), "Grad_bias shape does not match grad_output channels");
 
     const int64_t dims_[3]  = {0, 2, 3};
-    auto dims = at::IntList(dims_, 3);
+    auto dims = torch::IntList(dims_, 3);
     auto g = grad_output.sum(dims);
     grad_bias += g;
 }
 
-at::Tensor conv_relu_forward(at::Tensor input,
-                        at::Tensor kernel,
-                        at::Tensor bias,
-                        at::Tensor output,
+torch::Tensor conv_relu_forward(torch::Tensor input,
+                        torch::Tensor kernel,
+                        torch::Tensor bias,
+                        torch::Tensor output,
                         int dilation,
                         int block_size) {
     CHECK_CUDA(input);
@@ -207,8 +208,8 @@ at::Tensor conv_relu_forward(at::Tensor input,
     torch::TensorArg arg_bias(bias, "bias", 2);
     torch::TensorArg arg_output(output, "output", 3);
 
-    // Check same device
-    at::checkAllSameGPU("conv_relu_forward", {arg_input, arg_kernel, arg_bias, arg_output});
+    // Check same device (only for forward pass)
+    torch::checkAllSameGPU("conv_relu_forward", {arg_input, arg_kernel, arg_bias, arg_output});
 
     // Check data type
     AT_ASSERTM(input.type() == kernel.type(), "input and kernel must have same type");
@@ -240,10 +241,10 @@ at::Tensor conv_relu_forward(at::Tensor input,
     return conv_relu_cuda_forward(input, kernel, bias, output, dilation, block_size);
 }
 
-void conv_relu_backward_x(at::Tensor output,
-                          at::Tensor grad_output,
-                          at::Tensor kernel,
-                          at::Tensor grad_input,
+void conv_relu_backward_x(torch::Tensor output,
+                          torch::Tensor grad_output,
+                          torch::Tensor kernel,
+                          torch::Tensor grad_input,
                           int dilation,
                           int block_size) {
     CHECK_INPUT(kernel);        // kernel must be contiguous
@@ -277,10 +278,10 @@ void conv_relu_backward_x(at::Tensor output,
     conv_relu_cuda_backward_x(output, grad_output, kernel, grad_input, dilation, block_size);
 }
 
-void conv_relu_backward_k(at::Tensor output,
-                          at::Tensor grad_output,
-                          at::Tensor input,
-                          at::Tensor grad_kernel,
+void conv_relu_backward_k(torch::Tensor output,
+                          torch::Tensor grad_output,
+                          torch::Tensor input,
+                          torch::Tensor grad_kernel,
                           int dilation,
                           int block_size) {
 
@@ -315,9 +316,9 @@ void conv_relu_backward_k(at::Tensor output,
     conv_relu_cuda_backward_k(output, grad_output, input, grad_kernel, dilation, block_size);
 }
 
-void conv_relu_backward_bias(at::Tensor output,
-                             at::Tensor grad_output,
-                             at::Tensor grad_bias,
+void conv_relu_backward_bias(torch::Tensor output,
+                             torch::Tensor grad_output,
+                             torch::Tensor grad_bias,
                              int block_size) {
 
     CHECK_CUDA(output);

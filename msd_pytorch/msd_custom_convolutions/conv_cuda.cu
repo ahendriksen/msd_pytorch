@@ -2,7 +2,6 @@
 #include <torch/extension.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
-#include <vector>
 // THCAtomics is a private, but very useful api for adding things
 // atomatically. We use atomticAdd.
 #include "THC/THCAtomics.cuh"
@@ -47,7 +46,7 @@
 // from: torch/include/c10/core/DeviceGuard.h
 // We use the OptionalDeviceGuard for multi-GPU programming to make
 // sure that the computations take place where the data is.
-using at::OptionalDeviceGuard;
+using torch::OptionalDeviceGuard;
 
 __device__ __forceinline__ int
 reflect(int i, int dimi) {
@@ -311,10 +310,10 @@ conv_forward(dTensor4R input,
 //                        Kernel preparation functions                       //
 ///////////////////////////////////////////////////////////////////////////////
 
-at::Tensor conv_cuda_forward(at::Tensor input_t,
-                             at::Tensor kernel_t,
-                             at::Tensor bias_t,
-                             at::Tensor out_t,
+torch::Tensor conv_cuda_forward(torch::Tensor input_t,
+                             torch::Tensor kernel_t,
+                             torch::Tensor bias_t,
+                             torch::Tensor out_t,
                              int dilation,
                              int block_size) {
     OptionalDeviceGuard device_guard(device_of(input_t));
@@ -340,12 +339,12 @@ at::Tensor conv_cuda_forward(at::Tensor input_t,
     return out_t;
 }
 
-void conv_cuda_backward_x(at::Tensor grad_output_t,
-                          at::Tensor kernel_t,
-                          at::Tensor grad_input_t,
+void conv_cuda_backward_x(torch::Tensor grad_output_t,
+                          torch::Tensor kernel_t,
+                          torch::Tensor grad_input_t,
                           int dilation,
                           int block_size) {
-    OptionalDeviceGuard device_guard(at::device_of(grad_output_t));
+    OptionalDeviceGuard device_guard(torch::device_of(grad_output_t));
     cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
     AT_DISPATCH_FLOATING_TYPES(grad_output_t.scalar_type(), "conv_cuda_backward_x", ([&] {
@@ -365,11 +364,11 @@ void conv_cuda_backward_x(at::Tensor grad_output_t,
     }));
 }
 
-void conv_cuda_backward_k(at::Tensor grad_output, at::Tensor input,
-                          at::Tensor grad_kernel,
+void conv_cuda_backward_k(torch::Tensor grad_output, torch::Tensor input,
+                          torch::Tensor grad_kernel,
                           int dilation, int block_size)
 {
-    OptionalDeviceGuard device_guard(at::device_of(grad_output));
+    OptionalDeviceGuard device_guard(torch::device_of(grad_output));
     cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
     AT_DISPATCH_FLOATING_TYPES(grad_output.scalar_type(), "conv_cuda_backward_k", ([&] {

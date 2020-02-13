@@ -73,13 +73,13 @@ public:
 // https://github.com/ClementPinard/extension-cpp/blob/deviceTensorExperiments/cuda/lltm_cuda_kernel.cu
 template <typename T, int Dim>
 UnpackableTensorAccessor<T, Dim, torch::RestrictPtrTraits, DT_INDEX>
-toDeviceTensorR(at::Tensor x) {
+toDeviceTensorR(torch::Tensor x) {
     return UnpackableTensorAccessor<T, Dim, torch::RestrictPtrTraits, DT_INDEX>::from_tensor(x);
 }
 
 
 template <typename T, int Dim>
 UnpackableTensorAccessor<T, Dim, torch::DefaultPtrTraits, DT_INDEX>
-toDeviceTensor(at::Tensor x) {
+toDeviceTensor(torch::Tensor x) {
     return UnpackableTensorAccessor<T, Dim, torch::DefaultPtrTraits, DT_INDEX>::from_tensor(x);
 }
