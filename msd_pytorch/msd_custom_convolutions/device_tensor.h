@@ -4,46 +4,85 @@
 #include "THC/THC.h"
 #include "THC/THCDeviceTensor.cuh"
 
-#define THC_INDEX int
 
-#define dTensor1R THCDeviceTensor<scalar_t, 1, THC_INDEX, RestrictPtrTraits>
-#define dTensor2R THCDeviceTensor<scalar_t, 2, THC_INDEX, RestrictPtrTraits>
-#define dTensor3R THCDeviceTensor<scalar_t, 3, THC_INDEX, RestrictPtrTraits>
-#define dTensor4R THCDeviceTensor<scalar_t, 4, THC_INDEX, RestrictPtrTraits>
-#define dTensor5R THCDeviceTensor<scalar_t, 5, THC_INDEX, RestrictPtrTraits>
-#define dTensor1 THCDeviceTensor<scalar_t, 1, THC_INDEX>
-#define dTensor2 THCDeviceTensor<scalar_t, 2, THC_INDEX>
-#define dTensor3 THCDeviceTensor<scalar_t, 3, THC_INDEX>
-#define dTensor4 THCDeviceTensor<scalar_t, 4, THC_INDEX>
-#define dTensor5 THCDeviceTensor<scalar_t, 5, THC_INDEX>
-
-// https://github.com/ClementPinard/extension-cpp/blob/deviceTensorExperiments/cuda/lltm_cuda_kernel.cu
-template <typename scalar_t, int Dim>
-THCDeviceTensor<scalar_t, Dim, THC_INDEX, RestrictPtrTraits>
-toDeviceTensorR(at::Tensor t) {
-    auto _sizes = t.sizes().data();
-    auto _strides = t.strides().data();
-    THC_INDEX sizes[Dim] = {0};
-    THC_INDEX strides[Dim] = {0};
-    for (int i=0; i < Dim; i++) {
-	sizes[i] = (THC_INDEX) _sizes[i];
-	strides[i] = (THC_INDEX) _strides[i];
-    }
-    return THCDeviceTensor<scalar_t, Dim, THC_INDEX, RestrictPtrTraits>
-	(t.data<scalar_t>(), sizes, strides);
 }
 
-template <typename scalar_t, int Dim>
-THCDeviceTensor<scalar_t, Dim, THC_INDEX>
-toDeviceTensor(at::Tensor t) {
-    auto _sizes = t.sizes().data();
-    auto _strides = t.strides().data();
-    THC_INDEX sizes[Dim] = {0};
-    THC_INDEX strides[Dim] = {0};
-    for (int i=0; i < Dim; i++) {
-	sizes[i] = (THC_INDEX) _sizes[i];
-	strides[i] = (THC_INDEX) _strides[i];
+template<typename T, size_t N, template <typename U> class PtrTraits = torch::DefaultPtrTraits, typename index_t = int64_t>
+class UnpackableTensorAccessor : public torch::PackedTensorAccessor<T,N,PtrTraits,index_t> {
+public:
+  typedef typename PtrTraits<T>::PtrType PtrType;
+
+
+    C10_HOST UnpackableTensorAccessor(PtrType data_,
+    				  const index_t* sizes_,
+    				  const index_t* strides_)
+    	: torch::PackedTensorAccessor<T, N, PtrTraits, index_t>(data_, sizes_, strides_) {}
+
+    // if index_t is not int64_t, we want to have an int64_t constructor
+    template <typename source_index_t, class = typename std::enable_if<std::is_same<source_index_t, int64_t>::value>::type>
+    C10_HOST UnpackableTensorAccessor(PtrType data_,
+    				  const source_index_t* sizes_,
+    				  const source_index_t* strides_)
+    	: torch::PackedTensorAccessor<T, N, PtrTraits, index_t>(data_, sizes_, strides_) {}
+
+
+    static C10_HOST UnpackableTensorAccessor<T, N, PtrTraits, index_t> from_tensor(torch::Tensor x) {
+	return UnpackableTensorAccessor<T,N,PtrTraits,index_t>(static_cast<typename PtrTraits<T>::PtrType>(x.data<T>()),x.sizes().data(),x.strides().data());
     }
-    return THCDeviceTensor<scalar_t, Dim, THC_INDEX>
-	(t.data<scalar_t>(), sizes, strides);
+
+    C10_DEVICE torch::TensorAccessor<T, N, PtrTraits, index_t> unpack() {
+	return torch::TensorAccessor<T,N,PtrTraits,index_t>(this->data_, this->sizes_, this->strides_);
+    }
+    C10_DEVICE torch::TensorAccessor<T, N, PtrTraits, index_t> unpack() const {
+	return torch::TensorAccessor<T,N,PtrTraits,index_t>(this->data_, this->sizes_, this->strides_);
+    }
+
+    C10_DEVICE torch::TensorAccessor<T, N, PtrTraits, index_t> unpack_from(PtrType data) {
+	return torch::TensorAccessor<T,N,PtrTraits,index_t>(data, this->sizes_, this->strides_);
+    }
+    C10_DEVICE torch::TensorAccessor<T, N, PtrTraits, index_t> unpack_from(PtrType data) const {
+	return torch::TensorAccessor<T,N,PtrTraits,index_t>(data, this->sizes_, this->strides_);
+    }
+};
+
+
+#define DT_INDEX int
+
+#define PT1R32 scalar_t, 1, torch::RestrictPtrTraits, DT_INDEX
+#define PT2R32 scalar_t, 2, torch::RestrictPtrTraits, DT_INDEX
+#define PT3R32 scalar_t, 3, torch::RestrictPtrTraits, DT_INDEX
+#define PT4R32 scalar_t, 4, torch::RestrictPtrTraits, DT_INDEX
+#define PT5R32 scalar_t, 4, torch::RestrictPtrTraits, DT_INDEX
+
+#define PT1D32 scalar_t, 1, torch::DefaultPtrTraits, DT_INDEX
+#define PT2D32 scalar_t, 2, torch::DefaultPtrTraits, DT_INDEX
+#define PT3D32 scalar_t, 3, torch::DefaultPtrTraits, DT_INDEX
+#define PT4D32 scalar_t, 4, torch::DefaultPtrTraits, DT_INDEX
+#define PT5D32 scalar_t, 5, torch::DefaultPtrTraits, DT_INDEX
+
+
+#define dTensor1R UnpackableTensorAccessor<PT1R32>
+#define dTensor2R UnpackableTensorAccessor<PT2R32>
+#define dTensor3R UnpackableTensorAccessor<PT3R32>
+#define dTensor4R UnpackableTensorAccessor<PT4R32>
+#define dTensor5R UnpackableTensorAccessor<PT5R32>
+
+#define dTensor1D UnpackableTensorAccessor<PT1D32>
+#define dTensor2D UnpackableTensorAccessor<PT2D32>
+#define dTensor3D UnpackableTensorAccessor<PT3D32>
+#define dTensor4D UnpackableTensorAccessor<PT4D32>
+#define dTensor5D UnpackableTensorAccessor<PT5D32>
+
+// https://github.com/ClementPinard/extension-cpp/blob/deviceTensorExperiments/cuda/lltm_cuda_kernel.cu
+template <typename T, int Dim>
+UnpackableTensorAccessor<T, Dim, torch::RestrictPtrTraits, DT_INDEX>
+toDeviceTensorR(at::Tensor x) {
+    return UnpackableTensorAccessor<T, Dim, torch::RestrictPtrTraits, DT_INDEX>::from_tensor(x);
+}
+
+
+template <typename T, int Dim>
+UnpackableTensorAccessor<T, Dim, torch::DefaultPtrTraits, DT_INDEX>
+toDeviceTensor(at::Tensor x) {
+    return UnpackableTensorAccessor<T, Dim, torch::DefaultPtrTraits, DT_INDEX>::from_tensor(x);
 }

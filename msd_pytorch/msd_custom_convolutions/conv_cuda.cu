@@ -47,11 +47,11 @@ conv_backward_k(dTensor4R grad_output,
     // convolution kernel weights. Here, the gradient sums are reduced
     // accross the warp before being written to global memory.  This
     // implementation does not perform too badly.
-    int B = grad_output.getSize(0);
-    int C_OUT = grad_output.getSize(1);
-    int C_IN = input.getSize(1);
-    int H = grad_output.getSize(2);
-    int W = grad_output.getSize(3);
+    int B = grad_output.size(0);
+    int C_OUT = grad_output.size(1);
+    int C_IN = input.size(1);
+    int H = grad_output.size(2);
+    int W = grad_output.size(3);
 
     int h = threadIdx.y + blockDim.y * blockIdx.y;
     int w = threadIdx.x + blockDim.x * blockIdx.x;
@@ -108,11 +108,11 @@ conv_backward_x(dTensor4R grad_output,
     //     C_IN * C_OUT < 1300
     extern __shared__ int shared_memory[];
 
-    int B = grad_output.getSize(0);
-    int C_OUT = grad_output.getSize(1);
-    int C_IN = grad_input.getSize(1);
-    int H = grad_output.getSize(2);
-    int W = grad_output.getSize(3);
+    int B = grad_output.size(0);
+    int C_OUT = grad_output.size(1);
+    int C_IN = grad_input.size(1);
+    int H = grad_output.size(2);
+    int W = grad_output.size(3);
 
     int h = threadIdx.y + blockDim.y * blockIdx.y;
     int w = threadIdx.x + blockDim.x * blockIdx.x;
@@ -120,14 +120,14 @@ conv_backward_x(dTensor4R grad_output,
     int num_threads = blockDim.x * blockDim.y;
 
     scalar_t* kernel_buf = (scalar_t*) shared_memory;
-    for (int i=pId; i < kernel.numElements(); i+=num_threads) {
+    int num_kernel_elems = kernel.size(0) * kernel.size(1) * kernel.size(2) * kernel.size(3);
+    for (int i=pId; i < num_kernel_elems; i+=num_threads) {
 	kernel_buf[i] = kernel.data()[i];
     }
     __syncthreads();
 
     // We can index kernel_buffer like a 4d tensor.
-    dTensor4R kernel_buffer = THCDeviceTensor<scalar_t, 4, THC_INDEX, RestrictPtrTraits>
-	(kernel_buf, kernel.sizes(), kernel.strides());
+    torch::TensorAccessor<PT4R32> kernel_buffer = kernel.unpack_from(kernel_buf);
 
     if (W <= w || H <= h) {
 	return;
@@ -150,8 +150,8 @@ conv_backward_x(dTensor4R grad_output,
 	prog_w[0] = 2;
     }
 
-    THC_INDEX data_offsets[9];
-    THC_INDEX kernel_offsets[9];
+    DT_INDEX data_offsets[9];
+    DT_INDEX kernel_offsets[9];
     int i = 0;
     for (int p=-1; p <= 1; p++) {
 	for (int q=-1; q <= 1; q++) {
@@ -212,11 +212,11 @@ conv_forward(dTensor4R input,
     //     C_IN * C_OUT < 1300
     extern __shared__ int shared_memory[];
 
-    int B = output.getSize(0);
-    int C_OUT = output.getSize(1);
-    int C_IN = input.getSize(1);
-    int H = input.getSize(2);
-    int W = input.getSize(3);
+    int B = output.size(0);
+    int C_OUT = output.size(1);
+    int C_IN = input.size(1);
+    int H = input.size(2);
+    int W = input.size(3);
 
     int h = threadIdx.y + blockDim.y * blockIdx.y;
     int w = threadIdx.x + blockDim.x * blockIdx.x;
@@ -225,12 +225,13 @@ conv_forward(dTensor4R input,
 
     // Load kernels into shared memory
     scalar_t* kernel_buf = (scalar_t*) shared_memory;
-    for (int i=pId; i < kernel.numElements(); i+=num_threads) {
+    int num_kernel_elems = kernel.size(0) * kernel.size(1) * kernel.size(2) * kernel.size(3);
+
+    for (int i=pId; i < num_kernel_elems; i+=num_threads) {
 	kernel_buf[i] = kernel.data()[i];
     }
     // We can index kernel_buffer like a 4d tensor.
-    dTensor4R kernel_buffer = THCDeviceTensor<scalar_t, 4, THC_INDEX, RestrictPtrTraits>
-	(kernel_buf, kernel.sizes(), kernel.strides());
+    torch::TensorAccessor<PT4R32> kernel_buffer = kernel.unpack_from(kernel_buf);
 
     __syncthreads();
 
@@ -289,8 +290,8 @@ at::Tensor conv_cuda_forward(at::Tensor input_t,
         dTensor4R out_d = toDeviceTensorR<scalar_t,4>(out_t);
 	dTensor1R bias_d = toDeviceTensorR<scalar_t, 1>(bias_t);
 
-        dim3 gridSize(THCCeilDiv(input_d.getSize(3), block_size),
-    		      THCCeilDiv(input_d.getSize(2), block_size));
+        dim3 gridSize(THCCeilDiv(input_d.size(3), block_size),
+                      THCCeilDiv(input_d.size(2), block_size));
         dim3 blockSize(block_size, block_size);
     	auto buffer_sz = kernel_t.numel() * sizeof(scalar_t);
 
@@ -313,8 +314,9 @@ void conv_cuda_backward_x(at::Tensor grad_output_t,
         dTensor4R grad_output_d = toDeviceTensorR<scalar_t,4>(grad_output_t);
         dTensor4R grad_input_d = toDeviceTensorR<scalar_t,4>(grad_input_t);
 	dTensor4R kernel_d = toDeviceTensorR<scalar_t,4>(kernel_t);
-        dim3 gridSize(THCCeilDiv((int) grad_output_d.getSize(3), block_size),
-    		      THCCeilDiv((int) grad_output_d.getSize(2), block_size));
+
+        dim3 gridSize(THCCeilDiv((int) grad_output_d.size(3), block_size),
+                      THCCeilDiv((int) grad_output_d.size(2), block_size));
         dim3 blockSize(block_size, block_size);
     	auto buffer_sz = kernel_t.numel() * sizeof(scalar_t);
 	conv_backward_x<scalar_t><<<gridSize, blockSize, buffer_sz>>>
@@ -334,8 +336,8 @@ void conv_cuda_backward_k(at::Tensor grad_output, at::Tensor input,
         dTensor4R grad_output_d = toDeviceTensorR<scalar_t,4>(grad_output);
         dTensor4R input_d = toDeviceTensorR<scalar_t,4>(input);
 	dTensor4R grad_kernel_d = toDeviceTensorR<scalar_t,4>(grad_kernel);
-        dim3 gridSize(THCCeilDiv((int) grad_output_d.getSize(3), block_size),
-    		      THCCeilDiv((int) grad_output_d.getSize(2), block_size));
+        dim3 gridSize(THCCeilDiv((int) grad_output_d.size(3), block_size),
+                      THCCeilDiv((int) grad_output_d.size(2), block_size));
         dim3 blockSize(block_size, block_size);
 	conv_backward_k<scalar_t><<<gridSize, blockSize>>>
 	    (grad_output_d, input_d, grad_kernel_d, dilation);
