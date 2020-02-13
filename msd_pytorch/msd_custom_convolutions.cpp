@@ -11,45 +11,45 @@ using namespace pybind11::literals;
 //                   Forward declaration of CUDA functions                   //
 ///////////////////////////////////////////////////////////////////////////////
 at::Tensor conv_cuda_forward(at::Tensor input_t,
-			     at::Tensor kernel_t,
-			     at::Tensor bias_t,
-			     at::Tensor out_t,
-			     int dilation,
-			     int block_size);
+                             at::Tensor kernel_t,
+                             at::Tensor bias_t,
+                             at::Tensor out_t,
+                             int dilation,
+                             int block_size);
 
 void conv_cuda_backward_x(at::Tensor grad_output_t, at::Tensor kernel_t,
-			  at::Tensor grad_input_t,
-			  int dilation,
-			  int block_size);
+                          at::Tensor grad_input_t,
+                          int dilation,
+                          int block_size);
 
 void conv_cuda_backward_k(at::Tensor grad_output, at::Tensor input,
-			  at::Tensor grad_kernel,
-			  int dilation, int block_size);
+                          at::Tensor grad_kernel,
+                          int dilation, int block_size);
 
 at::Tensor conv_relu_cuda_forward(at::Tensor input_t,
-				  at::Tensor kernel_t,
-				  at::Tensor bias_t,
-				  at::Tensor out_t,
-				  int dilation,
-				  int block_size);
+                                  at::Tensor kernel_t,
+                                  at::Tensor bias_t,
+                                  at::Tensor out_t,
+                                  int dilation,
+                                  int block_size);
 
 void conv_relu_cuda_backward_x(at::Tensor output_t,
-			       at::Tensor grad_output_t,
-			       at::Tensor kernel_t,
-			       at::Tensor grad_input_t,
-			       int dilation,
-			       int block_size);
+                               at::Tensor grad_output_t,
+                               at::Tensor kernel_t,
+                               at::Tensor grad_input_t,
+                               int dilation,
+                               int block_size);
 
 void conv_relu_cuda_backward_k(at::Tensor output,
-			       at::Tensor grad_output,
-			       at::Tensor input,
-			       at::Tensor grad_kernel,
-			       int dilation, int block_size);
+                               at::Tensor grad_output,
+                               at::Tensor input,
+                               at::Tensor grad_kernel,
+                               int dilation, int block_size);
 
 void conv_relu_cuda_backward_bias(at::Tensor output,
-				  at::Tensor grad_output,
-				  at::Tensor grad_bias,
-				  int block_size);
+                                  at::Tensor grad_output,
+                                  at::Tensor grad_bias,
+                                  int block_size);
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                  Macros                                   //
@@ -66,15 +66,15 @@ void conv_relu_cuda_backward_bias(at::Tensor output,
 //                                 Functions                                 //
 ///////////////////////////////////////////////////////////////////////////////
 at::Tensor conv_forward(at::Tensor input,
-			at::Tensor kernel,
-			at::Tensor bias,
-			at::Tensor output,
-			int dilation,
-			int block_size) {
+                        at::Tensor kernel,
+                        at::Tensor bias,
+                        at::Tensor output,
+                        int dilation,
+                        int block_size) {
     CHECK_CUDA(input);
     CHECK_CUDA(output);
     CHECK_CUDA(bias);
-    CHECK_INPUT(kernel); 	// kernel must be contiguous.
+    CHECK_INPUT(kernel);        // kernel must be contiguous.
 
     // Check data type
     AT_ASSERTM(input.type() == kernel.type(), "input and kernel must have same type");
@@ -107,11 +107,11 @@ at::Tensor conv_forward(at::Tensor input,
 }
 
 void conv_backward_x(at::Tensor grad_output,
-		     at::Tensor kernel,
-		     at::Tensor grad_input,
-		     int dilation,
-		     int block_size) {
-    CHECK_INPUT(kernel); 	// kernel must be contiguous
+                     at::Tensor kernel,
+                     at::Tensor grad_input,
+                     int dilation,
+                     int block_size) {
+    CHECK_INPUT(kernel);        // kernel must be contiguous
     CHECK_CUDA(grad_output);
     CHECK_CUDA(grad_input);
 
@@ -138,10 +138,10 @@ void conv_backward_x(at::Tensor grad_output,
 }
 
 void conv_backward_k(at::Tensor grad_output,
-		     at::Tensor input,
-		     at::Tensor grad_kernel,
-		     int dilation,
-		     int block_size) {
+                     at::Tensor input,
+                     at::Tensor grad_kernel,
+                     int dilation,
+                     int block_size) {
 
     CHECK_CUDA(grad_output);
     CHECK_CUDA(input);
@@ -170,8 +170,8 @@ void conv_backward_k(at::Tensor grad_output,
 }
 
 void conv_backward_bias(at::Tensor grad_output,
-			at::Tensor grad_bias,
-			int block_size) {
+                        at::Tensor grad_bias,
+                        int block_size) {
 
     CHECK_CUDA(grad_output);
 
@@ -192,15 +192,15 @@ void conv_backward_bias(at::Tensor grad_output,
 }
 
 at::Tensor conv_relu_forward(at::Tensor input,
-			at::Tensor kernel,
-			at::Tensor bias,
-			at::Tensor output,
-			int dilation,
-			int block_size) {
+                        at::Tensor kernel,
+                        at::Tensor bias,
+                        at::Tensor output,
+                        int dilation,
+                        int block_size) {
     CHECK_CUDA(input);
     CHECK_CUDA(output);
     CHECK_CUDA(bias);
-    CHECK_INPUT(kernel); 	// kernel must be contiguous.
+    CHECK_INPUT(kernel);        // kernel must be contiguous.
 
     torch::TensorArg arg_input(input, "input", 0);
     torch::TensorArg arg_kernel(kernel, "kernel", 1);
@@ -241,12 +241,12 @@ at::Tensor conv_relu_forward(at::Tensor input,
 }
 
 void conv_relu_backward_x(at::Tensor output,
-			  at::Tensor grad_output,
-			  at::Tensor kernel,
-			  at::Tensor grad_input,
-			  int dilation,
-			  int block_size) {
-    CHECK_INPUT(kernel); 	// kernel must be contiguous
+                          at::Tensor grad_output,
+                          at::Tensor kernel,
+                          at::Tensor grad_input,
+                          int dilation,
+                          int block_size) {
+    CHECK_INPUT(kernel);        // kernel must be contiguous
     CHECK_CUDA(output);
     CHECK_CUDA(grad_output);
     CHECK_CUDA(grad_input);
@@ -278,11 +278,11 @@ void conv_relu_backward_x(at::Tensor output,
 }
 
 void conv_relu_backward_k(at::Tensor output,
-			  at::Tensor grad_output,
-			  at::Tensor input,
-			  at::Tensor grad_kernel,
-			  int dilation,
-			  int block_size) {
+                          at::Tensor grad_output,
+                          at::Tensor input,
+                          at::Tensor grad_kernel,
+                          int dilation,
+                          int block_size) {
 
     CHECK_CUDA(output);
     CHECK_CUDA(grad_output);
@@ -316,9 +316,9 @@ void conv_relu_backward_k(at::Tensor output,
 }
 
 void conv_relu_backward_bias(at::Tensor output,
-			     at::Tensor grad_output,
-			     at::Tensor grad_bias,
-			     int block_size) {
+                             at::Tensor grad_output,
+                             at::Tensor grad_bias,
+                             int block_size) {
 
     CHECK_CUDA(output);
     CHECK_CUDA(grad_output);
@@ -345,29 +345,29 @@ void conv_relu_backward_bias(at::Tensor output,
 ///////////////////////////////////////////////////////////////////////////////
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
     m.def("conv_forward", &conv_forward, "Forward convolution"
-	  "input"_a, "kernel"_a, "bias"_a, "output"_a, "dilation"_a,
-	  "block_size"_a=16);
+          "input"_a, "kernel"_a, "bias"_a, "output"_a, "dilation"_a,
+          "block_size"_a=16);
     m.def("conv_backward_x", &conv_backward_x, "Transpose of the forward convolution",
-	  "grad_output"_a, "kernel"_a, "grad_input"_a, "dilation"_a,
-	  "block_size"_a=16);
+          "grad_output"_a, "kernel"_a, "grad_input"_a, "dilation"_a,
+          "block_size"_a=16);
     m.def("conv_backward_k", &conv_backward_k, "Transpose of the forward convolution",
-	  "grad_output"_a, "input"_a, "grad_kernel"_a, "dilation"_a,
-	  "block_size"_a=16);
+          "grad_output"_a, "input"_a, "grad_kernel"_a, "dilation"_a,
+          "block_size"_a=16);
     m.def("conv_backward_bias", &conv_backward_bias, "Backward bias",
-	  "grad_output"_a, "grad_bias"_a,
-	  "block_size"_a=16);
+          "grad_output"_a, "grad_bias"_a,
+          "block_size"_a=16);
 
     m.def("conv_relu_forward", &conv_relu_forward, "Forward convolution"
-	  "input"_a, "kernel"_a, "bias"_a, "output"_a, "dilation"_a,
-	  "block_size"_a=16);
+          "input"_a, "kernel"_a, "bias"_a, "output"_a, "dilation"_a,
+          "block_size"_a=16);
     m.def("conv_relu_backward_x", &conv_relu_backward_x, "Transpose of the forward convolution",
-	  "output"_a, "grad_output"_a, "kernel"_a, "grad_input"_a, "dilation"_a,
-	  "block_size"_a=16);
+          "output"_a, "grad_output"_a, "kernel"_a, "grad_input"_a, "dilation"_a,
+          "block_size"_a=16);
     m.def("conv_relu_backward_k", &conv_relu_backward_k, "Transpose of the forward convolution",
-	  "output"_a, "grad_output"_a, "input"_a, "grad_kernel"_a, "dilation"_a,
-	  "block_size"_a=16);
+          "output"_a, "grad_output"_a, "input"_a, "grad_kernel"_a, "dilation"_a,
+          "block_size"_a=16);
     m.def("conv_relu_backward_bias", &conv_relu_backward_bias, "Backward bias",
-	  "output"_a, "grad_output"_a, "grad_bias"_a,
-	  "block_size"_a=16);
+          "output"_a, "grad_output"_a, "grad_bias"_a,
+          "block_size"_a=16);
 
 }

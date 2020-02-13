@@ -52,9 +52,9 @@ using at::OptionalDeviceGuard;
 __device__ __forceinline__ int
 reflect(int i, int dimi) {
     if (i < 0) {
-	i = -i - 1;
+        i = -i - 1;
     } else if (i >= dimi) {
-	i = 2 * dimi - i - 1;
+        i = 2 * dimi - i - 1;
     }
     return i;
 }
@@ -74,9 +74,9 @@ scalar_t warpReduceSum(int mask, scalar_t val) {
 template <typename scalar_t>
 __global__ void
 conv_backward_k(dTensor4R grad_output,
-		dTensor4R input,
-		dTensor4R grad_kernel,
-		int dilation)
+                dTensor4R input,
+                dTensor4R grad_kernel,
+                int dilation)
 {
     // A less naive implementation of the backward pass wrt the
     // convolution kernel weights. Here, the gradient sums are reduced
@@ -93,30 +93,30 @@ conv_backward_k(dTensor4R grad_output,
     int pId = threadIdx.y * blockDim.x + threadIdx.x;
 
     if (W <= w || H <= h) {
-	return;
+        return;
     }
 
     bool leader = 0 == pId % 32;
     int mask = __activemask();
 
     for (int b=0; b < B; b++) {
-	for (int c_in=0; c_in < C_IN; c_in++) {
-	    for (int c_out=0; c_out < C_OUT; c_out++) {
-		for (int p=-1; p <= 1; p++) {
-		    for (int q=-1; q <= 1; q++) {
-			int h_ = reflect(h + p * dilation, (int) H);
-			int w_ = reflect(w + q * dilation, (int) W);
-			scalar_t g =
-			    input[b][c_in][h_][w_] *
-			    grad_output[b][c_out][h][w];
-			g = warpReduceSum(mask, g);
-			if (leader) {
-			    atomicAdd(&grad_kernel[c_out][c_in][p+1][q+1], g);
-			}
-		    }
-		}
-	    }
-	}
+        for (int c_in=0; c_in < C_IN; c_in++) {
+            for (int c_out=0; c_out < C_OUT; c_out++) {
+                for (int p=-1; p <= 1; p++) {
+                    for (int q=-1; q <= 1; q++) {
+                        int h_ = reflect(h + p * dilation, (int) H);
+                        int w_ = reflect(w + q * dilation, (int) W);
+                        scalar_t g =
+                            input[b][c_in][h_][w_] *
+                            grad_output[b][c_out][h][w];
+                        g = warpReduceSum(mask, g);
+                        if (leader) {
+                            atomicAdd(&grad_kernel[c_out][c_in][p+1][q+1], g);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -128,9 +128,9 @@ conv_backward_k(dTensor4R grad_output,
 template <typename scalar_t>
 __global__ void
 conv_backward_x(dTensor4R grad_output,
-		dTensor4R kernel,
-		dTensor4R grad_input,
-		int dilation)
+                dTensor4R kernel,
+                dTensor4R grad_input,
+                int dilation)
 {
     // Performance improvements:
     // 1) Store kernel in shared memory.
@@ -157,7 +157,7 @@ conv_backward_x(dTensor4R grad_output,
     scalar_t* kernel_buf = (scalar_t*) shared_memory;
     int num_kernel_elems = kernel.size(0) * kernel.size(1) * kernel.size(2) * kernel.size(3);
     for (int i=pId; i < num_kernel_elems; i+=num_threads) {
-	kernel_buf[i] = kernel.data()[i];
+        kernel_buf[i] = kernel.data()[i];
     }
     __syncthreads();
 
@@ -165,58 +165,58 @@ conv_backward_x(dTensor4R grad_output,
     torch::TensorAccessor<PT4R32> kernel_buffer = kernel.unpack_from(kernel_buf);
 
     if (W <= w || H <= h) {
-	return;
+        return;
     }
 
     // Calculate right procession through filter if we are at the border.
     int prog_h[] = {0, 1, 2};
     if (h < dilation) {
-	prog_h[2] = 0;
+        prog_h[2] = 0;
     }
     if (H <= h + dilation) {
-	prog_h[0] = 2;
+        prog_h[0] = 2;
     }
 
     int prog_w[] = {0, 1, 2};
     if (w < dilation) {
-	prog_w[2] = 0;
+        prog_w[2] = 0;
     }
     if (W <= w + dilation) {
-	prog_w[0] = 2;
+        prog_w[0] = 2;
     }
 
     DT_INDEX data_offsets[9];
     DT_INDEX kernel_offsets[9];
     int i = 0;
     for (int p=-1; p <= 1; p++) {
-	for (int q=-1; q <= 1; q++) {
-	    int hp = reflect(h - dilation * p, (int) H);
-	    int wq = reflect(w - dilation * q, (int) W);
-	    data_offsets[i] = ((&grad_output[0][0][hp][wq]) - (&grad_output[0][0][0][0]));
-	    int p_ = prog_h[p+1];
-	    int q_ = prog_w[q+1];
-	    kernel_offsets[i] =  ((&kernel_buffer[0][0][p_][q_]) - (&kernel_buffer[0][0][0][0]));
-	    i++;
-	}
+        for (int q=-1; q <= 1; q++) {
+            int hp = reflect(h - dilation * p, (int) H);
+            int wq = reflect(w - dilation * q, (int) W);
+            data_offsets[i] = ((&grad_output[0][0][hp][wq]) - (&grad_output[0][0][0][0]));
+            int p_ = prog_h[p+1];
+            int q_ = prog_w[q+1];
+            kernel_offsets[i] =  ((&kernel_buffer[0][0][p_][q_]) - (&kernel_buffer[0][0][0][0]));
+            i++;
+        }
     }
 
     for (int b=0; b < B; b++) {
-	for (int c_in=0; c_in < C_IN; c_in++) {
-	    scalar_t g = 0;
-	    for (int c_out=0; c_out < C_OUT; c_out++) {
-		int i = 0;
-		scalar_t *data = &grad_output[b][c_out][0][0];
-		scalar_t *kdata = &kernel_buffer[c_out][c_in][0][0];
-		for (int p=-1; p <= 1; p++) {
-		    for (int q=-1; q <= 1; q++) {
-			g += *(data + data_offsets[i]) *
-			    *(kdata + kernel_offsets[i]);
-			i++;
-		    }
-		}
-	    }
-	    grad_input[b][c_in][h][w] += g;
-	}
+        for (int c_in=0; c_in < C_IN; c_in++) {
+            scalar_t g = 0;
+            for (int c_out=0; c_out < C_OUT; c_out++) {
+                int i = 0;
+                scalar_t *data = &grad_output[b][c_out][0][0];
+                scalar_t *kdata = &kernel_buffer[c_out][c_in][0][0];
+                for (int p=-1; p <= 1; p++) {
+                    for (int q=-1; q <= 1; q++) {
+                        g += *(data + data_offsets[i]) *
+                            *(kdata + kernel_offsets[i]);
+                        i++;
+                    }
+                }
+            }
+            grad_input[b][c_in][h][w] += g;
+        }
     }
 }
 
@@ -229,10 +229,10 @@ conv_backward_x(dTensor4R grad_output,
 template <typename scalar_t>
 __global__ void
 conv_forward(dTensor4R input,
-	     dTensor4R kernel,
-	     dTensor1R bias,
-	     dTensor4R output,
-	     int dilation)
+             dTensor4R kernel,
+             dTensor1R bias,
+             dTensor4R output,
+             int dilation)
 {
     // The following has been done to improve performance:
     // 1) This implementation caches the kernel weights.
@@ -263,7 +263,7 @@ conv_forward(dTensor4R input,
     int num_kernel_elems = kernel.size(0) * kernel.size(1) * kernel.size(2) * kernel.size(3);
 
     for (int i=pId; i < num_kernel_elems; i+=num_threads) {
-	kernel_buf[i] = kernel.data()[i];
+        kernel_buf[i] = kernel.data()[i];
     }
     // We can index kernel_buffer like a 4d tensor.
     torch::TensorAccessor<PT4R32> kernel_buffer = kernel.unpack_from(kernel_buf);
@@ -271,7 +271,7 @@ conv_forward(dTensor4R input,
     __syncthreads();
 
     if (W <= w || H <= h) {
-	return;
+        return;
     }
 
     // Precompute data offsets:
@@ -279,31 +279,31 @@ conv_forward(dTensor4R input,
     int ws[3] = {0};
 
     for (int i=-1; i <= 1; i++) {
-    	hs[i + 1] = reflect(h + dilation * i, (int) H);
-    	ws[i + 1] = reflect(w + dilation * i, (int) W);
+        hs[i + 1] = reflect(h + dilation * i, (int) H);
+        ws[i + 1] = reflect(w + dilation * i, (int) W);
     }
 
     // Actually compute the convolution
     for (int b=0; b < B; b++) {
-	for (int c_out=0; c_out < C_OUT; c_out++) {
-	    scalar_t o = bias[c_out];
-	    for (int c_in=0; c_in < C_IN; c_in++) {
-		scalar_t *kernel0 = &kernel_buffer[c_out][c_in][0][0];
-		#pragma unroll
-		for (int p=-1; p <= 1; p++) {
-		    #pragma unroll
-		    for (int q=-1; q <= 1; q++) {
-			o += input[b][c_in][hs[p + 1]][ws[q + 1]] * (*kernel0);
-			// Incrementing the kernel pointer works because
-			// the kernel weights are contiguous and the
-			// data_offsets are prepared to be in the same
-			// order as the kernel weights.
-			kernel0++;
-		    }
-		}
-	    }
-	    output[b][c_out][h][w] = o;
-	}
+        for (int c_out=0; c_out < C_OUT; c_out++) {
+            scalar_t o = bias[c_out];
+            for (int c_in=0; c_in < C_IN; c_in++) {
+                scalar_t *kernel0 = &kernel_buffer[c_out][c_in][0][0];
+                #pragma unroll
+                for (int p=-1; p <= 1; p++) {
+                    #pragma unroll
+                    for (int q=-1; q <= 1; q++) {
+                        o += input[b][c_in][hs[p + 1]][ws[q + 1]] * (*kernel0);
+                        // Incrementing the kernel pointer works because
+                        // the kernel weights are contiguous and the
+                        // data_offsets are prepared to be in the same
+                        // order as the kernel weights.
+                        kernel0++;
+                    }
+                }
+            }
+            output[b][c_out][h][w] = o;
+        }
     }
 }
 
@@ -312,39 +312,39 @@ conv_forward(dTensor4R input,
 ///////////////////////////////////////////////////////////////////////////////
 
 at::Tensor conv_cuda_forward(at::Tensor input_t,
-			     at::Tensor kernel_t,
-			     at::Tensor bias_t,
-			     at::Tensor out_t,
-			     int dilation,
-			     int block_size) {
+                             at::Tensor kernel_t,
+                             at::Tensor bias_t,
+                             at::Tensor out_t,
+                             int dilation,
+                             int block_size) {
     OptionalDeviceGuard device_guard(device_of(input_t));
     cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
     AT_DISPATCH_FLOATING_TYPES(input_t.scalar_type(), "conv_cuda_forward", ([&] {
         // Create device tensors:
         dTensor4R input_d = toDeviceTensorR<scalar_t,4>(input_t);
-	dTensor4R kernel_d = toDeviceTensorR<scalar_t,4>(kernel_t);
+        dTensor4R kernel_d = toDeviceTensorR<scalar_t,4>(kernel_t);
         dTensor4R out_d = toDeviceTensorR<scalar_t,4>(out_t);
-	dTensor1R bias_d = toDeviceTensorR<scalar_t, 1>(bias_t);
+        dTensor1R bias_d = toDeviceTensorR<scalar_t, 1>(bias_t);
 
         dim3 gridSize(CeilDiv(input_d.size(3), block_size),
                       CeilDiv(input_d.size(2), block_size));
         dim3 blockSize(block_size, block_size);
-    	auto buffer_sz = kernel_t.numel() * sizeof(scalar_t);
+        auto buffer_sz = kernel_t.numel() * sizeof(scalar_t);
 
-	conv_forward<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
-	    (input_d, kernel_d, bias_d, out_d, dilation);
+        conv_forward<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
+            (input_d, kernel_d, bias_d, out_d, dilation);
 
-    	CudaCheck(cudaGetLastError());
+        CudaCheck(cudaGetLastError());
     }));
     return out_t;
 }
 
 void conv_cuda_backward_x(at::Tensor grad_output_t,
-			  at::Tensor kernel_t,
-			  at::Tensor grad_input_t,
-			  int dilation,
-			  int block_size) {
+                          at::Tensor kernel_t,
+                          at::Tensor grad_input_t,
+                          int dilation,
+                          int block_size) {
     OptionalDeviceGuard device_guard(at::device_of(grad_output_t));
     cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
@@ -352,22 +352,22 @@ void conv_cuda_backward_x(at::Tensor grad_output_t,
         // Create device tensors:
         dTensor4R grad_output_d = toDeviceTensorR<scalar_t,4>(grad_output_t);
         dTensor4R grad_input_d = toDeviceTensorR<scalar_t,4>(grad_input_t);
-	dTensor4R kernel_d = toDeviceTensorR<scalar_t,4>(kernel_t);
+        dTensor4R kernel_d = toDeviceTensorR<scalar_t,4>(kernel_t);
 
         dim3 gridSize(CeilDiv((int) grad_output_d.size(3), block_size),
                       CeilDiv((int) grad_output_d.size(2), block_size));
         dim3 blockSize(block_size, block_size);
-    	auto buffer_sz = kernel_t.numel() * sizeof(scalar_t);
-	conv_backward_x<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
-	    (grad_output_d, kernel_d, grad_input_d, dilation);
+        auto buffer_sz = kernel_t.numel() * sizeof(scalar_t);
+        conv_backward_x<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
+            (grad_output_d, kernel_d, grad_input_d, dilation);
 
-    	CudaCheck(cudaGetLastError());
+        CudaCheck(cudaGetLastError());
     }));
 }
 
 void conv_cuda_backward_k(at::Tensor grad_output, at::Tensor input,
-			  at::Tensor grad_kernel,
-			  int dilation, int block_size)
+                          at::Tensor grad_kernel,
+                          int dilation, int block_size)
 {
     OptionalDeviceGuard device_guard(at::device_of(grad_output));
     cudaStream_t stream = at::cuda::getCurrentCUDAStream();
@@ -376,13 +376,13 @@ void conv_cuda_backward_k(at::Tensor grad_output, at::Tensor input,
         // Create device tensors:
         dTensor4R grad_output_d = toDeviceTensorR<scalar_t,4>(grad_output);
         dTensor4R input_d = toDeviceTensorR<scalar_t,4>(input);
-	dTensor4R grad_kernel_d = toDeviceTensorR<scalar_t,4>(grad_kernel);
+        dTensor4R grad_kernel_d = toDeviceTensorR<scalar_t,4>(grad_kernel);
         dim3 gridSize(CeilDiv((int) grad_output_d.size(3), block_size),
                       CeilDiv((int) grad_output_d.size(2), block_size));
         dim3 blockSize(block_size, block_size);
-	conv_backward_k<scalar_t><<<gridSize, blockSize, 0, stream>>>
-	    (grad_output_d, input_d, grad_kernel_d, dilation);
+        conv_backward_k<scalar_t><<<gridSize, blockSize, 0, stream>>>
+            (grad_output_d, input_d, grad_kernel_d, dilation);
 
-    	CudaCheck(cudaGetLastError());
+        CudaCheck(cudaGetLastError());
     }));
 }
