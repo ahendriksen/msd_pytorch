@@ -165,18 +165,21 @@ class MSDBlock2d(torch.nn.Module):
             torch.nn.init.uniform_(self.bias, -bound, bound)
 
     def forward(self, input):
-        # This is a bit of a hack, since we require but cannot assume
-        # that self.parameters() remains sorted in the order that we
-        # added the parameters.
-        #
-        # However, we need to obtain weights in this way, because
-        # self.weights may become obsolete when used in multi-gpu
-        # settings when the weights are automatically transferred (by,
-        # e.g., torch.nn.DataParallel). In that case, self.weights may
+        # We need to obtain weights in this way, because self.weights
+        # may become obsolete when used in multi-gpu settings when the
+        # weights are automatically transferred (by, e.g.,
+        # torch.nn.DataParallel). In that case, self.weights may
         # continue to point to the weight parameters on the original
         # device, even when the weight parameters have been
         # transferred to a different gpu.
-        bias, *weights = self.parameters()
+        #
+        # To be compatible with torch.nn.utils.prune, we obtain the
+        # weights using attributes. Previously, we used
+        # `self.parameters()`, but this returns the original
+        # (unmasked) parameters.
+        bias = self.bias
+        weights = (self.__getattr__("weight{}".format(i)) for i in range(len(self.weights)))
+
         return MSDBlockImpl2d.apply(input, self.dilations, bias, *weights)
 
 
