@@ -77,7 +77,7 @@ build-10.1:
 publish:
   stage: publish
   only:
-  - tags
+  - dev
   variables:
     ANACONDA_USERNAME: $ANACONDA_USERNAME
     ANACONDA_PASSWORD: $ANACONDA_PASSWORD
@@ -86,4 +86,4 @@ publish:
     - set +x
     - anaconda login --username "$ANACONDA_USERNAME" --password "$ANACONDA_PASSWORD"
     - set -x
-    - anaconda upload artifacts/*.bz2
+    - anaconda upload --label dev artifacts/*.bz2
