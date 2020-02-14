@@ -1,16 +1,11 @@
-from . import torch_equal
 from pytest import approx
-from msd_pytorch.conv import Conv2dInPlaceModule
+import pytest
 from msd_pytorch.msd_module import MSDModule, MSDFinalLayer
-from msd_pytorch.stitch import stitchCopy
 from torch.autograd import Variable
-import msd_pytorch.stitch as stitch
 import torch as t
 import torch.nn as nn
 import torch.optim as optim
-import unittest
 from torch.autograd import gradcheck
-from torch.autograd.gradcheck import get_analytical_jacobian
 
 
 def test_msd_gradients():
@@ -26,21 +21,16 @@ def test_msd_gradients():
         x = Variable(t.randn(batch_sz, c_in, *size, dtype=dtype)).cuda()
         x.requires_grad = True
 
-        net = MSDModule(c_in, c_out, depth, width)
+        net = MSDModule(c_in, c_out, depth, width).cuda()
         net.double()
 
+        # The weights of the final layer are initialized to zero by
+        # default. This makes it trivial to pass gradcheck. Therefore,
+        # we reinitialize all weights randomly.
         for p in net.parameters():
             p.data = t.randn_like(p.data)
 
-        assert net is not None
-
-        # o = net(x)
-        # analytical, reentrant, correct_grad_sizes = get_analytical_jacobian((x,), o)
-        # print(analytical)
-        # print(f"Reentrant: {reentrant}")
-        # print(correct_grad_sizes)
-        # print(f"Net L shape: {net.L.shape}")
-        gradcheck(net, [x], raise_exception=True)
+        gradcheck(net, [x], raise_exception=True, atol=1e-4, rtol=1e-3)
 
 
 def test_final_layer():
@@ -94,7 +84,7 @@ def test_reflect():
     x = t.randn(batch_sz, c_in, *size).cuda()
     target = t.randn(batch_sz, c_out, *size).cuda()
 
-    net = MSDModule(c_in, c_out, depth, width)
+    net = MSDModule(c_in, c_out, depth, width).cuda()
 
     output = net(Variable(x))
 
@@ -127,15 +117,13 @@ def test_parameters_change():
 
     size = (30, 30)
     for batch_sz in [1]:
-        for depth in range(0, 20, 6):
+        for depth in range(1, 20, 6):
             width = c_in = c_out = batch_sz
             x = Variable(t.randn(batch_sz, c_in, *size)).cuda()
             target = Variable(t.randn(batch_sz, c_out, *size)).cuda()
             assert x.data.is_cuda
 
-            net = MSDModule(c_in, c_out, depth, width)
-
-            assert net is not None
+            net = MSDModule(c_in, c_out, depth, width).cuda()
 
             params0 = dict((n, p.data.clone()) for n, p in net.named_parameters())
             # Train for two iterations. The convolution weights in
@@ -166,3 +154,10 @@ def test_parameters_change():
 
             # Check that the loss is not zero
             assert loss.abs().item() != approx(0.0)
+
+
+def test_zero_depth_network():
+    with pytest.raises(ValueError):
+        MSDModule(1, 1, depth=0, width=1)
+    with pytest.raises(ValueError):
+        MSDModule(1, 1, depth=1, width=0)

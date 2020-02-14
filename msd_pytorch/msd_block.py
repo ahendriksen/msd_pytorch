@@ -1,9 +1,6 @@
 import torch
 import msd_custom_convolutions as cc
-from msd_pytorch.msd_module import MSDFinalLayer, init_convolution_weights
 import numpy as np
-
-IDX_WEIGHT_START = 3
 
 
 class MSDBlockImpl2d(torch.autograd.Function):
@@ -90,6 +87,7 @@ class MSDBlockImpl2d(torch.autograd.Function):
             )
 
             # Gradient w.r.t weights
+            IDX_WEIGHT_START = 3            # The first weight has index 3 in the forward pass.
             if ctx.needs_input_grad[i + IDX_WEIGHT_START]:
                 sub_grad_weight = torch.zeros_like(sub_weight)
                 cc.conv_relu_backward_k(
@@ -181,53 +179,3 @@ class MSDBlock2d(torch.nn.Module):
         weights = (self.__getattr__("weight{}".format(i)) for i in range(len(self.weights)))
 
         return MSDBlockImpl2d.apply(input, self.dilations, bias, *weights)
-
-
-class MSDModule2d(torch.nn.Module):
-    def __init__(
-        self, c_in, c_out, depth, width, dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    ):
-        """Create a 2-dimensional MSD Module
-
-        :param c_in: # of input channels
-        :param c_out: # of output channels
-        :param depth: # of layers
-        :param width: # the width of the module
-        :param dilations: `list(int)`
-
-        A list of dilations to use. Default is ``[1, 2, ..., 10]``.  A
-        good alternative is ``[1, 2, 4, 8]``. The dilations are
-        repeated.
-
-        :returns: an MSD module
-        :rtype: MSDModule2d
-
-        """
-
-        super(MSDModule2d, self).__init__()
-
-        self.c_in = c_in
-        self.c_out = c_out
-        self.depth = depth
-        self.width = width
-        self.dilations = [dilations[i % len(dilations)] for i in range(depth)]
-
-        self.msd_block = MSDBlock2d(self.c_in, self.dilations, self.width)
-        self.final_layer = MSDFinalLayer(c_in=c_in + width * depth, c_out=c_out)
-
-        self.reset_parameters()
-
-    def reset_parameters(self):
-        # Initialize weights for hidden layers:
-        for w in self.msd_block.weights:
-            init_convolution_weights(
-                w.data, self.c_in, self.c_out, self.width, self.depth
-            )
-
-        self.msd_block.bias.data.zero_()
-        self.final_layer.reset_parameters()
-
-    def forward(self, input):
-        output = self.msd_block(input)
-        output = self.final_layer(output)
-        return output

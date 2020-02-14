@@ -1,4 +1,4 @@
-from msd_pytorch.msd_block import MSDModule2d
+from msd_pytorch.msd_module import MSDModule
 from torch.autograd import Variable
 import numpy as np
 import torch as t
@@ -84,7 +84,7 @@ class MSDModel:
         # network is saved.
         self.scale_in = scaling_module(c_in, c_in)
         self.scale_out = scaling_module(c_out, c_out)
-        self.msd = MSDModule2d(c_in, c_out, depth, width, dilations)
+        self.msd = MSDModule(c_in, c_out, depth, width, dilations)
 
         # It is the task of any subclass to initialize `self.net` and
         # call `init_optimizer` to set the trainable parameters.
