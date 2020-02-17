@@ -1,10 +1,8 @@
+[![DOI](https://zenodo.org/badge/188229038.svg)](https://zenodo.org/badge/latestdoi/188229038)
+
 # Mixed-scale Dense Networks for PyTorch
 
 An implementation of Mixed-Scale Dense networks in PyTorch.
-
-This paragraph should contain a high-level description of the package, with a
-brief overview of its features and limitations.
-
 
 * Free software: GNU General Public License v3
 * Documentation: [https://ahendriksen.github.io/msd_pytorch]
@@ -124,10 +122,28 @@ Examples:
 To learn more about the functionality of the package check out our
 examples folder.
 
+
+## Cite
+If you find our work useful, please cite as:
+
+```
+@software{hendriksen-2019-msd-pytor,
+  author       = {Hendriksen, Allard A.},
+  title        = {ahendriksenh/msd\_pytorch: v0.7.2},
+  month        = dec,
+  year         = 2019,
+  publisher    = {Zenodo},
+  version      = {v0.7.2},
+  doi          = {10.5281/zenodo.3560114},
+  url          = {https://doi.org/10.5281/zenodo.3560114}
+}
+```
+
 ## Authors and contributors
 
 * **Allard Hendriksen** - *Initial work*
 * **Jonas Adler** - *Discussions and code*
+* **Richard Schoonhoven** - *Testing and patches*
 
 See also the list of [contributors](https://github.com/ahendriksen/msd_pytorch/contributors) who participated in this project.
 
