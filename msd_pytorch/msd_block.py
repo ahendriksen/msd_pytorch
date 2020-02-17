@@ -176,6 +176,6 @@ class MSDBlock2d(torch.nn.Module):
         # `self.parameters()`, but this returns the original
         # (unmasked) parameters.
         bias = self.bias
-        weights = (self.__getattr__("weight{}".format(i)) for i in range(len(self.weights)))
+        weights = (getattr(self, "weight{}".format(i)) for i in range(len(self.weights)))
 
         return MSDBlockImpl2d.apply(input, self.dilations, bias, *weights)
