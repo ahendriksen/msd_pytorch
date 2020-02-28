@@ -4,6 +4,7 @@ A short example to get you started with Mixed-scale Dense Networks for PyTorch
 import msd_pytorch as mp
 from torch.utils.data import DataLoader
 import numpy as np
+import torch
 
 ###############################################################################
 #                              Network parameters                             #
@@ -124,5 +125,68 @@ for epoch in range(epochs):
 # Save final network parameters
 model.save(f"msd_network_epoch_{epoch}.torch", epoch)
 
+###############################################################################
+#                   Applying the trained network to new data                  #
+###############################################################################
+
+# 1) Recreate the model and load the saved parameters.
+print(f"Create {task} network model")
+if task == "regression":
+    model = mp.MSDRegressionModel(
+        c_in, c_out, depth, width, dilations=dilations, loss=loss
+    )
+else:
+    model = mp.MSDSegmentationModel(
+        c_in, train_ds.num_labels, depth, width, dilations=dilations
+    )
+
 # The parameters can be reloaded again:
 epoch = model.load(f"msd_network_epoch_{epoch}.torch")
+
+# 2) Load new data.
+# The glob pattern for new input data.
+new_data_input_glob = "~/datasets/new-data/noisy/*.tiff"
+
+print("Load dataset")
+# Since usually no target data is available for new images, just put
+# the input images as target as well. They will be ignored in the rest
+# of the script.
+ds = mp.ImageDataset(new_data_input_glob, new_data_input_glob)
+
+# Do not shuffle when applying to new data:
+dl = DataLoader(ds, batch_size, shuffle=False)
+
+# 3) apply to new data:
+for i, data in enumerate(dl):
+    # data contains a tuple of input and target data. Ignore the
+    # target data.
+    inp, _ = data
+    # Move input to GPU and apply the network:
+    output = model.net(inp.cuda())
+    # Output has dimensions BxCxHxW (batch size, # channels, height, width).
+
+    if task == "segmentation":
+        # For each label, a separate output channel is created. The
+        # output channel with the highest value is the classification
+        # of the network.
+        prediction = torch.max(output.data, 1).indices
+    if task == "regression":
+        # No processing has to be performed for regression:
+        prediction = output
+
+    # To convert to a numpy array, detach the output tensor from the
+    # pytorch computation graph, move it to cpu, and convert it to a
+    # numpy array.
+    prediction_numpy = prediction.detach().cpu().numpy()
+
+    # Optionally, if the prediction has a single output channel, you
+    # may want to remove the channel dimension as follows:
+    prediction_numpy = prediction_numpy.squeeze()
+
+    # Save to tiff file or do other processing:
+    for b in range(batch_size):
+        output_index = i * batch_size + b
+        if output_index < len(ds):
+            print(f"At iteration {i}: saving slice {output_index} with shape {prediction_numpy[b].shape}")
+            # Save CxHxW dimensioned numpy array into tif file:
+            # tifffile.imsave(f"output_{output_index:05d}.tif", prediction_numpy[b])

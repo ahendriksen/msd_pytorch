@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -157,9 +157,10 @@ example trains an MSD regression or segmentation network on a dataset.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">A short example to get you started with Mixed-scale Dense Networks for PyTorch</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">msd_pytorch</span> <span class="kn">as</span> <span class="nn">mp</span>
+<span class="kn">import</span> <span class="nn">msd_pytorch</span> <span class="k">as</span> <span class="nn">mp</span>
 <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">torch</span>
 
 <span class="c1">###############################################################################</span>
 <span class="c1">#                              Network parameters                             #</span>
@@ -217,29 +218,29 @@ example trains an MSD regression or segmentation network on a dataset.</p>
 <span class="c1">#                                 Loading data                                #</span>
 <span class="c1">###############################################################################</span>
 
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Load training dataset&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Load training dataset&quot;</span><span class="p">)</span>
 <span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="s2">&quot;regression&quot;</span><span class="p">:</span>
     <span class="n">train_ds</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">ImageDataset</span><span class="p">(</span><span class="n">train_input_glob</span><span class="p">,</span> <span class="n">train_target_glob</span><span class="p">)</span>
 <span class="k">else</span><span class="p">:</span>
     <span class="n">train_ds</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">ImageDataset</span><span class="p">(</span><span class="n">train_input_glob</span><span class="p">,</span> <span class="n">train_target_glob</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
 
-<span class="n">train_dl</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_ds</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">train_dl</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_ds</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="c1"># Load Validation dataset (if specified)</span>
 <span class="k">if</span> <span class="n">val_input_glob</span><span class="p">:</span>
-    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Load validation set&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Load validation set&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="s2">&quot;regression&quot;</span><span class="p">:</span>
         <span class="n">val_ds</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">ImageDataset</span><span class="p">(</span><span class="n">val_input_glob</span><span class="p">,</span> <span class="n">val_target_glob</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">val_ds</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">ImageDataset</span><span class="p">(</span><span class="n">val_input_glob</span><span class="p">,</span> <span class="n">val_target_glob</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
 
-    <span class="n">val_dl</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">val_ds</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">val_dl</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">val_ds</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="k">else</span><span class="p">:</span>
-    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;No validation set loaded&quot;</span><span class="p">)</span>
-    <span class="n">val_dl</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No validation set loaded&quot;</span><span class="p">)</span>
+    <span class="n">val_dl</span> <span class="o">=</span> <span class="kc">None</span>
 
 
-<span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Create {task} network model&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Create </span><span class="si">{task}</span><span class="s2"> network model&quot;</span><span class="p">)</span>
 <span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="s2">&quot;regression&quot;</span><span class="p">:</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">MSDRegressionModel</span><span class="p">(</span>
         <span class="n">c_in</span><span class="p">,</span> <span class="n">c_out</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">dilations</span><span class="o">=</span><span class="n">dilations</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="n">loss</span>
@@ -254,11 +255,11 @@ example trains an MSD regression or segmentation network on a dataset.</p>
 <span class="c1"># correction parameters from the training data. These parameters are</span>
 <span class="c1"># not updated after this step and are stored in the network, so that</span>
 <span class="c1"># they are not lost when the network is saved to and loaded from disk.</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Start estimating normalization parameters&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Start estimating normalization parameters&quot;</span><span class="p">)</span>
 <span class="n">model</span><span class="o">.</span><span class="n">set_normalization</span><span class="p">(</span><span class="n">train_dl</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Done estimating normalization parameters&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Done estimating normalization parameters&quot;</span><span class="p">)</span>
 
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Starting training...&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Starting training...&quot;</span><span class="p">)</span>
 <span class="n">best_validation_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
 <span class="n">validation_error</span> <span class="o">=</span> <span class="mf">0.0</span>
 
@@ -267,21 +268,84 @@ example trains an MSD regression or segmentation network on a dataset.</p>
     <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">train_dl</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="c1"># Compute training error</span>
     <span class="n">train_error</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">train_dl</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;{epoch:05} Training error: {train_error: 0.6f}&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{epoch:05}</span><span class="s2"> Training error: </span><span class="si">{train_error: 0.6f}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="c1"># Compute validation error</span>
-    <span class="k">if</span> <span class="n">val_dl</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">val_dl</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">validation_error</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">val_dl</span><span class="p">)</span>
-        <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;{epoch:05} Validation error: {validation_error: 0.6f}&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{epoch:05}</span><span class="s2"> Validation error: </span><span class="si">{validation_error: 0.6f}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="c1"># Save network if worthwile</span>
-    <span class="k">if</span> <span class="n">validation_error</span> <span class="o">&lt;</span> <span class="n">best_validation_error</span> <span class="ow">or</span> <span class="n">val_dl</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">validation_error</span> <span class="o">&lt;</span> <span class="n">best_validation_error</span> <span class="ow">or</span> <span class="n">val_dl</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">best_validation_error</span> <span class="o">=</span> <span class="n">validation_error</span>
-        <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;msd_network_epoch_{epoch}.torch&quot;</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;msd_network_epoch_</span><span class="si">{epoch}</span><span class="s2">.torch&quot;</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
 
 <span class="c1"># Save final network parameters</span>
-<span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;msd_network_epoch_{epoch}.torch&quot;</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;msd_network_epoch_</span><span class="si">{epoch}</span><span class="s2">.torch&quot;</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
+
+<span class="c1">###############################################################################</span>
+<span class="c1">#                   Applying the trained network to new data                  #</span>
+<span class="c1">###############################################################################</span>
+
+<span class="c1"># 1) Recreate the model and load the saved parameters.</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Create </span><span class="si">{task}</span><span class="s2"> network model&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="s2">&quot;regression&quot;</span><span class="p">:</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">MSDRegressionModel</span><span class="p">(</span>
+        <span class="n">c_in</span><span class="p">,</span> <span class="n">c_out</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">dilations</span><span class="o">=</span><span class="n">dilations</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="n">loss</span>
+    <span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">MSDSegmentationModel</span><span class="p">(</span>
+        <span class="n">c_in</span><span class="p">,</span> <span class="n">train_ds</span><span class="o">.</span><span class="n">num_labels</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">dilations</span><span class="o">=</span><span class="n">dilations</span>
+    <span class="p">)</span>
 
 <span class="c1"># The parameters can be reloaded again:</span>
-<span class="n">epoch</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;msd_network_epoch_{epoch}.torch&quot;</span><span class="p">)</span>
+<span class="n">epoch</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;msd_network_epoch_</span><span class="si">{epoch}</span><span class="s2">.torch&quot;</span><span class="p">)</span>
+
+<span class="c1"># 2) Load new data.</span>
+<span class="c1"># The glob pattern for new input data.</span>
+<span class="n">new_data_input_glob</span> <span class="o">=</span> <span class="s2">&quot;~/datasets/new-data/noisy/*.tiff&quot;</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Load dataset&quot;</span><span class="p">)</span>
+<span class="c1"># Since usually no target data is available for new images, just put</span>
+<span class="c1"># the input images as target as well. They will be ignored in the rest</span>
+<span class="c1"># of the script.</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">ImageDataset</span><span class="p">(</span><span class="n">new_data_input_glob</span><span class="p">,</span> <span class="n">new_data_input_glob</span><span class="p">)</span>
+
+<span class="c1"># Do not shuffle when applying to new data:</span>
+<span class="n">dl</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># 3) apply to new data:</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dl</span><span class="p">):</span>
+    <span class="c1"># data contains a tuple of input and target data. Ignore the</span>
+    <span class="c1"># target data.</span>
+    <span class="n">inp</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">data</span>
+    <span class="c1"># Move input to GPU and apply the network:</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">net</span><span class="p">(</span><span class="n">inp</span><span class="o">.</span><span class="n">cuda</span><span class="p">())</span>
+    <span class="c1"># Output has dimensions BxCxHxW (batch size, # channels, height, width).</span>
+
+    <span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="s2">&quot;segmentation&quot;</span><span class="p">:</span>
+        <span class="c1"># For each label, a separate output channel is created. The</span>
+        <span class="c1"># output channel with the highest value is the classification</span>
+        <span class="c1"># of the network.</span>
+        <span class="n">prediction</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">indices</span>
+    <span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="s2">&quot;regression&quot;</span><span class="p">:</span>
+        <span class="c1"># No processing has to be performed for regression:</span>
+        <span class="n">prediction</span> <span class="o">=</span> <span class="n">output</span>
+
+    <span class="c1"># To convert to a numpy array, detach the output tensor from the</span>
+    <span class="c1"># pytorch computation graph, move it to cpu, and convert it to a</span>
+    <span class="c1"># numpy array.</span>
+    <span class="n">prediction_numpy</span> <span class="o">=</span> <span class="n">prediction</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+
+    <span class="c1"># Optionally, if the prediction has a single output channel, you</span>
+    <span class="c1"># may want to remove the channel dimension as follows:</span>
+    <span class="n">prediction_numpy</span> <span class="o">=</span> <span class="n">prediction_numpy</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+
+    <span class="c1"># Save to tiff file or do other processing:</span>
+    <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+        <span class="n">output_index</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">batch_size</span> <span class="o">+</span> <span class="n">b</span>
+        <span class="k">if</span> <span class="n">output_index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">ds</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;At iteration </span><span class="si">{i}</span><span class="s2">: saving slice </span><span class="si">{output_index}</span><span class="s2"> with shape </span><span class="si">{prediction_numpy[b].shape}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="c1"># Save CxHxW dimensioned numpy array into tif file:</span>
+            <span class="c1"># tifffile.imsave(f&quot;output_{output_index:05d}.tif&quot;, prediction_numpy[b])</span>
 </pre></div>
 </div>
 </div>

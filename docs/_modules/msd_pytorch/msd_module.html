@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../../_static/jquery.js"></script>
-        <script type="text/javascript" src="../../_static/underscore.js"></script>
-        <script type="text/javascript" src="../../_static/doctools.js"></script>
-        <script type="text/javascript" src="../../_static/language_data.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -147,11 +147,11 @@
             
   <h1>Source code for msd_pytorch.msd_module</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
-<span class="kn">from</span> <span class="nn">msd_pytorch.conv</span> <span class="k">import</span> <span class="n">Conv2dInPlaceModule</span>
-<span class="kn">from</span> <span class="nn">msd_pytorch.conv_relu</span> <span class="k">import</span> <span class="n">ConvRelu2dInPlaceModule</span>
-<span class="kn">from</span> <span class="nn">msd_pytorch.stitch</span> <span class="k">import</span> <span class="n">stitchLazy</span><span class="p">,</span> <span class="n">StitchCopyModule</span><span class="p">,</span> <span class="n">StitchBuffer</span>
-<span class="kn">from</span> <span class="nn">msd_pytorch.relu_inplace</span> <span class="k">import</span> <span class="n">ReLUInplaceModule</span>
-<span class="kn">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">sqrt</span>
+<span class="kn">from</span> <span class="nn">msd_pytorch.conv</span> <span class="kn">import</span> <span class="n">Conv2dInPlaceModule</span>
+<span class="kn">from</span> <span class="nn">msd_pytorch.conv_relu</span> <span class="kn">import</span> <span class="n">ConvRelu2dInPlaceModule</span>
+<span class="kn">from</span> <span class="nn">msd_pytorch.stitch</span> <span class="kn">import</span> <span class="n">stitchLazy</span><span class="p">,</span> <span class="n">StitchCopyModule</span><span class="p">,</span> <span class="n">StitchBuffer</span>
+<span class="kn">from</span> <span class="nn">msd_pytorch.relu_inplace</span> <span class="kn">import</span> <span class="n">ReLUInplaceModule</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">sqrt</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="n">use_conv_relu</span> <span class="o">=</span> <span class="kc">True</span>
@@ -224,7 +224,7 @@
 <span class="sd">    * Weight initialization</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="MSDLayerModule.__init__"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_module.MSDLayerModule.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">c_in</span><span class="p">,</span> <span class="n">layer_depth</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">dilation</span><span class="p">):</span>
+<div class="viewcode-block" id="MSDLayerModule.__init__"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_module.MSDLayerModule.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">c_in</span><span class="p">,</span> <span class="n">layer_depth</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">dilation</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialize the hidden layer.</span>
 
 <span class="sd">        :param buffer: a StitchBuffer object for storing the L and G buffers.</span>
@@ -279,7 +279,7 @@
 <span class="sd">    Initializes the weight and bias to zero.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="MSDFinalLayer.__init__"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_module.MSDFinalLayer.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c_in</span><span class="p">,</span> <span class="n">c_out</span><span class="p">):</span>
+<div class="viewcode-block" id="MSDFinalLayer.__init__"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_module.MSDFinalLayer.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c_in</span><span class="p">,</span> <span class="n">c_out</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">MSDFinalLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">c_in</span> <span class="o">=</span> <span class="n">c_in</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">c_out</span> <span class="o">=</span> <span class="n">c_out</span>
@@ -302,7 +302,7 @@
 
 
 <div class="viewcode-block" id="MSDModule"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_module.MSDModule">[docs]</a><span class="k">class</span> <span class="nc">MSDModule</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<div class="viewcode-block" id="MSDModule.__init__"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_module.MSDModule.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+<div class="viewcode-block" id="MSDModule.__init__"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_module.MSDModule.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">c_in</span><span class="p">,</span> <span class="n">c_out</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">dilations</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Create a msd module</span>

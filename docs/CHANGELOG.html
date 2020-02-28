@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -90,13 +90,19 @@
 <li class="toctree-l3"><a class="reference internal" href="#removed">Removed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id1">0.7.1 - 2019-05-27</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id1">0.7.2 - 2019-07-30</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id2">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Fixed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">Removed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id5">0.7.1 - 2019-05-27</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id6">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#changed">Changed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id3">0.6.2 - 2019-05-23</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id4">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id7">0.6.2 - 2019-05-23</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id8">Added</a></li>
 </ul>
 </li>
 </ul>
@@ -171,49 +177,61 @@
 <p>The format is based on <a class="reference external" href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>,
 and this project adheres to <a class="reference external" href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
 <div class="section" id="unreleased">
-<h2><a class="reference external" href="https://www.github.com/ahendriksen/msd_pytorch/compare/v0.6.2...master">Unreleased</a><a class="headerlink" href="#unreleased" title="Permalink to this headline">¶</a></h2>
+<h2><a class="reference external" href="https://www.github.com/ahendriksen/msd_pytorch/compare/v0.7.2...master">Unreleased</a><a class="headerlink" href="#unreleased" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="added">
 <h3>Added<a class="headerlink" href="#added" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li>Support for multi-gpu execution. Use <code class="docutils literal notranslate"><span class="pre">parallel=True</span></code> when
-constructing a <code class="docutils literal notranslate"><span class="pre">MSDRegressionModel</span></code> or <code class="docutils literal notranslate"><span class="pre">MSDSegmentationModel</span></code>.</li>
-</ul>
 </div>
 <div class="section" id="fixed">
 <h3>Fixed<a class="headerlink" href="#fixed" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li>Make <code class="docutils literal notranslate"><span class="pre">model.forward()</span></code> more memory-efficient.</li>
-</ul>
 </div>
 <div class="section" id="removed">
 <h3>Removed<a class="headerlink" href="#removed" title="Permalink to this headline">¶</a></h3>
 </div>
 </div>
 <div class="section" id="id1">
-<h2><a class="reference external" href="https://www.github.com/ahendriksen/msd_pytorch/compare/v0.6.2...v0.7.1">0.7.1</a> - 2019-05-27<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<h2><a class="reference external" href="https://www.github.com/ahendriksen/msd_pytorch/compare/v0.7.1...v0.7.2">0.7.2</a> - 2019-07-30<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="id2">
 <h3>Added<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>Add <code class="docutils literal notranslate"><span class="pre">weights_path</span></code> command-line argument to msd executable to indicate
-where to store final weights.</li>
-<li>Add <code class="docutils literal notranslate"><span class="pre">MSDBlock2d</span></code>: this is a faster and slightly more memory efficient
+<li><p>Support for multi-gpu execution. Use <code class="docutils literal notranslate"><span class="pre">parallel=True</span></code> when
+constructing a <code class="docutils literal notranslate"><span class="pre">MSDRegressionModel</span></code> or <code class="docutils literal notranslate"><span class="pre">MSDSegmentationModel</span></code>.</p></li>
+</ul>
+</div>
+<div class="section" id="id3">
+<h3>Fixed<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Make <code class="docutils literal notranslate"><span class="pre">model.forward()</span></code> more memory-efficient.</p></li>
+</ul>
+</div>
+<div class="section" id="id4">
+<h3>Removed<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="id5">
+<h2><a class="reference external" href="https://www.github.com/ahendriksen/msd_pytorch/compare/v0.6.2...v0.7.1">0.7.1</a> - 2019-05-27<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id6">
+<h3>Added<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">weights_path</span></code> command-line argument to msd executable to indicate
+where to store final weights.</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">MSDBlock2d</span></code>: this is a faster and slightly more memory efficient
 implementation of the same MSD component. Many thanks to Jonas
-Adler for suggesting this way of structuring the code!</li>
+Adler for suggesting this way of structuring the code!</p></li>
 </ul>
 </div>
 <div class="section" id="changed">
 <h3>Changed<a class="headerlink" href="#changed" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>The MSD models use <code class="docutils literal notranslate"><span class="pre">MSDBlock2d</span></code> implementation by default now.</li>
+<li><p>The MSD models use <code class="docutils literal notranslate"><span class="pre">MSDBlock2d</span></code> implementation by default now.</p></li>
 </ul>
 </div>
 </div>
-<div class="section" id="id3">
-<h2>0.6.2 - 2019-05-23<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id4">
-<h3>Added<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id7">
+<h2>0.6.2 - 2019-05-23<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id8">
+<h3>Added<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>Initial release.</li>
+<li><p>Initial release.</p></li>
 </ul>
 </div>
 </div>

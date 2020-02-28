@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../../_static/jquery.js"></script>
-        <script type="text/javascript" src="../../_static/underscore.js"></script>
-        <script type="text/javascript" src="../../_static/doctools.js"></script>
-        <script type="text/javascript" src="../../_static/language_data.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -171,11 +171,11 @@
 
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">import</span> <span class="nn">torch</span> <span class="k">as</span> <span class="nn">t</span>
-<span class="kn">from</span> <span class="nn">torch.autograd</span> <span class="k">import</span> <span class="n">Variable</span><span class="p">,</span> <span class="n">Function</span>
+<span class="kn">from</span> <span class="nn">torch.autograd</span> <span class="kn">import</span> <span class="n">Variable</span><span class="p">,</span> <span class="n">Function</span>
 
 
 <div class="viewcode-block" id="StitchBuffer"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchBuffer">[docs]</a><span class="k">class</span> <span class="nc">StitchBuffer</span><span class="p">:</span>
-<div class="viewcode-block" id="StitchBuffer.__init__"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchBuffer.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="StitchBuffer.__init__"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchBuffer.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Holds the ``L`` and ``G`` buffers for a stitched module.</span>
 
 <span class="sd">        The intermediate layers are stored in ``L`` for the forward</span>
@@ -281,7 +281,7 @@
 <div class="viewcode-block" id="StitchCopyFunction.forward"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchCopyFunction.forward">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
         <span class="k">assert</span> <span class="nb">input</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">L</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="p">(</span>
-            <span class="n">f</span><span class="s2">&quot;Input type (</span><span class="si">{input.dtype}</span><span class="s2">) and layer L type (</span><span class="si">{L.dtype}</span><span class="s2">) &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Input type (</span><span class="si">{input.dtype}</span><span class="s2">) and layer L type (</span><span class="si">{L.dtype}</span><span class="s2">) &quot;</span>
             <span class="s2">&quot;should be the same. &quot;</span>
         <span class="p">)</span>
 
@@ -314,7 +314,7 @@
 
 
 <div class="viewcode-block" id="StitchCopyModule"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchCopyModule">[docs]</a><span class="k">class</span> <span class="nc">StitchCopyModule</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<div class="viewcode-block" id="StitchCopyModule.__init__"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchCopyModule.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+<div class="viewcode-block" id="StitchCopyModule.__init__"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchCopyModule.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Make a new StitchCopyModule</span>
 
 <span class="sd">        :param buffer: A StitchBuffer</span>
@@ -396,7 +396,7 @@
 
 
 <div class="viewcode-block" id="StitchLazyModule"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchLazyModule">[docs]</a><span class="k">class</span> <span class="nc">StitchLazyModule</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<div class="viewcode-block" id="StitchLazyModule.__init__"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchLazyModule.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+<div class="viewcode-block" id="StitchLazyModule.__init__"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.stitch.StitchLazyModule.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Make a new StitchLazyModule</span>
 
 <span class="sd">        :param buffer: A StitchBuffer</span>

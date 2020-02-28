@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../../_static/jquery.js"></script>
-        <script type="text/javascript" src="../../_static/underscore.js"></script>
-        <script type="text/javascript" src="../../_static/doctools.js"></script>
-        <script type="text/javascript" src="../../_static/language_data.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -146,8 +146,8 @@
            <div itemprop="articleBody">
             
   <h1>Source code for msd_pytorch.msd_segmentation_model</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">msd_pytorch.msd_model</span> <span class="k">import</span> <span class="n">MSDModel</span>
-<span class="kn">from</span> <span class="nn">torch.autograd</span> <span class="k">import</span> <span class="n">Variable</span>
+<span></span><span class="kn">from</span> <span class="nn">msd_pytorch.msd_model</span> <span class="kn">import</span> <span class="n">MSDModel</span>
+<span class="kn">from</span> <span class="nn">torch.autograd</span> <span class="kn">import</span> <span class="n">Variable</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 
@@ -164,7 +164,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="MSDSegmentationModel.__init__"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_segmentation_model.MSDSegmentationModel.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+<div class="viewcode-block" id="MSDSegmentationModel.__init__"><a class="viewcode-back" href="../../msd_pytorch.html#msd_pytorch.msd_segmentation_model.MSDSegmentationModel.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">c_in</span><span class="p">,</span>
         <span class="n">num_labels</span><span class="p">,</span>
@@ -248,7 +248,7 @@
         <span class="nb">min</span><span class="p">,</span> <span class="nb">max</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">target</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
         <span class="k">if</span> <span class="nb">min</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_labels</span> <span class="o">&lt;=</span> <span class="nb">max</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="n">f</span><span class="s2">&quot;Target invalid: expected values in range {[0, self.num_labels - 1]}, but got {[min, max]}&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Target invalid: expected values in range {[0, self.num_labels - 1]}, but got {[min, max]}&quot;</span>
             <span class="p">)</span>
         <span class="c1"># The NLLLoss does not accept a channel dimension. So we</span>
         <span class="c1"># squeeze the target.</span>
