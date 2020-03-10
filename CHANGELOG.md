@@ -9,10 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Removed
 
+## [0.8.0] - 2020-03.10
+### Added
+### Fixed
+- Weights access when pruning in pytorch 1.4
+### Removed
+- torchvision dependency
+- sacred dependency
+- `msd_pytorch.relu_inplace`
+- command-line interface
+- old MSDModule
+- stitch functions and modules
+
 ## [0.7.3] - 2020-03-10
 ### Fixed
 - Bug in relabeling code in ImageDataset.
-
 
 ## [0.7.2] - 2019-07-30
 ### Added
@@ -36,7 +47,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release.
 
-[Unreleased]: https://www.github.com/ahendriksen/msd_pytorch/compare/v0.7.3...master
+[Unreleased]: https://www.github.com/ahendriksen/msd_pytorch/compare/v0.8.0...master
+[0.8.0]: https://www.github.com/ahendriksen/msd_pytorch/compare/v0.7.3...v0.8.0
 [0.7.2]: https://www.github.com/ahendriksen/msd_pytorch/compare/v0.7.2...v0.7.3
 [0.7.2]: https://www.github.com/ahendriksen/msd_pytorch/compare/v0.7.1...v0.7.2
 [0.7.1]: https://www.github.com/ahendriksen/msd_pytorch/compare/v0.6.2...v0.7.1
