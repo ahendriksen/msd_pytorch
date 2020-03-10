@@ -58,7 +58,7 @@ def _relabel_image(img, labels):
         data = np.copy(img)
         for i, label in enumerate(labels):
             data[img == label] = i
-            return data
+        return data
     else:
         # Image values should be contained in [0, labels-1]. We check this and return the image.
         if img.min() < 0 or labels <= img.max():
