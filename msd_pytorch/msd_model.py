@@ -299,7 +299,7 @@ class MSDModel:
         }
         t.save(state, path)
 
-    def load(self, path):
+    def load(self, path, strict=True):
         """Load network parameters from disk.
 
         :param path: The filesystem path where the network parameters are stored.
@@ -309,7 +309,7 @@ class MSDModel:
         """
         state = t.load(path)
 
-        self.net.load_state_dict(state["state_dict"])
+        self.net.load_state_dict(state["state_dict"], strict=strict)
         self.optimizer.load_state_dict(state["optimizer"])
         self.net.cuda()
 
