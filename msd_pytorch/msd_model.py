@@ -4,6 +4,8 @@ import numpy as np
 import torch as t
 import torch.nn as nn
 import torch.optim as optim
+from collections import OrderedDict
+import warnings
 
 
 def scaling_module(c_in, c_out, *, conv3d=False):
@@ -299,7 +301,7 @@ class MSDModel:
         }
         t.save(state, path)
 
-    def load(self, path, strict=True):
+    def load(self, path, strict=True, expanded=False):
         """Load network parameters from disk.
 
         :param path: The filesystem path where the network parameters are stored.
@@ -309,10 +311,45 @@ class MSDModel:
         """
         state = t.load(path)
 
-        self.net.load_state_dict(state["state_dict"], strict=strict)
+        if 'state_dict' in state:
+            state_dict = state['state_dict']
+        else:
+            state_dict = state
+        self.net.load_state_dict(state_dict, strict=strict)
+
+        if not strict:
+            model_dict = self.net.state_dict()
+            new_state_dict = OrderedDict()
+            matched_keys, discarded_keys = [], []
+
+            for k, v in state_dict.items():
+                if k in model_dict and model_dict[k].size() == v.size():
+                    new_state_dict[k] = v
+                    matched_keys.append(k)
+                else:
+                    discarded_keys.append(k)
+
+            model_dict.update(new_state_dict)
+            self.net.load_state_dict(state_dict, strict=strict)
+
+            if len(matched_keys) == 0:
+                warnings.warn(
+                    'The pretrained weights cannot be loaded, '
+                    'please check the key names manually '
+                    '(** ignored and continue **)'
+                )
+            else:
+                print(
+                    'Successfully loaded pretrained weights.'
+                )
+                if len(discarded_keys) > 0:
+                    print(
+                        '** The following keys are discarded '
+                        'due to unmatched keys or layer size: {}'.
+                        format(discarded_keys)
+                    )
         self.optimizer.load_state_dict(state["optimizer"])
         self.net.cuda()
 
         epoch = state["epoch"]
-
         return epoch
