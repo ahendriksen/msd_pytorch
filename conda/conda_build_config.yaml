@@ -5,8 +5,5 @@ cxx_compiler_version:  # [linux]
 python:
   - 3.6
   - 3.7
-  - 3.8
 pytorch:
   - 1.4
-  - 1.5
-  - 1.6
