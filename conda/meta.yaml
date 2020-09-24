@@ -34,6 +34,8 @@ requirements:
     - setuptools
     - pytorch {{pytorch}}
     - cudatoolkit {{cudatoolkit}}
+    # Force downloading gpu packages for pytorch:
+    - _pytorch_select=0.2
     {% for dep in data['setup_requires'] %}
     - {{ dep.lower() }}
     {% endfor %}
