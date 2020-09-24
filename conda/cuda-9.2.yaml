@@ -1,2 +1,6 @@
 cudatoolkit:
   - 9.2
+pytorch:
+  - 1.5
+python:
+  - 3.7
