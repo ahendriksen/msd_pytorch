@@ -2,6 +2,7 @@ variables:
   # This fixes issues with conda-build and versions of git < 1.9. Cloning from a
   # shallow clone is not possible.
   GIT_DEPTH: 0
+  GIT_STRATEGY: clone
 
 stages:
   - build
