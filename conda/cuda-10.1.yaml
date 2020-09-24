@@ -1,4 +1,2 @@
 cudatoolkit:
   - 10.1
-pytorch:
-  - 1.4    # pytorch 1.1 does not support cuda 10.1
