@@ -1,0 +1,11 @@
+#+TITLE: Readme
+
+Pytorch has a complex compatibility table:
+
+|           | Pytorch |     |     |   | Python |     |     |
+|           | 1.4     | 1.5 | 1.6 |   | 3.6    | 3.7 | 3.8 |
+|-----------+---------+-----+-----+---+--------+-----+-----|
+| CUDA 9.2  | x       | x   | x   |   | x      | x   | x   |
+| CUDA 10.0 | x       |     |     |   | x      | x   | x   |
+| CUDA 10.1 | x       | x   | x   |   | x      | x   | x   |
+| CUDA 10.2 |         | x   | x   |   | x      | x   | x   |
