@@ -1,4 +1,8 @@
-from msd_pytorch.msd_model import MSDModel
+from msd_pytorch.msd_model import (
+    MSDModel,
+    scaling_module_set_bias,
+    scaling_module_set_scale
+)
 from torch.autograd import Variable
 import numpy as np
 import torch.nn as nn
@@ -90,8 +94,8 @@ class MSDSegmentationModel(MSDModel):
 
         # The input data should be roughly normally distributed after
         # passing through net_fixed.
-        self.scale_in.bias.data.fill_(-mean / std)
-        self.scale_in.weight.data.fill_(1 / std)
+        scaling_module_set_scale(self.scale_in, 1 / std)
+        scaling_module_set_bias(self.scale_in, -mean / std)
 
     def set_target(self, target):
         # The class labels must be of long data type

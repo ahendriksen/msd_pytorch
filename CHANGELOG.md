@@ -6,7 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+
 ### Fixed
+- Fixed normalization for multi-channel input and output.
 ### Removed
 
 ## [0.8.0] - 2020-03.10

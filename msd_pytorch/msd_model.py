@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.optim as optim
 
 
-def scaling_module(c_in, c_out, *, conv3d=False):
+def scaling_module(num_channels, *, conv3d=False):
     """Make a Module that normalizes the input data.
 
     This part of the network can be used to renormalize the input
@@ -15,22 +15,35 @@ def scaling_module(c_in, c_out, *, conv3d=False):
     * saved when the network is saved;
     * not updated by the gradient descent solvers.
 
-    :param c_in: The number of input channels.
-    :param c_out: The number of output channels.
+    :param num_channels: The number of channels.
     :param conv3d: Indicates that the input data is 3D instead of 2D.
     :returns: A scaling module.
     :rtype: torch.nn.ConvNd
 
     """
     if conv3d:
-        c = nn.Conv3d(c_in, c_out, 1)
+        c = nn.Conv3d(num_channels, num_channels, 1)
     else:
-        c = nn.Conv2d(c_in, c_out, 1)
+        c = nn.Conv2d(num_channels, num_channels, 1)
     c.bias.requires_grad = False
-    c.bias.data.zero_()
     c.weight.requires_grad = False
-    c.weight.data.fill_(1)
+
+    scaling_module_set_scale(c, 1.0)
+    scaling_module_set_bias(c, 0.0)
+
     return c
+
+
+def scaling_module_set_scale(sm, s):
+    c_out, c_in = sm.weight.shape[:2]
+    assert c_out == c_in
+    sm.weight.data.zero_()
+    for i in range(c_out):
+        sm.weight.data[i, i] = s
+
+
+def scaling_module_set_bias(sm, bias):
+    sm.bias.data.fill_(bias)
 
 
 class MSDModel:
@@ -82,8 +95,8 @@ class MSDModel:
         # This part of the network can be used to renormalize the
         # input and output data. Its parameters are saved when the
         # network is saved.
-        self.scale_in = scaling_module(c_in, c_in)
-        self.scale_out = scaling_module(c_out, c_out)
+        self.scale_in = scaling_module(c_in)
+        self.scale_out = scaling_module(c_out)
         self.msd = MSDModule(c_in, c_out, depth, width, dilations)
 
         # It is the task of any subclass to initialize `self.net` and
@@ -132,12 +145,12 @@ class MSDModel:
         # The input data should be roughly normally distributed after
         # passing through scale_in. Note that the input is first
         # scaled and then recentered.
-        self.scale_in.weight.data.fill_(1 / std_in)
-        self.scale_in.bias.data.fill_(-mean_in / std_in)
+        scaling_module_set_scale(self.scale_in, 1 / std_in)
+        scaling_module_set_bias(self.scale_in, -mean_in / std_in)
         # The scale_out layer should rather 'denormalize' the network
         # output.
-        self.scale_out.weight.data.fill_(std_out)
-        self.scale_out.bias.data.fill_(mean_out)
+        scaling_module_set_scale(self.scale_out, std_out)
+        scaling_module_set_bias(self.scale_out, mean_out)
 
     def set_input(self, data):
         """Set input data.
