@@ -6,10 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-
+- Support for Python 3.8
+- Suport for PyTorch 1.5
 ### Fixed
 - Fixed normalization for multi-channel input and output.
 ### Removed
+- Support for PyTorch 1.1
 
 ## [0.8.0] - 2020-03.10
 ### Added
