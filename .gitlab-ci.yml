@@ -19,7 +19,7 @@ build-9.2:
     # https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#options-for-steering-gpu-code-generation-gpu-architecture
     TORCH_CUDA_ARCH_LIST: "3.5 5.2 6.0 6.1"
   script:
-    - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O install_conda.sh
+    - wget -nv https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O install_conda.sh
     - bash install_conda.sh -b
     - export PATH="$HOME/miniconda3/bin:$PATH"
     - mkdir -p /cache/pkgs
@@ -47,7 +47,7 @@ build-10.0:
     # https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#options-for-steering-gpu-code-generation-gpu-architecture
     TORCH_CUDA_ARCH_LIST: "3.5 5.2 6.0 6.1 7.0+PTX"
   script:
-    - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O install_conda.sh
+    - wget -nv https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O install_conda.sh
     - bash install_conda.sh -b
     - export PATH="$HOME/miniconda3/bin:$PATH"
     - conda install -y -c pytorch pytorch=1.4 python=3.7
@@ -72,7 +72,7 @@ build-10.1:
     # https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#options-for-steering-gpu-code-generation-gpu-architecture
     TORCH_CUDA_ARCH_LIST: "3.5 5.2 6.0 6.1 7.0+PTX"
   script:
-    - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O install_conda.sh
+    - wget -nv https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O install_conda.sh
     - bash install_conda.sh -b
     - export PATH="$HOME/miniconda3/bin:$PATH"
     - conda install -y -c pytorch pytorch=1.4 python=3.7
