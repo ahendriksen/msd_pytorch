@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Removed
 
+## [0.9.1] - 2020-10-27
+### Fixed
+- Fixed the conda build for pytorch versions < 1.5
+
 ## [0.9.0] - 2020-10-26
 ### Added
 - Support for Python 3.8
@@ -56,7 +60,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release.
 
-[Unreleased]: https://www.github.com/ahendriksen/msd_pytorch/compare/v0.9.0...master
+[Unreleased]: https://www.github.com/ahendriksen/msd_pytorch/compare/v0.9.1...master
+[0.9.1]: https://www.github.com/ahendriksen/msd_pytorch/compare/v0.9.0...v0.9.1
 [0.9.0]: https://www.github.com/ahendriksen/msd_pytorch/compare/v0.8.0...v0.9.0
 [0.8.0]: https://www.github.com/ahendriksen/msd_pytorch/compare/v0.7.3...v0.8.0
 [0.7.2]: https://www.github.com/ahendriksen/msd_pytorch/compare/v0.7.2...v0.7.3
