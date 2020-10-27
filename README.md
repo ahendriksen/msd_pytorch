@@ -25,11 +25,11 @@ This package is compatible with python 3.6 and 3.7.
 
 ### Installing with Conda
 
-Simply install with either CUDA version 9.0, 10.1, or 10.2:
+Simply install with either CUDA version 9.2, 10.0, or 10.1:
 ```
-conda install msd_pytorch cudatoolkit=9.0 -c aahendriksen -c pytorch -c defaults -c conda-forge
-conda install msd_pytorch cudatoolkit=10.1 -c aahendriksen -c pytorch -c defaults -c conda-forge
-conda install msd_pytorch cudatoolkit=10.2 -c aahendriksen -c pytorch -c defaults -c conda-forge
+conda install msd_pytorch=0.9.0 cudatoolkit=9.2 -c aahendriksen -c pytorch -c defaults -c conda-forge
+conda install msd_pytorch=0.9.0 cudatoolkit=10.0 -c aahendriksen -c pytorch -c defaults -c conda-forge
+conda install msd_pytorch=0.9.0 cudatoolkit=10.1 -c aahendriksen -c pytorch -c defaults -c conda-forge
 ```
 
 **Note**: The order of the channels is important. If you install pytorch from
