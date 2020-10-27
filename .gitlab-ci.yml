@@ -28,7 +28,7 @@ build-9.2:
     - ln -s /cache/pkgs $HOME/miniconda3/
     - conda install -y -c pytorch pytorch=1.4 python=3.7
     - conda install -y conda-build conda-verify
-    - conda build conda/ -c defaults -c pytorch -c conda-forge -c aahendriksen -m conda/cuda-${cudatoolkit}.yaml
+    - conda build conda/ -c aahendriksen -c pytorch -c defaults -c conda-forge -m conda/cuda-${cudatoolkit}.yaml
     - mkdir -p artifacts
     - mv /root/miniconda3/conda-bld/linux-64/msd_pytorch*.bz2 artifacts/
   artifacts:
@@ -52,13 +52,14 @@ build-10.0:
     - export PATH="$HOME/miniconda3/bin:$PATH"
     - conda install -y -c pytorch pytorch=1.4 python=3.7
     - conda install -y conda-build conda-verify
-    - conda build conda/ -c defaults -c pytorch -c conda-forge -c aahendriksen -m conda/cuda-${cudatoolkit}.yaml
+    - conda build conda/ -c aahendriksen -c pytorch -c defaults -c conda-forge -m conda/cuda-${cudatoolkit}.yaml
     - mkdir -p artifacts
     - mv /root/miniconda3/conda-bld/linux-64/msd_pytorch*.bz2 artifacts/
   artifacts:
     paths:
     - artifacts/
     expire_in: 7 days
+
 
 build-10.1:
   stage: build
@@ -76,7 +77,7 @@ build-10.1:
     - export PATH="$HOME/miniconda3/bin:$PATH"
     - conda install -y -c pytorch pytorch=1.4 python=3.7
     - conda install -y conda-build conda-verify
-    - conda build conda/ -c defaults -c pytorch -c conda-forge -c aahendriksen -m conda/cuda-${cudatoolkit}.yaml
+    - conda build conda/ -c aahendriksen -c pytorch -c defaults -c conda-forge -m conda/cuda-${cudatoolkit}.yaml
     - mkdir -p artifacts
     - mv /root/miniconda3/conda-bld/linux-64/msd_pytorch*.bz2 artifacts/
   artifacts:
