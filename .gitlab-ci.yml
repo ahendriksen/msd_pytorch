@@ -99,6 +99,7 @@ publish-dev:
     - anaconda login --username "$ANACONDA_USERNAME" --password "$ANACONDA_PASSWORD"
     - set -x
     - anaconda upload --label dev artifacts/*.bz2
+    - anaconda logout
 
 publish-release:
   stage: publish
@@ -114,3 +115,4 @@ publish-release:
     - anaconda login --username "$ANACONDA_USERNAME" --password "$ANACONDA_PASSWORD"
     - set -x
     - anaconda upload artifacts/*.bz2
+    - anaconda logout
