@@ -142,7 +142,7 @@ def test_conv_values():
 
         # Execute pytorch convolution:
         conv_torch = torch.nn.Conv2d(
-            1, 1, 3, padding=dilation, dilation=dilation
+            C_in, C_out, 3, padding=dilation, dilation=dilation
         ).cuda()
         conv_torch.weight.data = k
         conv_torch.bias.data = bias
