@@ -135,6 +135,7 @@ setup(
                 'msd_pytorch/msd_custom_convolutions/conv2d_backward_bias.cu',
                 'msd_pytorch/msd_custom_convolutions/conv2d_backward_x.cu',
                 'msd_pytorch/msd_custom_convolutions/conv2d_forward.cu',
+                'msd_pytorch/msd_custom_convolutions/conv3d_backward_bias.cu',
             ],
             extra_compile_args={
                 'cxx': [],
