@@ -130,7 +130,7 @@ setup(
             name='msd_custom_convolutions',
             sources=[
                 'msd_pytorch/msd_custom_convolutions.cpp',
-                'msd_pytorch/msd_custom_convolutions/conv_relu_cuda.cu',
+                'msd_pytorch/msd_custom_convolutions/torch_cuda_dispatch.cu',
                 'msd_pytorch/msd_custom_convolutions/conv2d_backward_k.cu',
                 'msd_pytorch/msd_custom_convolutions/conv2d_backward_bias.cu',
                 'msd_pytorch/msd_custom_convolutions/conv2d_backward_x.cu',
