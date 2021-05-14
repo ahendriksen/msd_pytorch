@@ -134,6 +134,7 @@ setup(
                 'msd_pytorch/msd_custom_convolutions/conv_cuda_kernels.cu',
                 'msd_pytorch/msd_custom_convolutions/conv_relu_cuda_kernels.cu',
                 'msd_pytorch/msd_custom_convolutions/conv_relu_cuda.cu',
+                'msd_pytorch/msd_custom_convolutions/conv2d_backward_k.cu',
             ],
             extra_compile_args={
                 'cxx': [],

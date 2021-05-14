@@ -28,6 +28,19 @@
 #define dTensor4R mcc::UnpackableTensorAccessor<PT4R32>
 #define dTensor5R mcc::UnpackableTensorAccessor<PT5R32>
 
+
+#define dTensor1Rfloat mcc::UnpackableTensorAccessor<float, 1, mcc::RestrictPtrTraits, DT_INDEX>
+#define dTensor2Rfloat mcc::UnpackableTensorAccessor<float, 2, mcc::RestrictPtrTraits, DT_INDEX>
+#define dTensor3Rfloat mcc::UnpackableTensorAccessor<float, 3, mcc::RestrictPtrTraits, DT_INDEX>
+#define dTensor4Rfloat mcc::UnpackableTensorAccessor<float, 4, mcc::RestrictPtrTraits, DT_INDEX>
+#define dTensor5Rfloat mcc::UnpackableTensorAccessor<float, 5, mcc::RestrictPtrTraits, DT_INDEX>
+
+#define dTensor1Rdouble mcc::UnpackableTensorAccessor<double, 1, mcc::RestrictPtrTraits, DT_INDEX>
+#define dTensor2Rdouble mcc::UnpackableTensorAccessor<double, 2, mcc::RestrictPtrTraits, DT_INDEX>
+#define dTensor3Rdouble mcc::UnpackableTensorAccessor<double, 3, mcc::RestrictPtrTraits, DT_INDEX>
+#define dTensor4Rdouble mcc::UnpackableTensorAccessor<double, 4, mcc::RestrictPtrTraits, DT_INDEX>
+#define dTensor5Rdouble mcc::UnpackableTensorAccessor<double, 5, mcc::RestrictPtrTraits, DT_INDEX>
+
 #define dTensor1D mcc::UnpackableTensorAccessor<PT1D32>
 #define dTensor2D mcc::UnpackableTensorAccessor<PT2D32>
 #define dTensor3D mcc::UnpackableTensorAccessor<PT3D32>
