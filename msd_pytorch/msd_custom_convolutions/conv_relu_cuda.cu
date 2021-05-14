@@ -9,6 +9,7 @@
 
 #include "device_tensor.h"
 #include "utils.h"
+#include "kernels.cuh"
 
 /**
  * A OptionalDeviceGuard is an RAII class that sets a device to some value on
@@ -69,74 +70,88 @@ toDeviceTensor(torch::Tensor x) {
     );
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
-//                         Convolution: Backward Bias                        //
-///////////////////////////////////////////////////////////////////////////////
-
-template <typename scalar_t>
-__global__ void
-conv_relu_backward_bias(dTensor4R output,
-                        dTensor4R grad_output,
-                        dTensor1R grad_bias);
-
-///////////////////////////////////////////////////////////////////////////////
-//                        Convolution: Backward Kernel                       //
+//                        Convolution (no relu)                              //
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename scalar_t>
-__global__ void
-conv_relu_backward_k(dTensor4R output,
-                     dTensor4R grad_output,
-                     dTensor4R input,
-                     dTensor4R grad_kernel,
-                     int dilation);
+torch::Tensor conv_cuda_forward(torch::Tensor input_t,
+                             torch::Tensor kernel_t,
+                             torch::Tensor bias_t,
+                             torch::Tensor out_t,
+                             int dilation,
+                             int block_size) {
+    OptionalDeviceGuard device_guard(device_of(input_t));
+    cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+
+    AT_DISPATCH_FLOATING_TYPES(input_t.scalar_type(), "conv_cuda_forward", ([&] {
+        // Create device tensors:
+        dTensor4R input_d = toDeviceTensorR<scalar_t,4>(input_t);
+        dTensor4R kernel_d = toDeviceTensorR<scalar_t,4>(kernel_t);
+        dTensor4R out_d = toDeviceTensorR<scalar_t,4>(out_t);
+        dTensor1R bias_d = toDeviceTensorR<scalar_t, 1>(bias_t);
+
+        dim3 gridSize(CeilDiv(input_d.size(3), block_size),
+                      CeilDiv(input_d.size(2), block_size));
+        dim3 blockSize(block_size, block_size);
+        auto buffer_sz = kernel_t.numel() * sizeof(scalar_t);
+
+        conv_forward<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
+            (input_d, kernel_d, bias_d, out_d, dilation);
+
+        CudaCheck(cudaGetLastError());
+    }));
+    return out_t;
+}
+
+void conv_cuda_backward_x(torch::Tensor grad_output_t,
+                          torch::Tensor kernel_t,
+                          torch::Tensor grad_input_t,
+                          int dilation,
+                          int block_size) {
+    OptionalDeviceGuard device_guard(torch::device_of(grad_output_t));
+    cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+
+    AT_DISPATCH_FLOATING_TYPES(grad_output_t.scalar_type(), "conv_cuda_backward_x", ([&] {
+        // Create device tensors:
+        dTensor4R grad_output_d = toDeviceTensorR<scalar_t,4>(grad_output_t);
+        dTensor4R grad_input_d = toDeviceTensorR<scalar_t,4>(grad_input_t);
+        dTensor4R kernel_d = toDeviceTensorR<scalar_t,4>(kernel_t);
+
+        dim3 gridSize(CeilDiv((int) grad_output_d.size(3), block_size),
+                      CeilDiv((int) grad_output_d.size(2), block_size));
+        dim3 blockSize(block_size, block_size);
+        auto buffer_sz = kernel_t.numel() * sizeof(scalar_t);
+        conv_backward_x<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
+            (grad_output_d, kernel_d, grad_input_d, dilation);
+
+        CudaCheck(cudaGetLastError());
+    }));
+}
+
+void conv_cuda_backward_k(torch::Tensor grad_output, torch::Tensor input,
+                          torch::Tensor grad_kernel,
+                          int dilation, int block_size)
+{
+    OptionalDeviceGuard device_guard(torch::device_of(grad_output));
+    cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+
+    AT_DISPATCH_FLOATING_TYPES(grad_output.scalar_type(), "conv_cuda_backward_k", ([&] {
+        // Create device tensors:
+        dTensor4R grad_output_d = toDeviceTensorR<scalar_t,4>(grad_output);
+        dTensor4R input_d = toDeviceTensorR<scalar_t,4>(input);
+        dTensor4R grad_kernel_d = toDeviceTensorR<scalar_t,4>(grad_kernel);
+        dim3 gridSize(CeilDiv((int) grad_output_d.size(3), block_size),
+                      CeilDiv((int) grad_output_d.size(2), block_size));
+        dim3 blockSize(block_size, block_size);
+        conv_backward_k<scalar_t><<<gridSize, blockSize, 0, stream>>>
+            (grad_output_d, input_d, grad_kernel_d, dilation);
+
+        CudaCheck(cudaGetLastError());
+    }));
+}
 
 ///////////////////////////////////////////////////////////////////////////////
-//                           Convolution: Backward Input                     //
-///////////////////////////////////////////////////////////////////////////////
-
-template <typename scalar_t>
-__global__ void
-conv_relu_backward_x(dTensor4R output,
-                      dTensor4R grad_output,
-                      dTensor4R kernel,
-                      dTensor4R grad_input,
-		     int dilation);
-
-///////////////////////////////////////////////////////////////////////////////
-//                            Convolution:Forward                            //
-///////////////////////////////////////////////////////////////////////////////
-
-
-template <typename scalar_t>
-__global__ void
-conv_relu_forward(dTensor4R input,
-                  dTensor4R kernel,
-                  dTensor1R bias,
-                  dTensor4R output,
-                  int dilation);
-
-// extern template
-// __global__ void
-// conv_relu_forward<float>(dTensor4R input,
-//                   dTensor4R kernel,
-//                   dTensor1R bias,
-//                   dTensor4R output,
-//                   int dilation);
-
-
-
-// extern template
-// __global__ void
-// conv_relu_forward<double>(dTensor4R input,
-//                   dTensor4R kernel,
-//                   dTensor1R bias,
-//                   dTensor4R output,
-//                   int dilation);
-
-///////////////////////////////////////////////////////////////////////////////
-//                        Kernel preparation functions                       //
+//                        Convolution (including relu)                       //
 ///////////////////////////////////////////////////////////////////////////////
 
 torch::Tensor conv_relu_cuda_forward(torch::Tensor input_t,
