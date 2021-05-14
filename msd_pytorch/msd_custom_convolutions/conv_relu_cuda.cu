@@ -46,6 +46,29 @@
 // sure that the computations take place where the data is.
 using torch::OptionalDeviceGuard;
 
+
+// https://github.com/ClementPinard/extension-cpp/blob/deviceTensorExperiments/cuda/lltm_cuda_kernel.cu
+template <typename T, int Dim>
+UnpackableTensorAccessor<T, Dim, torch::RestrictPtrTraits, DT_INDEX>
+toDeviceTensorR(torch::Tensor x) {
+    return UnpackableTensorAccessor<T, Dim,torch::RestrictPtrTraits,DT_INDEX>(
+         x.data<T>(),
+	 x.sizes().data(),
+	 x.strides().data()
+    );
+}
+
+
+template <typename T, int Dim>
+UnpackableTensorAccessor<T, Dim, torch::DefaultPtrTraits, DT_INDEX>
+toDeviceTensor(torch::Tensor x) {
+    return UnpackableTensorAccessor<T, Dim,torch::DefaultPtrTraits,DT_INDEX>(
+         x.data<T>(),
+	 x.sizes().data(),
+	 x.strides().data()
+    );
+}
+
 // In the MSD pytorch source code, we sometimes need atomicAdd for 64bit floats.
 // This is not supported for compute capability < 6.0 (pre-GTX 10XX series). So
 // Nvidia proposes the following fix:
