@@ -5,6 +5,17 @@
 #include "kernel_utils.cuh"
 
 
+template <typename scalar_t>
+static __inline__ __device__ void pack_shared_mem(scalar_t* dest, scalar_t* src, int n){
+    int pId = threadIdx.x + blockDim.x * threadIdx.y;
+    int num_threads = blockDim.x * blockDim.y;
+
+    for (int i=pId; i < n; i+=num_threads) {
+        dest[i] = src[i];
+    }
+    __syncthreads();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //                            Convolution:Forward                            //
 ///////////////////////////////////////////////////////////////////////////////
@@ -28,6 +39,7 @@ conv_forward(dTensor4R input,
     // So we must have:
     //     C_IN * C_OUT < 1300
     extern __shared__ int shared_memory[];
+    scalar_t* buf = (scalar_t*) shared_memory;
 
     int B = output.size(0);
     int C_OUT = output.size(1);
@@ -37,20 +49,11 @@ conv_forward(dTensor4R input,
 
     int h = threadIdx.y + blockDim.y * blockIdx.y;
     int w = threadIdx.x + blockDim.x * blockIdx.x;
-    int pId = threadIdx.x + blockDim.x * threadIdx.y;
-    int num_threads = blockDim.x * blockDim.y;
 
-    // Load kernels into shared memory
-    scalar_t* kernel_buf = (scalar_t*) shared_memory;
+    // // Load kernels into shared memory
     int num_kernel_elems = kernel.size(0) * kernel.size(1) * kernel.size(2) * kernel.size(3);
-
-    for (int i=pId; i < num_kernel_elems; i+=num_threads) {
-        kernel_buf[i] = kernel.data()[i];
-    }
-    // We can index kernel_buffer like a 4d tensor.
-    mcc::TensorAccessor<PT4R32> kernel_buffer = kernel.unpack_from(kernel_buf);
-
-    __syncthreads();
+    pack_shared_mem<scalar_t>(buf, kernel.data(), num_kernel_elems);
+    mcc::TensorAccessor<PT4R32> kernel_buffer = kernel.unpack_from(buf);
 
     if (W <= w || H <= h) {
         return;
