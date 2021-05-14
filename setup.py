@@ -131,12 +131,11 @@ setup(
             sources=[
                 'msd_pytorch/msd_custom_convolutions.cpp',
                 'msd_pytorch/msd_custom_convolutions/conv_cuda.cu',
-                'msd_pytorch/msd_custom_convolutions/conv_cuda_kernels.cu',
-                'msd_pytorch/msd_custom_convolutions/conv_relu_cuda_kernels.cu',
                 'msd_pytorch/msd_custom_convolutions/conv_relu_cuda.cu',
                 'msd_pytorch/msd_custom_convolutions/conv2d_backward_k.cu',
                 'msd_pytorch/msd_custom_convolutions/conv2d_backward_bias.cu',
                 'msd_pytorch/msd_custom_convolutions/conv2d_backward_x.cu',
+                'msd_pytorch/msd_custom_convolutions/conv2d_forward.cu',
             ],
             extra_compile_args={
                 'cxx': [],
