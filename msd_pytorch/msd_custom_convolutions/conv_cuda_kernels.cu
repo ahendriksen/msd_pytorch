@@ -5,6 +5,7 @@
 #include "device_tensor.h"
 #include "utils.h"
 
+
 __device__ __forceinline__ int
 reflect(int i, int dimi) {
     if (i < 0) {
@@ -145,7 +146,7 @@ conv_backward_x(dTensor4R grad_output,
     __syncthreads();
 
     // We can index kernel_buffer like a 4d tensor.
-    torch::TensorAccessor<PT4R32> kernel_buffer = kernel.unpack_from(kernel_buf);
+    mcc::TensorAccessor<PT4R32> kernel_buffer = kernel.unpack_from(kernel_buf);
 
     if (W <= w || H <= h) {
         return;
@@ -249,7 +250,7 @@ conv_forward(dTensor4R input,
         kernel_buf[i] = kernel.data()[i];
     }
     // We can index kernel_buffer like a 4d tensor.
-    torch::TensorAccessor<PT4R32> kernel_buffer = kernel.unpack_from(kernel_buf);
+    mcc::TensorAccessor<PT4R32> kernel_buffer = kernel.unpack_from(kernel_buf);
 
     __syncthreads();
 

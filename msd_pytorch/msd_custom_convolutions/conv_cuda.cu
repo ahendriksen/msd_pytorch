@@ -47,11 +47,12 @@
 using torch::OptionalDeviceGuard;
 
 
+
 // https://github.com/ClementPinard/extension-cpp/blob/deviceTensorExperiments/cuda/lltm_cuda_kernel.cu
 template <typename T, int Dim>
-UnpackableTensorAccessor<T, Dim, torch::RestrictPtrTraits, DT_INDEX>
+mcc::UnpackableTensorAccessor<T, Dim, mcc::RestrictPtrTraits, DT_INDEX>
 toDeviceTensorR(torch::Tensor x) {
-    return UnpackableTensorAccessor<T, Dim,torch::RestrictPtrTraits,DT_INDEX>(
+    return mcc::UnpackableTensorAccessor<T, Dim,mcc::RestrictPtrTraits,DT_INDEX>(
          x.data<T>(),
 	 x.sizes().data(),
 	 x.strides().data()
@@ -60,9 +61,9 @@ toDeviceTensorR(torch::Tensor x) {
 
 
 template <typename T, int Dim>
-UnpackableTensorAccessor<T, Dim, torch::DefaultPtrTraits, DT_INDEX>
+mcc::UnpackableTensorAccessor<T, Dim, mcc::DefaultPtrTraits, DT_INDEX>
 toDeviceTensor(torch::Tensor x) {
-    return UnpackableTensorAccessor<T, Dim,torch::DefaultPtrTraits,DT_INDEX>(
+    return mcc::UnpackableTensorAccessor<T, Dim,mcc::DefaultPtrTraits,DT_INDEX>(
          x.data<T>(),
 	 x.sizes().data(),
 	 x.strides().data()
