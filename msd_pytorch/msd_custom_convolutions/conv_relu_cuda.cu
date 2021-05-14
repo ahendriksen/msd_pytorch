@@ -2,9 +2,7 @@
 #include <torch/extension.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
-// THCAtomics is a private, but very useful api for adding things
-// atomatically. We use atomticAdd.
-#include "THC/THCAtomics.cuh"
+
 // For multi-device code, we have to get the correct CUDA stream to
 // run the computations on. We therefore have to use this private API.
 #include <c10/cuda/CUDAStream.h>
@@ -47,6 +45,31 @@
 // We use the OptionalDeviceGuard for multi-GPU programming to make
 // sure that the computations take place where the data is.
 using torch::OptionalDeviceGuard;
+
+// In the MSD pytorch source code, we sometimes need atomicAdd for 64bit floats.
+// This is not supported for compute capability < 6.0 (pre-GTX 10XX series). So
+// Nvidia proposes the following fix:
+// https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#atomic-functions
+#if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 600
+#else
+static __inline__ __device__ double atomicAdd(double* address, double val)
+{
+    unsigned long long int* address_as_ull =
+                              (unsigned long long int*)address;
+    unsigned long long int old = *address_as_ull, assumed;
+
+    do {
+        assumed = old;
+        old = atomicCAS(address_as_ull, assumed,
+                        __double_as_longlong(val +
+                               __longlong_as_double(assumed)));
+
+    // Note: uses integer comparison to avoid hang in case of NaN (since NaN != NaN)
+    } while (assumed != old);
+
+    return __longlong_as_double(old);
+}
+#endif
 
 __device__ __forceinline__ int
 reflect(int i, int dimi) {
