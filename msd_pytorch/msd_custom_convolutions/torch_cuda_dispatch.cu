@@ -54,8 +54,8 @@ mcc::UnpackableTensorAccessor<T, Dim, mcc::RestrictPtrTraits, DT_INDEX>
 toDeviceTensorR(torch::Tensor x) {
     return mcc::UnpackableTensorAccessor<T, Dim,mcc::RestrictPtrTraits,DT_INDEX>(
          x.data<T>(),
-	 x.sizes().data(),
-	 x.strides().data()
+         x.sizes().data(),
+         x.strides().data()
     );
 }
 
@@ -65,8 +65,8 @@ mcc::UnpackableTensorAccessor<T, Dim, mcc::DefaultPtrTraits, DT_INDEX>
 toDeviceTensor(torch::Tensor x) {
     return mcc::UnpackableTensorAccessor<T, Dim,mcc::DefaultPtrTraits,DT_INDEX>(
          x.data<T>(),
-	 x.sizes().data(),
-	 x.strides().data()
+         x.sizes().data(),
+         x.strides().data()
     );
 }
 
@@ -248,6 +248,195 @@ void conv_relu_cuda_backward_bias(torch::Tensor output,
                       CeilDiv((int) grad_output_d.size(2), block_size));
         dim3 blockSize(block_size, block_size);
         conv_relu_backward_bias<scalar_t><<<gridSize, blockSize, 0, stream>>>
+            (output_d, grad_output_d, grad_bias_d);
+
+        CudaCheck(cudaGetLastError());
+    }));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//                     3D Convolution (including relu)                       //
+///////////////////////////////////////////////////////////////////////////////
+torch::Tensor conv3d_cuda_forward(torch::Tensor input_t,
+                                  torch::Tensor kernel_t,
+                                  torch::Tensor bias_t,
+                                  torch::Tensor out_t,
+                                  int dilation,
+                                  int block_size) {
+    OptionalDeviceGuard device_guard(device_of(input_t));
+    cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+
+    AT_DISPATCH_FLOATING_TYPES(input_t.scalar_type(), "conv3d_cuda_forward", ([&] {
+        // Create device tensors:
+        dTensor5R input_d = toDeviceTensorR<scalar_t,5>(input_t);
+        dTensor5R kernel_d = toDeviceTensorR<scalar_t,5>(kernel_t);
+        dTensor5R out_d = toDeviceTensorR<scalar_t,5>(out_t);
+        dTensor1R bias_d = toDeviceTensorR<scalar_t, 1>(bias_t);
+
+        dim3 gridSize(CeilDiv(input_d.size(4), block_size),
+                      CeilDiv(input_d.size(3), block_size),
+                      CeilDiv(input_d.size(2), block_size));
+        dim3 blockSize(block_size, block_size, block_size);
+        auto buffer_sz = kernel_t.numel() * sizeof(scalar_t);
+        conv3d_forward<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
+            (input_d, kernel_d, bias_d, out_d, dilation);
+
+        CudaCheck(cudaGetLastError());
+    }));
+    return out_t;
+}
+
+torch::Tensor conv3d_relu_cuda_forward(torch::Tensor input_t,
+                                       torch::Tensor kernel_t,
+                                       torch::Tensor bias_t,
+                                       torch::Tensor out_t,
+                                       int dilation,
+                                       int block_size) {
+    OptionalDeviceGuard device_guard(device_of(input_t));
+    cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+
+    AT_DISPATCH_FLOATING_TYPES(input_t.scalar_type(), "conv3d_relu_cuda_forward", ([&] {
+        // Create device tensors:
+        dTensor5R input_d = toDeviceTensorR<scalar_t,5>(input_t);
+        dTensor5R kernel_d = toDeviceTensorR<scalar_t,5>(kernel_t);
+        dTensor5R out_d = toDeviceTensorR<scalar_t,5>(out_t);
+        dTensor1R bias_d = toDeviceTensorR<scalar_t, 1>(bias_t);
+
+        dim3 gridSize(CeilDiv(input_d.size(4), block_size),
+                      CeilDiv(input_d.size(3), block_size),
+                      CeilDiv(input_d.size(2), block_size));
+        dim3 blockSize(block_size, block_size, block_size);
+        auto buffer_sz = kernel_t.numel() * sizeof(scalar_t);
+        conv3d_relu_forward<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
+            (input_d, kernel_d, bias_d, out_d, dilation);
+
+        CudaCheck(cudaGetLastError());
+    }));
+    return out_t;
+}
+
+void conv3d_cuda_backward_x(torch::Tensor grad_output_t,
+			    torch::Tensor kernel_t,
+			    torch::Tensor grad_input_t,
+			    int dilation,
+			    int block_size) {
+    OptionalDeviceGuard device_guard(device_of(grad_output_t));
+    cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+
+    AT_DISPATCH_FLOATING_TYPES(grad_output_t.scalar_type(), "conv3d_cuda_backward_x", ([&] {
+        // Create device tensors:
+        dTensor5R grad_output_d = toDeviceTensorR<scalar_t,5>(grad_output_t);
+        dTensor5R grad_input_d = toDeviceTensorR<scalar_t,5>(grad_input_t);
+        dTensor5R kernel_d = toDeviceTensorR<scalar_t,5>(kernel_t);
+        dim3 gridSize(CeilDiv((int) grad_output_d.size(4), block_size),
+                      CeilDiv((int) grad_output_d.size(3), block_size),
+                      CeilDiv((int) grad_output_d.size(2), block_size));
+        dim3 blockSize(block_size, block_size, block_size);
+        auto buffer_sz = kernel_t.numel() * sizeof(scalar_t);
+        conv3d_backward_x<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
+            (grad_output_d, kernel_d, grad_input_d, dilation);
+
+        CudaCheck(cudaGetLastError());
+    }));
+}
+
+void conv3d_relu_cuda_backward_x(torch::Tensor output_t,
+                                 torch::Tensor grad_output_t,
+                                 torch::Tensor kernel_t,
+                                 torch::Tensor grad_input_t,
+                                 int dilation,
+                                 int block_size) {
+    OptionalDeviceGuard device_guard(device_of(grad_output_t));
+    cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+
+    AT_DISPATCH_FLOATING_TYPES(output_t.scalar_type(), "conv3d_relu_cuda_backward_x", ([&] {
+        // Create device tensors:
+        dTensor5R output_d = toDeviceTensorR<scalar_t,5>(output_t);
+        dTensor5R grad_output_d = toDeviceTensorR<scalar_t,5>(grad_output_t);
+        dTensor5R grad_input_d = toDeviceTensorR<scalar_t,5>(grad_input_t);
+        dTensor5R kernel_d = toDeviceTensorR<scalar_t,5>(kernel_t);
+        dim3 gridSize(CeilDiv((int) grad_output_d.size(4), block_size),
+                      CeilDiv((int) grad_output_d.size(3), block_size),
+                      CeilDiv((int) grad_output_d.size(2), block_size));
+        dim3 blockSize(block_size, block_size, block_size);
+        auto buffer_sz = kernel_t.numel() * sizeof(scalar_t);
+        conv3d_relu_backward_x<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
+            (output_d, grad_output_d, kernel_d, grad_input_d, dilation);
+
+        CudaCheck(cudaGetLastError());
+    }));
+}
+
+void conv3d_cuda_backward_k(torch::Tensor grad_output,
+			    torch::Tensor input,
+			    torch::Tensor grad_kernel,
+			    int dilation,
+			    int block_size)
+{
+    OptionalDeviceGuard device_guard(device_of(grad_output));
+    cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+
+    AT_DISPATCH_FLOATING_TYPES(grad_output.scalar_type(), "conv3d_cuda_backward_k", ([&] {
+        // Create device tensors:
+        dTensor5R grad_output_d = toDeviceTensorR<scalar_t,5>(grad_output);
+        dTensor5R input_d = toDeviceTensorR<scalar_t,5>(input);
+        dTensor5R grad_kernel_d = toDeviceTensorR<scalar_t,5>(grad_kernel);
+        dim3 gridSize(CeilDiv((int) grad_output_d.size(4), block_size),
+                      CeilDiv((int) grad_output_d.size(3), block_size),
+                      CeilDiv((int) grad_output_d.size(2), block_size));
+        dim3 blockSize(block_size, block_size, block_size);
+        conv3d_backward_k<scalar_t><<<gridSize, blockSize, 0, stream>>>
+            (grad_output_d, input_d, grad_kernel_d, dilation);
+
+        CudaCheck(cudaGetLastError());
+    }));
+}
+
+void conv3d_relu_cuda_backward_k(torch::Tensor output,
+				 torch::Tensor grad_output,
+				 torch::Tensor input,
+				 torch::Tensor grad_kernel,
+				 int dilation,
+				 int block_size)
+{
+    OptionalDeviceGuard device_guard(device_of(grad_output));
+    cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+
+    AT_DISPATCH_FLOATING_TYPES(grad_output.scalar_type(), "conv3d_relu_cuda_backward_k", ([&] {
+        // Create device tensors:
+        dTensor5R output_d = toDeviceTensorR<scalar_t,5>(output);
+        dTensor5R grad_output_d = toDeviceTensorR<scalar_t,5>(grad_output);
+        dTensor5R input_d = toDeviceTensorR<scalar_t,5>(input);
+        dTensor5R grad_kernel_d = toDeviceTensorR<scalar_t,5>(grad_kernel);
+        dim3 gridSize(CeilDiv((int) grad_output_d.size(4), block_size),
+                      CeilDiv((int) grad_output_d.size(3), block_size),
+                      CeilDiv((int) grad_output_d.size(2), block_size));
+        dim3 blockSize(block_size, block_size, block_size);
+        conv3d_relu_backward_k<scalar_t><<<gridSize, blockSize, 0, stream>>>
+            (output_d, grad_output_d, input_d, grad_kernel_d, dilation);
+
+        CudaCheck(cudaGetLastError());
+    }));
+}
+
+void conv3d_relu_cuda_backward_bias(torch::Tensor output,
+				    torch::Tensor grad_output,
+				    torch::Tensor grad_bias,
+				    int block_size)
+{
+    OptionalDeviceGuard device_guard(device_of(grad_output));
+    cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+
+    AT_DISPATCH_FLOATING_TYPES(grad_output.scalar_type(), "conv3d_relu_cuda_backward_bias", ([&] {
+        // Create device tensors:
+        dTensor5R output_d = toDeviceTensorR<scalar_t,5>(output);
+        dTensor5R grad_output_d = toDeviceTensorR<scalar_t,5>(grad_output);
+        dTensor1R grad_bias_d = toDeviceTensorR<scalar_t,1>(grad_bias);
+        dim3 gridSize(CeilDiv((int) grad_output_d.size(4), block_size),
+                      CeilDiv((int) grad_output_d.size(3), block_size),
+                      CeilDiv((int) grad_output_d.size(2), block_size));
+        dim3 blockSize(block_size, block_size, block_size);
+        conv3d_relu_backward_bias<scalar_t><<<gridSize, blockSize, 0, stream>>>
             (output_d, grad_output_d, grad_bias_d);
 
         CudaCheck(cudaGetLastError());
