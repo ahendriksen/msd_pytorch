@@ -139,6 +139,7 @@ setup(
                 # 3D kernels:
                 'msd_pytorch/msd_custom_convolutions/conv3d_backward_bias.cu',
                 'msd_pytorch/msd_custom_convolutions/conv3d_backward_k.cu',
+                'msd_pytorch/msd_custom_convolutions/conv3d_backward_x.cu',
             ],
             extra_compile_args={
                 'cxx': [],
