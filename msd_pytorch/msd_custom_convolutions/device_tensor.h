@@ -44,7 +44,7 @@ public:
 #define PT2R32 scalar_t, 2, torch::RestrictPtrTraits, DT_INDEX
 #define PT3R32 scalar_t, 3, torch::RestrictPtrTraits, DT_INDEX
 #define PT4R32 scalar_t, 4, torch::RestrictPtrTraits, DT_INDEX
-#define PT5R32 scalar_t, 4, torch::RestrictPtrTraits, DT_INDEX
+#define PT5R32 scalar_t, 5, torch::RestrictPtrTraits, DT_INDEX
 
 #define PT1D32 scalar_t, 1, torch::DefaultPtrTraits, DT_INDEX
 #define PT2D32 scalar_t, 2, torch::DefaultPtrTraits, DT_INDEX
