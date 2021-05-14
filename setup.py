@@ -80,7 +80,7 @@ class EmitNinjaCommand(Command):
                 name=e.name,
                 sources=e.sources,
                 extra_cflags=None,       # TODO:
-                extra_cuda_cflags=None,  # TODO:
+                extra_cuda_cflags=e.extra_compile_args['nvcc'],
                 extra_ldflags=e.extra_link_args,
                 extra_include_paths=e.include_dirs,
                 build_directory=output_dir,
