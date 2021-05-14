@@ -22,11 +22,6 @@ public:
                                   const source_index_t* strides_)
         : torch::PackedTensorAccessor<T, N, PtrTraits, index_t>(data_, sizes_, strides_) {}
 
-
-    static C10_HOST UnpackableTensorAccessor<T, N, PtrTraits, index_t> from_tensor(torch::Tensor x) {
-        return UnpackableTensorAccessor<T,N,PtrTraits,index_t>(static_cast<typename PtrTraits<T>::PtrType>(x.data<T>()),x.sizes().data(),x.strides().data());
-    }
-
     C10_DEVICE torch::TensorAccessor<T, N, PtrTraits, index_t> unpack() {
         return torch::TensorAccessor<T,N,PtrTraits,index_t>(this->data_, this->sizes_, this->strides_);
     }
@@ -74,12 +69,20 @@ public:
 template <typename T, int Dim>
 UnpackableTensorAccessor<T, Dim, torch::RestrictPtrTraits, DT_INDEX>
 toDeviceTensorR(torch::Tensor x) {
-    return UnpackableTensorAccessor<T, Dim, torch::RestrictPtrTraits, DT_INDEX>::from_tensor(x);
+    return UnpackableTensorAccessor<T, Dim,torch::RestrictPtrTraits,DT_INDEX>(
+         x.data<T>(),
+	 x.sizes().data(),
+	 x.strides().data()
+    );
 }
 
 
 template <typename T, int Dim>
 UnpackableTensorAccessor<T, Dim, torch::DefaultPtrTraits, DT_INDEX>
 toDeviceTensor(torch::Tensor x) {
-    return UnpackableTensorAccessor<T, Dim, torch::DefaultPtrTraits, DT_INDEX>::from_tensor(x);
+    return UnpackableTensorAccessor<T, Dim,torch::DefaultPtrTraits,DT_INDEX>(
+         x.data<T>(),
+	 x.sizes().data(),
+	 x.strides().data()
+    );
 }
