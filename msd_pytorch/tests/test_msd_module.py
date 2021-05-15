@@ -14,7 +14,6 @@ def test_msd_module_3D():
     # The final layer is initialized with zeros. Therefore the output
     # of an untrained network must always be zero.
     assert net(x).sum().item() == 0.0
-    assert net(x).shape == x.shape
 
 
 def test_msd_gradients():
