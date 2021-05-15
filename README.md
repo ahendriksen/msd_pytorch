@@ -91,6 +91,7 @@ If you find our work useful, please cite as:
 ## Authors and contributors
 
 * **Allard Hendriksen** - *Initial work*
+* **Ryan Pollitt** - *Port CUDA convolution code from 2D to 3D!*
 * **Jonas Adler** - *Discussions and code*
 * **Richard Schoonhoven** - *Testing and patches*
 
