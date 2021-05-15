@@ -203,11 +203,11 @@ def test_conv_backward_x():
 
     dtype = torch.double    # Extra machine precision is needed.
     B = 5                   # Batch size
-    C_IN = 3                # Input channels (for f)
-    C_OUT = 2               # Output channels (for g)
-    H = 259                 # Height
-    W = 257                 # Width
-    dilation = 10           # Dilation
+    C_IN = 2                # Input channels (for f)
+    C_OUT = 3               # Output channels (for g)
+    H = 7                   # Height
+    W = 13                  # Width
+    dilation = 3            # Dilation
 
     # Define operators
     def A(x, k):

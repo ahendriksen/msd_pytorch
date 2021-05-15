@@ -6,6 +6,8 @@ from . import torch_equal
 from msd_pytorch.conv3d import (
     Conv3DReluInPlaceModule,
     conv3d_reluInPlace,
+    Conv3DInPlaceModule,
+    conv3dInPlace,
 )
 import torch
 from torch.autograd import Variable
@@ -15,6 +17,195 @@ import msd_custom_convolutions as cc
 
 
 def test_conv3d():
+    """Test 3D custom convolution module
+
+    We compare our custom reflection-padded convolution to the builtin
+    Torch convolution.
+
+    We check that:
+    - The shape of the output is equal
+    - The output values are equal in the center, where the
+      reflection-padding should not have influenced the result.
+
+    """
+
+    batch_sz = 5
+    in_channels = 5
+    kernel_size = 3
+    padding_torch = 1
+    size = (13, 7, 19)
+
+    # xi: for inplace
+    # xc: for normal torch convolution
+    xi = torch.ones(batch_sz, in_channels, *size).cuda()
+    xc = torch.ones(batch_sz, in_channels, *size).cuda()
+
+    output = torch.ones(batch_sz, 1, *size).cuda()
+    ci = Conv3DInPlaceModule(output, in_channels, 1, kernel_size=kernel_size)
+    cc = nn.Conv3d(in_channels, 1, kernel_size=kernel_size, padding=padding_torch)
+
+    for c in [ci, cc]:
+        c.cuda()
+        c.weight.data.fill_(1)
+        c.bias.data.zero_()
+
+    xi.requires_grad = True
+    xc.requires_grad = True
+
+    yi = ci(xi)
+    yc = cc(xc)
+    assert yi.shape == yc.shape
+
+    # Check center of output, where the output should be equal.
+    d = 1
+    yi_ = yi[:, :, d:-d, d:-d, d:-d]
+    yc_ = yc[:, :, d:-d, d:-d, d:-d]
+
+    # Check that pytorch and own convolution agree in the center:
+    assert torch_equal(yi_, yc_)
+    assert torch_equal(yi.data, output)
+
+
+def test_conv3d_zeros():
+    """Test convolution
+
+    Check if an all-zero convolution runs without runtime errors.
+    """
+    dtype = torch.float  # or t.double
+    dilation = 1
+
+    x = torch.zeros(1, 1, 5, 5, 5, dtype=dtype).cuda()
+    y = torch.ones(1, 1, 5, 5, 5, dtype=dtype).cuda()
+    bias = torch.zeros(1, dtype=dtype).cuda()
+    k = torch.zeros(1, 1, 3, 3, 3, dtype=dtype).cuda()
+
+    cc.conv3d_forward(x, k, bias, y, dilation)
+    assert y.sum().item() == approx(0.0)
+
+
+
+def test_conv3d_backward_x():
+    """Test conv3d_backward
+
+    Because there is no reference implementation to compare to,
+    we check if the backward operator satisfies the adjoint
+    property.
+
+    We want the following to hold:
+
+    <Af, g> = <f, A^T g>,
+
+    where A is the the forward pass, A^T the backward pass, and
+    f and g are just tensors.
+    """
+
+    dtype = torch.double    # Extra machine precision is needed.
+    B = 5                   # Batch size
+    C_IN = 3                # Input channels (for f)
+    C_OUT = 2               # Output channels (for g)
+    D = 11                  # Depth
+    H = 7                   # Height
+    W = 129                 # Width
+    dilation = 3            # Dilation
+
+    # Define operators
+    def A(x, k):
+        y = torch.zeros(B, k.size(0), *x.shape[2:], dtype=dtype).cuda()
+        bias = torch.zeros(k.size(0), dtype=dtype).cuda()
+        cc.conv3d_forward(x, k, bias, y, dilation)
+        return y
+
+    def AT(y, k):
+        x = torch.zeros(B, k.size(1), *y.shape[2:], dtype=dtype).cuda()
+        cc.conv3d_backward_x(y, k, x, dilation)
+        return x
+
+    def dot(x, y):
+        return (x.flatten() * y.flatten()).sum().item()
+
+    # Test
+    for i in range(10):
+        f = torch.randn(B, C_IN, D, H, W, dtype=dtype).cuda()
+        g = torch.randn(B, C_OUT, D, H, W, dtype=dtype).cuda()
+        k = torch.randn(C_OUT, C_IN, 3, 3, 3, dtype=dtype).cuda()
+
+        assert dot(A(f, k), g) == approx(dot(f, AT(g, k)))
+
+
+
+
+def test_conv3d_backward_k():
+    """Test conv_backward (kernel)
+
+    Because there is no reference implementation to compare to,
+    we check if the backward operator satisfies the adjoint
+    property.
+
+    We want the following to hold:
+
+    <Ak, g> = <k, A^T g>,
+
+    where A is the the forward pass, A^T the backward pass, k is a
+    weight parameter tensor, and g is an image tensor.
+
+    """
+
+    dtype = torch.double    # Extra machine precision is needed.
+    B = 5                   # Batch size
+    C_IN = 3                # Input channels (for f)
+    C_OUT = 2               # Output channels (for g)
+    D = 129                 # Depth
+    H = 11                  # Height
+    W = 7                   # Width
+    dilation = 20           # Dilation
+
+    # Define operators
+    def A(k, x):
+        y = torch.zeros(B, k.size(0), *x.shape[2:], dtype=dtype).cuda()
+        bias = torch.zeros(k.size(0), dtype=dtype).cuda()
+        assert x.size(0) == y.size(0), f"{x.shape} , {y.shape}"
+        cc.conv3d_forward(x, k, bias, y, dilation)
+        return y
+
+    def AT(y, x):
+        k_grad = torch.zeros(y.size(1), x.size(1), 3, 3, 3, dtype=dtype).cuda()
+        cc.conv3d_backward_k(y, x, k_grad, dilation)
+        return k_grad
+
+    def dot(x, y):
+        return (x.flatten() * y.flatten()).sum().item()
+
+    # Test
+    for i in range(10):
+        x = torch.randn(B, C_IN, D, H, W, dtype=dtype).cuda()
+        g = torch.randn(B, C_OUT, D, H, W, dtype=dtype).cuda()
+
+        k = torch.randn(C_OUT, C_IN, 3, 3, 3, dtype=dtype).cuda()
+
+        assert dot(A(k, x), g) == approx(dot(k, AT(g, x)))
+
+
+def test_conv_backward_bias():
+    """Test conv_backward_bias
+    """
+
+    dtype = torch.double    # Extra machine precision is needed.
+    B = 5                   # Batch size
+    C_OUT = 2               # Output channels (for g)
+    D = 63                  # Depth
+    H = 259                 # Height
+    W = 127                 # Width
+
+    grad = torch.randn(B, C_OUT, D, H, W, dtype=dtype).cuda()
+    g_bias = torch.zeros(C_OUT, dtype=dtype).cuda()
+    cc.conv3d_backward_bias(grad, g_bias)
+
+    ref_g_bias = grad.sum((0, 2, 3, 4))
+    assert ref_g_bias.shape == g_bias.shape
+    assert torch_equal(ref_g_bias, g_bias)
+
+
+def test_conv3d_relu():
     """Test 3D custom convolution module
 
     We compare our custom reflection-padded convolution to the builtin
