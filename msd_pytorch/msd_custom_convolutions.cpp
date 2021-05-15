@@ -347,32 +347,4 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
     m.def("conv_relu_backward_bias", &conv_relu_backward_bias, "Backward bias",
           "output"_a, "grad_output"_a, "grad_bias"_a,
           "block_size"_a=16);
-
-
-    m.def("conv3d_forward", &conv_forward, "Forward convolution"
-          "input"_a, "kernel"_a, "bias"_a, "output"_a, "dilation"_a,
-          "block_size"_a=8);
-    m.def("conv3d_backward_x", &conv_backward_x, "Transpose of the forward convolution",
-          "grad_output"_a, "kernel"_a, "grad_input"_a, "dilation"_a,
-          "block_size"_a=4);
-    m.def("conv3d_backward_k", &conv_backward_k, "Transpose of the forward convolution",
-          "grad_output"_a, "input"_a, "grad_kernel"_a, "dilation"_a,
-          "block_size"_a=8);
-    m.def("conv3d_backward_bias", &conv_backward_bias, "Backward bias",
-          "grad_output"_a, "grad_bias"_a,
-          "block_size"_a=8);
-
-    m.def("conv3d_relu_forward", &conv_relu_forward, "Forward convolution"
-          "input"_a, "kernel"_a, "bias"_a, "output"_a, "dilation"_a,
-          "block_size"_a=8);
-    m.def("conv3d_relu_backward_x", &conv_relu_backward_x, "Transpose of the forward convolution",
-          "output"_a, "grad_output"_a, "kernel"_a, "grad_input"_a, "dilation"_a,
-          "block_size"_a=4);
-    m.def("conv3d_relu_backward_k", &conv_relu_backward_k, "Transpose of the forward convolution",
-          "output"_a, "grad_output"_a, "input"_a, "grad_kernel"_a, "dilation"_a,
-          "block_size"_a=8);
-    m.def("conv3d_relu_backward_bias", &conv_relu_backward_bias, "Backward bias",
-          "output"_a, "grad_output"_a, "grad_bias"_a,
-          "block_size"_a=8);
-
 }

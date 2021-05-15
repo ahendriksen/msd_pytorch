@@ -4,17 +4,20 @@ import pytest
 from pytest import approx
 from . import torch_equal
 from msd_pytorch.conv3d import (
-    Conv3DReluInPlaceModule,
-    conv3d_reluInPlace,
-    Conv3DInPlaceModule,
-    conv3dInPlace,
+    Conv3DReluModule,
+    conv3d_relu,
+    Conv3DModule,
+    conv3d,
+    conv3d_forward,
+    conv3d_backward_x,
+    conv3d_backward_k,
+    conv3d_backward_bias,
 )
 import torch
 from torch.autograd import Variable
 from torch.autograd import gradcheck
 import torch.nn as nn
 import msd_custom_convolutions as cc
-
 
 def test_conv3d():
     """Test 3D custom convolution module
@@ -41,7 +44,7 @@ def test_conv3d():
     xc = torch.ones(batch_sz, in_channels, *size).cuda()
 
     output = torch.ones(batch_sz, 1, *size).cuda()
-    ci = Conv3DInPlaceModule(output, in_channels, 1, kernel_size=kernel_size)
+    ci = Conv3DModule(output, in_channels, 1, kernel_size=kernel_size)
     cc = nn.Conv3d(in_channels, 1, kernel_size=kernel_size, padding=padding_torch)
 
     for c in [ci, cc]:
@@ -79,7 +82,7 @@ def test_conv3d_zeros():
     bias = torch.zeros(1, dtype=dtype).cuda()
     k = torch.zeros(1, 1, 3, 3, 3, dtype=dtype).cuda()
 
-    cc.conv3d_forward(x, k, bias, y, dilation)
+    conv3d(x, k, bias, y, 1, dilation)
     assert y.sum().item() == approx(0.0)
 
 
@@ -112,12 +115,12 @@ def test_conv3d_backward_x():
     def A(x, k):
         y = torch.zeros(B, k.size(0), *x.shape[2:], dtype=dtype).cuda()
         bias = torch.zeros(k.size(0), dtype=dtype).cuda()
-        cc.conv3d_forward(x, k, bias, y, dilation)
+        conv3d_forward(x, k, bias, y, dilation)
         return y
 
     def AT(y, k):
         x = torch.zeros(B, k.size(1), *y.shape[2:], dtype=dtype).cuda()
-        cc.conv3d_backward_x(y, k, x, dilation)
+        conv3d_backward_x(y, k, x, dilation)
         return x
 
     def dot(x, y):
@@ -164,12 +167,12 @@ def test_conv3d_backward_k():
         y = torch.zeros(B, k.size(0), *x.shape[2:], dtype=dtype).cuda()
         bias = torch.zeros(k.size(0), dtype=dtype).cuda()
         assert x.size(0) == y.size(0), f"{x.shape} , {y.shape}"
-        cc.conv3d_forward(x, k, bias, y, dilation)
+        conv3d_forward(x, k, bias, y, dilation)
         return y
 
     def AT(y, x):
         k_grad = torch.zeros(y.size(1), x.size(1), 3, 3, 3, dtype=dtype).cuda()
-        cc.conv3d_backward_k(y, x, k_grad, dilation)
+        conv3d_backward_k(y, x, k_grad, dilation)
         return k_grad
 
     def dot(x, y):
@@ -198,7 +201,7 @@ def test_conv_backward_bias():
 
     grad = torch.randn(B, C_OUT, D, H, W, dtype=dtype).cuda()
     g_bias = torch.zeros(C_OUT, dtype=dtype).cuda()
-    cc.conv3d_backward_bias(grad, g_bias)
+    conv3d_backward_bias(grad, g_bias)
 
     ref_g_bias = grad.sum((0, 2, 3, 4))
     assert ref_g_bias.shape == g_bias.shape
@@ -234,7 +237,7 @@ def test_conv3d_relu():
     xc.requires_grad = True
 
     output = torch.ones(batch_sz, c_out, *size).cuda()
-    ci = Conv3DReluInPlaceModule(
+    ci = Conv3DReluModule(
         output, c_in, c_out, kernel_size=kernel_size
     )
     cc = nn.Sequential(
@@ -277,7 +280,7 @@ def test_dtype_check():
     k = torch.zeros(1, 1, 3, 3, 3, dtype=d1).cuda()
 
     with pytest.raises(RuntimeError):
-        cc.conv3d_relu_forward(x, k, bias, y, dilation)
+        conv3d_relu(x, k, bias, y, 1, dilation)
 
 
 def test_zero_conv():
@@ -293,7 +296,7 @@ def test_zero_conv():
     bias = torch.zeros(1, dtype=dtype).cuda()
     k = torch.zeros(1, 1, 3, 3, 3, dtype=dtype).cuda()
 
-    cc.conv3d_relu_forward(x, k, bias, y, dilation)
+    conv3d_relu(x, k, bias, y, 1, dilation)
     assert y.sum().item() == approx(0.0)
 
 
@@ -326,7 +329,7 @@ def test_conv_values(B, C_in, C_out, dilation, size):
     k = torch.randn(C_out, C_in, 3, 3, 3, dtype=dtype).cuda()
     bias = torch.randn(C_out, dtype=dtype).cuda()
     y = torch.zeros(B, C_out, *shape, dtype=dtype).cuda()
-    cc.conv3d_relu_forward(x, k, bias, y, dilation)
+    conv3d_relu(x, k, bias, y, 1, dilation)
 
     # Execute pytorch convolution:
     conv_torch = torch.nn.Conv3d(
@@ -351,6 +354,7 @@ def test_conv_values(B, C_in, C_out, dilation, size):
     )
 
 
+@pytest.mark.slow
 def test_grad_check():
     """Test using gradcheck provided by Torch.
 
@@ -377,6 +381,6 @@ def test_grad_check():
         output_shape[1] = k.shape[0]
         output = x.new_zeros(output_shape, requires_grad=True)
         stride = 1
-        return conv3d_reluInPlace(x, k, b, output, stride, dilation)
+        return conv3d_relu(x, k, b, output, stride, dilation)
 
     gradcheck(f, [x, k, b, dilation], raise_exception=True)
