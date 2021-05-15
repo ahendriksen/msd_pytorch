@@ -69,12 +69,12 @@ void checkInOutShape(CheckedFrom c, const torch::TensorGeometryArg& input, const
     }
 }
 
-torch::Tensor conv_forward(torch::Tensor input,
-                        torch::Tensor kernel,
-                        torch::Tensor bias,
-                        torch::Tensor output,
-                        int dilation,
-                        int block_size) {
+void conv_forward(torch::Tensor input,
+		  torch::Tensor kernel,
+		  torch::Tensor bias,
+		  torch::Tensor output,
+		  int dilation,
+		  int block_size) {
     auto c = "conv_forward";
 
     torch::TensorArg arg_input(input, "input", 0);
@@ -99,7 +99,7 @@ torch::Tensor conv_forward(torch::Tensor input,
     checkOutputChannels(c, arg_kernel, arg_output);
     checkBiasShape(c, arg_bias, arg_output);
 
-    return conv_cuda_forward(input, kernel, bias, output, dilation, block_size);
+    conv_cuda_forward(input, kernel, bias, output, dilation, block_size);
 }
 
 void conv_backward_x(torch::Tensor grad_output,
@@ -194,12 +194,12 @@ void conv_backward_bias(torch::Tensor grad_output,
     }
 }
 
-torch::Tensor conv_relu_forward(torch::Tensor input,
-				torch::Tensor kernel,
-				torch::Tensor bias,
-				torch::Tensor output,
-				int dilation,
-				int block_size) {
+void conv_relu_forward(torch::Tensor input,
+		       torch::Tensor kernel,
+		       torch::Tensor bias,
+		       torch::Tensor output,
+		       int dilation,
+		       int block_size) {
     auto c = "conv_relu_forward";
 
     torch::TensorArg arg_input(input, "input", 0);
@@ -224,7 +224,7 @@ torch::Tensor conv_relu_forward(torch::Tensor input,
     checkOutputChannels(c, arg_kernel, arg_output);
     checkBiasShape(c, arg_bias, arg_output);
 
-    return conv_relu_cuda_forward(input, kernel, bias, output, dilation, block_size);
+    conv_relu_cuda_forward(input, kernel, bias, output, dilation, block_size);
 }
 
 void conv_relu_backward_x(torch::Tensor output,

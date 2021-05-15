@@ -73,7 +73,7 @@ def test_dtype_check():
     bias = torch.zeros(1, dtype=d1).cuda()
     k = torch.zeros(1, 1, 3, 3, dtype=d1).cuda()
 
-    with pytest.raises(RuntimeError) as e_info:
+    with pytest.raises(RuntimeError):
         cc.conv_forward(x, k, bias, y, dilation)
 
 

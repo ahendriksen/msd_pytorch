@@ -7,6 +7,7 @@
 // run the computations on. We therefore have to use this private API.
 #include <c10/cuda/CUDAStream.h>
 
+#include "torch_cuda_dispatch.h"
 #include "device_tensor.h"
 #include "utils.h"
 #include "kernels.cuh"
@@ -74,12 +75,12 @@ toDeviceTensor(torch::Tensor x) {
 //                        Convolution (no relu)                              //
 ///////////////////////////////////////////////////////////////////////////////
 
-torch::Tensor conv_cuda_forward(torch::Tensor input_t,
-				torch::Tensor kernel_t,
-				torch::Tensor bias_t,
-				torch::Tensor out_t,
-				int dilation,
-				int block_size) {
+void conv_cuda_forward(torch::Tensor input_t,
+		       torch::Tensor kernel_t,
+		       torch::Tensor bias_t,
+		       torch::Tensor out_t,
+		       int dilation,
+		       int block_size) {
     OptionalDeviceGuard device_guard(device_of(input_t));
     cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
@@ -122,7 +123,6 @@ torch::Tensor conv_cuda_forward(torch::Tensor input_t,
 		    CudaCheck(cudaGetLastError());
 		}));
     }
-    return out_t;
 }
 
 void conv_cuda_backward_x(torch::Tensor grad_output_t,
@@ -211,12 +211,12 @@ void conv_cuda_backward_k(torch::Tensor grad_output, torch::Tensor input,
 //                        Convolution (including relu)                       //
 ///////////////////////////////////////////////////////////////////////////////
 
-torch::Tensor conv_relu_cuda_forward(torch::Tensor input_t,
-                             torch::Tensor kernel_t,
-                             torch::Tensor bias_t,
-                             torch::Tensor out_t,
-                             int dilation,
-                             int block_size) {
+void conv_relu_cuda_forward(torch::Tensor input_t,
+			    torch::Tensor kernel_t,
+			    torch::Tensor bias_t,
+			    torch::Tensor out_t,
+			    int dilation,
+			    int block_size) {
     OptionalDeviceGuard device_guard(device_of(input_t));
     cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
@@ -256,7 +256,6 @@ torch::Tensor conv_relu_cuda_forward(torch::Tensor input_t,
 		    CudaCheck(cudaGetLastError());
 		}));
     }
-    return out_t;
 }
 
 void conv_relu_cuda_backward_x(torch::Tensor output_t,
