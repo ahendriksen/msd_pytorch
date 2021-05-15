@@ -1,5 +1,4 @@
 from msd_pytorch.msd_module import MSDModule
-from torch.autograd import Variable
 import numpy as np
 import torch as t
 import torch.nn as nn
@@ -64,7 +63,7 @@ class MSDModel:
     """
 
     def __init__(
-        self, c_in, c_out, depth, width, dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+            self, c_in, c_out, depth, width, dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], ndim=2
     ):
         """Create a new MSDModel base class.
 
@@ -84,6 +83,11 @@ class MSDModel:
         good alternative is ``[1, 2, 4, 8]``. The dilations are
         repeated when there are more layers than supplied dilations.
 
+        :param ndim: `int`
+
+        The dimension of the convolutions. 2D convolutions are used by
+        default. 3D is also possible.
+
         :returns:
         :rtype:
 
@@ -91,13 +95,20 @@ class MSDModel:
         self.c_in, self.c_out = c_in, c_out
         self.depth, self.width = depth, width
         self.dilations = dilations
+        self.ndim = ndim
+
+        if ndim not in [2, 3]:
+            raise ValueError(
+                f"Expected 2D or 3D convolutions (ndim=2 or 3). Got: {ndim}"
+            )
 
         # This part of the network can be used to renormalize the
         # input and output data. Its parameters are saved when the
         # network is saved.
-        self.scale_in = scaling_module(c_in)
-        self.scale_out = scaling_module(c_out)
-        self.msd = MSDModule(c_in, c_out, depth, width, dilations)
+        conv3d = ndim == 3
+        self.scale_in = scaling_module(c_in, conv3d=conv3d)
+        self.scale_out = scaling_module(c_out, conv3d=conv3d)
+        self.msd = MSDModule(c_in, c_out, depth, width, dilations, ndim=ndim)
 
         # It is the task of any subclass to initialize `self.net` and
         # call `init_optimizer` to set the trainable parameters.
@@ -164,7 +175,7 @@ class MSDModel:
 
         """
         assert self.c_in == data.shape[1], "Wrong number of input channels"
-        self.input = Variable(data.cuda())
+        self.input = data.cuda()
 
     def set_target(self, data):
         """Set target data.
@@ -178,7 +189,7 @@ class MSDModel:
 
         """
         assert self.c_out == data.shape[1], "Wrong number of output channels"
-        self.target = Variable(data.cuda())
+        self.target = data.cuda()
 
     def forward(self, input=None, target=None):
         """Calculate the loss for a single input-target pair.

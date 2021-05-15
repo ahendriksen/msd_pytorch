@@ -3,7 +3,6 @@ from msd_pytorch.msd_model import (
     scaling_module_set_bias,
     scaling_module_set_scale
 )
-from torch.autograd import Variable
 import numpy as np
 import torch.nn as nn
 
@@ -29,6 +28,7 @@ class MSDSegmentationModel(MSDModel):
         *,
         dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
         parallel=False,
+        ndim=2,
     ):
         """Create a new MSD network for segmentation.
 
@@ -48,13 +48,18 @@ class MSDSegmentationModel(MSDModel):
         that the batch size must be a multiple of the number of
         available GPUs.
 
+        :param ndim: `int`
+
+        The dimension of the convolutions. 2D convolutions are used by
+        default. 3D is also possible.
+
         :returns:
         :rtype:
 
         """
         self.num_labels = num_labels
         # Initialize msd network.
-        super().__init__(c_in, num_labels, depth, width, dilations)
+        super().__init__(c_in, num_labels, depth, width, dilations, ndim=ndim)
 
         self.criterion = nn.NLLLoss()
 
@@ -111,4 +116,4 @@ class MSDSegmentationModel(MSDModel):
         target = target.squeeze(1)
         # The class labels must reside on the GPU
         target = target.cuda()
-        self.target = Variable(target)
+        self.target = target

@@ -27,6 +27,7 @@ class MSDRegressionModel(MSDModel):
         dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
         loss="L2",
         parallel=False,
+        ndim=2,
     ):
         """Create a new MSD network for regression.
 
@@ -54,11 +55,16 @@ class MSDRegressionModel(MSDModel):
         that the batch size must be a multiple of the number of
         available GPUs.
 
+        :param ndim: `int`
+
+        The dimension of the convolutions. 2D convolutions are used by
+        default. 3D is also possible.
+
         :returns:
         :rtype:
 
         """
-        super().__init__(c_in, c_out, depth, width, dilations)
+        super().__init__(c_in, c_out, depth, width, dilations, ndim=ndim)
 
         self.criterion = loss_functions.get(loss)
         if self.criterion is None:

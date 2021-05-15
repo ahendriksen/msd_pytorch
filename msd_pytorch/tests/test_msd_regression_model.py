@@ -5,6 +5,34 @@ from msd_pytorch.msd_regression_model import MSDRegressionModel
 from . import torch_equal
 
 
+def test_params_change_3d():
+    """Ensure that learning updates all parameters.
+    """
+    # make test repeatable
+    torch.manual_seed(1)
+
+    c_in, c_out, depth, width = 1, 1, 11, 1
+    model = MSDRegressionModel(
+        c_in, c_out, depth, width, loss="L1", dilations=[1, 2, 4, 8], ndim=3,
+    )
+    shape = (7, 11, 13)
+
+    input = torch.randn(1, c_in, *shape)  # batch size is one.
+    target = torch.randn(1, c_out, *shape)
+
+    params0 = [p.data.clone() for p in model.optimizer.param_groups[0]["params"]]
+
+    model.set_input(input)
+    model.set_target(target)
+    for i in range(10):
+        model.learn(input, target)
+
+    params1 = [p.data.clone() for p in model.optimizer.param_groups[0]["params"]]
+
+    for p0, p1 in zip(params0, params1):
+        assert not torch_equal(p0, p1)
+
+
 def test_params_change():
     """Ensure that learning updates all parameters.
     """
