@@ -19,82 +19,9 @@ static __inline__ __device__ void pack_shared_mem(scalar_t* dest, scalar_t* src,
 ///////////////////////////////////////////////////////////////////////////////
 //                            Convolution:Forward                            //
 ///////////////////////////////////////////////////////////////////////////////
-template <typename scalar_t>
+template <typename scalar_t, bool relu>
 __global__ void
-conv_forward(dTensor4R input,
-             dTensor4R kernel,
-             dTensor1R bias,
-             dTensor4R output,
-             int dilation)
-{
-    // The following has been done to improve performance:
-    // 1) This implementation caches the kernel weights.
-    // 2) This implementation precomputes data offsets in x and y
-    //    direction instead of pointers.
-
-    // LIMITS:
-    //    49152 bytes of shared memory per block
-    //    12288 floats of shared memory per block
-    // +-  1300 kernels can be stored in shared mem
-    // So we must have:
-    //     C_IN * C_OUT < 1300
-    extern __shared__ int shared_memory[];
-    scalar_t* buf = (scalar_t*) shared_memory;
-
-    int B = output.size(0);
-    int C_OUT = output.size(1);
-    int C_IN = input.size(1);
-    int H = input.size(2);
-    int W = input.size(3);
-
-    int h = threadIdx.y + blockDim.y * blockIdx.y;
-    int w = threadIdx.x + blockDim.x * blockIdx.x;
-
-    // // Load kernels into shared memory
-    int num_kernel_elems = kernel.size(0) * kernel.size(1) * kernel.size(2) * kernel.size(3);
-    pack_shared_mem<scalar_t>(buf, kernel.data(), num_kernel_elems);
-    mcc::TensorAccessor<PT4R32> kernel_buffer = kernel.unpack_from(buf);
-
-    if (W <= w || H <= h) {
-        return;
-    }
-
-    // Precompute data offsets:
-    int hs[3] = {0};
-    int ws[3] = {0};
-
-    for (int i=-1; i <= 1; i++) {
-        hs[i + 1] = reflect(h + dilation * i, (int) H);
-        ws[i + 1] = reflect(w + dilation * i, (int) W);
-    }
-
-    // Actually compute the convolution
-    for (int b=0; b < B; b++) {
-        for (int c_out=0; c_out < C_OUT; c_out++) {
-            scalar_t o = bias[c_out];
-            for (int c_in=0; c_in < C_IN; c_in++) {
-                scalar_t *kernel0 = &kernel_buffer[c_out][c_in][0][0];
-                #pragma unroll
-                for (int p=-1; p <= 1; p++) {
-                    #pragma unroll
-                    for (int q=-1; q <= 1; q++) {
-                        o += input[b][c_in][hs[p + 1]][ws[q + 1]] * (*kernel0);
-                        // Incrementing the kernel pointer works because
-                        // the kernel weights are contiguous and the
-                        // data_offsets are prepared to be in the same
-                        // order as the kernel weights.
-                        kernel0++;
-                    }
-                }
-            }
-            output[b][c_out][h][w] = o;
-        }
-    }
-}
-
-template <typename scalar_t>
-__global__ void
-conv_relu_forward(dTensor4R input,
+conv_both_forward(dTensor4R input,
                   dTensor4R kernel,
                   dTensor1R bias,
                   dTensor4R output,
@@ -168,40 +95,41 @@ conv_relu_forward(dTensor4R input,
                     }
                 }
             }
-            output[b][c_out][h][w] = max(0.0, o);
+	    if constexpr(relu) {
+		output[b][c_out][h][w] = max(0.0, o);
+	    } else {
+		output[b][c_out][h][w] = o;
+	    }
         }
     }
 }
 
 
-template
-__global__ void
-conv_forward<float>(dTensor4Rfloat input,
-             dTensor4Rfloat kernel,
-             dTensor1Rfloat bias,
-             dTensor4Rfloat output,
-             int dilation);
+template __global__ void conv_both_forward<float, false>(dTensor4Rfloat input, dTensor4Rfloat kernel, dTensor1Rfloat bias, dTensor4Rfloat output, int dilation);
+template __global__ void conv_both_forward<float, true>(dTensor4Rfloat input, dTensor4Rfloat kernel, dTensor1Rfloat bias, dTensor4Rfloat output, int dilation);
+template __global__ void conv_both_forward<double, false>(dTensor4Rdouble input, dTensor4Rdouble kernel, dTensor1Rdouble bias, dTensor4Rdouble output, int dilation);
+template __global__ void conv_both_forward<double, true>(dTensor4Rdouble input, dTensor4Rdouble kernel, dTensor1Rdouble bias, dTensor4Rdouble output, int dilation);
 
-template
-__global__ void
-conv_forward<double>(dTensor4Rdouble input,
-             dTensor4Rdouble kernel,
-             dTensor1Rdouble bias,
-             dTensor4Rdouble output,
-             int dilation);
+// template
+// __global__ void
+// conv_forward<double>(dTensor4Rdouble input,
+//              dTensor4Rdouble kernel,
+//              dTensor1Rdouble bias,
+//              dTensor4Rdouble output,
+//              int dilation);
 
-template
-__global__ void
-conv_relu_forward<float>(dTensor4Rfloat input,
-                  dTensor4Rfloat kernel,
-                  dTensor1Rfloat bias,
-                  dTensor4Rfloat output,
-                  int dilation);
+// template
+// __global__ void
+// conv_relu_forward<float>(dTensor4Rfloat input,
+//                   dTensor4Rfloat kernel,
+//                   dTensor1Rfloat bias,
+//                   dTensor4Rfloat output,
+//                   int dilation);
 
-template
-__global__ void
-conv_relu_forward<double>(dTensor4Rdouble input,
-                  dTensor4Rdouble kernel,
-                  dTensor1Rdouble bias,
-                  dTensor4Rdouble output,
-                  int dilation);
+// template
+// __global__ void
+// conv_relu_forward<double>(dTensor4Rdouble input,
+//                   dTensor4Rdouble kernel,
+//                   dTensor1Rdouble bias,
+//                   dTensor4Rdouble output,
+//                   int dilation);

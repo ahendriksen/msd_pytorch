@@ -174,7 +174,7 @@ torch::Tensor conv_relu_cuda_forward(torch::Tensor input_t,
                       CeilDiv(input_d.size(2), block_size));
         dim3 blockSize(block_size, block_size);
         auto buffer_sz = kernel_t.numel() * sizeof(scalar_t);
-        conv_relu_forward<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
+        conv_both_forward<scalar_t, true><<<gridSize, blockSize, buffer_sz, stream>>>
             (input_d, kernel_d, bias_d, out_d, dilation);
 
         CudaCheck(cudaGetLastError());

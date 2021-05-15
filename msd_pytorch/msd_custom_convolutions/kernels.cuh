@@ -89,21 +89,13 @@ conv3d_relu_backward_x(dTensor5R output,
 //                            Convolution:Forward                            //
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename scalar_t>
+template <typename scalar_t, bool relu>
 __global__ void
-conv_forward(dTensor4R input,
+conv_both_forward(dTensor4R input,
              dTensor4R kernel,
              dTensor1R bias,
              dTensor4R output,
              int dilation);
-
-template <typename scalar_t>
-__global__ void
-conv_relu_forward(dTensor4R input,
-                  dTensor4R kernel,
-                  dTensor1R bias,
-                  dTensor4R output,
-                  int dilation);
 
 template <typename scalar_t>
 __global__ void
