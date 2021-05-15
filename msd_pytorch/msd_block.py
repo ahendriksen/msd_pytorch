@@ -1,13 +1,23 @@
 import torch
-import msd_custom_convolutions as cc
+from . import conv2d
+from . import conv3d
 import numpy as np
 
 
-class MSDBlockImpl2d(torch.autograd.Function):
+class MSDBlockFunction(torch.autograd.Function):
     @staticmethod
     def forward(ctx, input, dilations, bias, *weights):
         depth = len(dilations)
         assert depth == len(weights), "number of weights does not match depth"
+
+        if input.dim() == 4:
+            conv_relu_forward = conv2d.conv2d_relu_forward
+        elif input.dim() == 5:
+            conv_relu_forward = conv3d.conv3d_relu_forward
+        else:
+            raise ValueError(
+                "Input to MSDBlock must be 2D or 3D"
+            )
 
         num_out_channels = sum(w.shape[0] for w in weights)
         assert (
@@ -39,7 +49,7 @@ class MSDBlockImpl2d(torch.autograd.Function):
             # Compute convolution. conv_relu_forward computes the
             # convolution and relu in one pass and stores the
             # output in sub_result.
-            cc.conv_relu_forward(
+            conv_relu_forward(
                 sub_input, sub_weight, sub_bias, sub_result, dilation
             )
 
@@ -54,6 +64,18 @@ class MSDBlockImpl2d(torch.autograd.Function):
     @staticmethod
     def backward(ctx, grad_output):
         bias, result, *weights = ctx.saved_tensors
+        if grad_output.dim() == 4:
+            conv_relu_backward_x = conv2d.conv2d_relu_backward_x
+            conv_relu_backward_k = conv2d.conv2d_relu_backward_k
+            conv_relu_backward_bias = conv2d.conv2d_relu_backward_bias
+        elif grad_output.dim() == 5:
+            conv_relu_backward_x = conv3d.conv3d_relu_backward_x
+            conv_relu_backward_k = conv3d.conv3d_relu_backward_k
+            conv_relu_backward_bias = conv3d.conv3d_relu_backward_bias
+        else:
+            assert False, "Mismatched tensor dimensions."
+
+
         depth = ctx.depth
 
         grad_bias = torch.zeros_like(bias)
@@ -82,7 +104,7 @@ class MSDBlockImpl2d(torch.autograd.Function):
             # Gradient w.r.t. input: conv_relu_backward_x computes the
             # gradient wrt sub_input and adds the gradient to
             # sub_grad_input.
-            cc.conv_relu_backward_x(
+            conv_relu_backward_x(
                 sub_result, sub_grad_output, sub_weight, sub_grad_input, dilation
             )
 
@@ -90,7 +112,7 @@ class MSDBlockImpl2d(torch.autograd.Function):
             IDX_WEIGHT_START = 3            # The first weight has index 3 in the forward pass.
             if ctx.needs_input_grad[i + IDX_WEIGHT_START]:
                 sub_grad_weight = torch.zeros_like(sub_weight)
-                cc.conv_relu_backward_k(
+                conv_relu_backward_k(
                     sub_result, sub_grad_output, sub_input, sub_grad_weight, dilation
                 )
                 grad_weights.insert(0, sub_grad_weight)
@@ -99,7 +121,7 @@ class MSDBlockImpl2d(torch.autograd.Function):
             # Gradient of Bias
             if ctx.needs_input_grad[2]:
                 sub_grad_bias = grad_bias[bias_start:bias_end]
-                cc.conv_relu_backward_bias(
+                conv_relu_backward_bias(
                     sub_result, sub_grad_output, sub_grad_bias
                 )
 
@@ -112,11 +134,11 @@ class MSDBlockImpl2d(torch.autograd.Function):
         return (grad_input, None, grad_bias, *grad_weights)
 
 
-msdblock2d = MSDBlockImpl2d.apply
+msd_block = MSDBlockFunction.apply
 
 
-class MSDBlock2d(torch.nn.Module):
-    def __init__(self, in_channels, dilations, width=1):
+class MSDBlock(torch.nn.Module):
+    def __init__(self, in_channels, dilations, width=1, ndim=2):
         """Multi-scale dense block
 
         Parameters
@@ -133,7 +155,13 @@ class MSDBlock2d(torch.nn.Module):
         The number of output channels is in_channels + depth * width
         """
         super().__init__()
-        self.kernel_size = (3, 3)
+        if ndim == 2:
+            self.kernel_size = (3, 3)
+        elif ndim == 3:
+            self.kernel_size = (3, 3, 3)
+        else:
+            raise ValueError("ndim must be 2 or 3")
+
         self.width = width
         self.dilations = dilations
 
@@ -178,4 +206,44 @@ class MSDBlock2d(torch.nn.Module):
         bias = self.bias
         weights = (getattr(self, "weight{}".format(i)) for i in range(len(self.weights)))
 
-        return MSDBlockImpl2d.apply(input, self.dilations, bias, *weights)
+        return msd_block(input, self.dilations, bias, *weights)
+
+
+class MSDBlock2d(MSDBlock):
+    def __init__(self, in_channels, dilations, width=1):
+        """Multi-scale dense block
+
+        Parameters
+        ----------
+        in_channels : int
+            Number of input channels
+        dilations : tuple of int
+            Dilation for each convolution-block
+        width : int
+            Number of channels per convolution.
+
+        Notes
+        -----
+        The number of output channels is in_channels + depth * width
+        """
+        super().__init__(in_channels, dilations, width=width, ndim=2)
+
+
+class MSDBlock3d(MSDBlock):
+    def __init__(self, in_channels, dilations, width=1):
+        """Multi-scale dense block
+
+        Parameters
+        ----------
+        in_channels : int
+            Number of input channels
+        dilations : tuple of int
+            Dilation for each convolution-block
+        width : int
+            Number of channels per convolution.
+
+        Notes
+        -----
+        The number of output channels is in_channels + depth * width
+        """
+        super().__init__(in_channels, dilations, width=width, ndim=3)

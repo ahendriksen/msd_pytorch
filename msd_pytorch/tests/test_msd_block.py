@@ -1,3 +1,4 @@
+import pytest
 from . import torch_equal
 import torch
 import msd_pytorch.msd_block as msd_block
@@ -22,33 +23,44 @@ def test_msd_block():
         print('grad', weight.grad)
 
 
-def copy_weights(module, module2d):
-    width = module.width
-    assert module.width == module2d.width
-    block = module2d.msd_block
+@pytest.mark.slow
+def test_msd_block_2d_grad_check():
+    """Test using gradcheck provided by Torch.
 
-    for i, hl in enumerate(module.hidden_layers):
-        block.weights[i].data[:] = hl.convolution.weight
-        block.bias.data[i * width:(i + 1) * width] = hl.convolution.bias
+    Because there is no reference implementation to compare to, we
+    check if the gradient calculations are consistent with numerical
+    calculations.
 
-    module2d.final_layer.linear.weight.data[:] = module.c_final.linear.weight.data
-    module2d.final_layer.linear.bias.data[:] = module.c_final.linear.bias.data
+    """
+    dtype = torch.double
+    B = 2                   # Batch size
+    C_IN = 3                # Input channels
+    H = 13                  # Height
+    W = 21                  # Width
+    dilations = [1, 2, 3]   # Dilation
+
+    net = msd_block.MSDBlock2d(C_IN, dilations).cuda().to(dtype=dtype)
+    x = torch.randn(B, C_IN, H, W, dtype=dtype, requires_grad=True).cuda()
+
+    gradcheck(net, [x], raise_exception=True)
 
 
-def init_weights_for_testing(module):
-    for i, hl in enumerate(module.hidden_layers):
-        hl.convolution.weight.data.normal_(0, 1)
-        hl.convolution.bias.data.normal_(0, 1)
-        module.c_final.linear.weight.data.normal_(0, 1)
-        module.c_final.linear.bias.data.normal_(0, 1)
+@pytest.mark.slow
+def test_msd_block_3d_grad_check():
+    """Test using gradcheck provided by Torch.
 
+    Because there is no reference implementation to compare to, we
+    check if the gradient calculations are consistent with numerical
+    calculations.
 
-def assert_grads_equal(module, module2d):
-    block = module2d.msd_block
-    width = module.width
-    for i, hl in enumerate(module.hidden_layers):
-        assert torch_equal(block.weights[i].grad, hl.convolution.weight.grad)
-        assert torch_equal(block.bias.grad[i * width:(i + 1) * width], hl.convolution.bias.grad)
+    """
+    dtype = torch.double
+    B = 2                   # Batch size
+    C_IN = 3                # Input channels
+    D, H, W = (5, 7, 11)
+    dilations = [1, 2, 3]   # Dilation
 
-    assert torch_equal(module2d.final_layer.linear.weight.grad, module.c_final.linear.weight.grad)
-    assert torch_equal(module2d.final_layer.linear.bias.grad, module.c_final.linear.bias.grad)
+    net = msd_block.MSDBlock3d(C_IN, dilations).cuda().to(dtype=dtype)
+    x = torch.randn(B, C_IN, D, H, W, dtype=dtype, requires_grad=True).cuda()
+
+    gradcheck(net, [x], raise_exception=True)
