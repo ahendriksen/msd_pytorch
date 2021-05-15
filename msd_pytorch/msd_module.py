@@ -1,7 +1,7 @@
 import torch
 from math import sqrt
 import numpy as np
-from msd_pytorch.msd_block import MSDBlock2d
+from msd_pytorch.msd_block import MSDBlock
 
 
 def units_in_front(c_in, width, layer_depth):
@@ -90,7 +90,7 @@ class MSDFinalLayer(torch.nn.Module):
 
 class MSDModule(torch.nn.Module):
     def __init__(
-        self, c_in, c_out, depth, width, dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+            self, c_in, c_out, depth, width, dilations=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], ndim=2
     ):
         """Create a msd module
 
@@ -104,6 +104,11 @@ class MSDModule(torch.nn.Module):
         good alternative is ``[1, 2, 4, 8]``. The dilations are
         repeated when the depth of the module exceeds the length of
         the list.
+
+        :param ndim: `int`
+
+        The dimension of the convolutions. 2D convolutions are used by
+        default. 3D is also possible.
 
         :returns: an MSD module
         :rtype: MSDModule
@@ -121,7 +126,7 @@ class MSDModule(torch.nn.Module):
         if width < 1:
             raise ValueError(f"Width must be at least 1. Got: {width}.")
 
-        self.msd_block = MSDBlock2d(self.c_in, self.dilations, self.width)
+        self.msd_block = MSDBlock(self.c_in, self.dilations, self.width, ndim=ndim)
         self.final_layer = MSDFinalLayer(c_in=c_in + width * depth, c_out=c_out)
 
         self.reset_parameters()

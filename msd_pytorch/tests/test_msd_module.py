@@ -8,6 +8,15 @@ import torch.optim as optim
 from torch.autograd import gradcheck
 
 
+def test_msd_module_3D():
+    net = MSDModule(2, 3, 5, 1, ndim=3).cuda()
+    x = t.ones(1, 2, 7, 7, 7).cuda()
+    # The final layer is initialized with zeros. Therefore the output
+    # of an untrained network must always be zero.
+    assert net(x).sum().item() == 0.0
+    assert net(x).shape == x.shape
+
+
 def test_msd_gradients():
     t.manual_seed(1)
 
@@ -74,40 +83,6 @@ def test_final_layer():
         # And have the same values.
         diff = (output1 - output2).abs().sum().item()
         assert diff == approx(0)
-
-
-def test_reflect():
-    batch_sz = 1
-    c_in, c_out = 2, 3
-    depth, width = 11, 3
-    size = (20,) * 2
-    x = t.randn(batch_sz, c_in, *size).cuda()
-    target = t.randn(batch_sz, c_out, *size).cuda()
-
-    net = MSDModule(c_in, c_out, depth, width).cuda()
-
-    output = net(Variable(x))
-
-    assert target.shape == output.shape
-    assert output.data.abs().sum().item() == approx(0)
-
-
-def test_with_tail():
-    batch_sz = 1
-    c_in, c_out = 2, 3
-    depth, width = 11, 3
-    size = (20,) * 2
-    x = t.randn(batch_sz, c_in, *size).cuda()
-    target = Variable(t.randn(batch_sz, 1, *size).cuda())
-
-    net = nn.Sequential(MSDModule(c_in, c_out, depth, width), nn.Conv2d(3, 1, 1))
-    net.cuda()
-
-    output = net(Variable(x))
-    loss = nn.MSELoss()(output, target)
-    loss.backward()
-
-    assert output.abs().sum().item() != approx(0.0)
 
 
 def test_parameters_change():
