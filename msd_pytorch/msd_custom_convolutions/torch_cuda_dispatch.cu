@@ -9,7 +9,6 @@
 
 #include "torch_cuda_dispatch.h"
 #include "device_tensor.h"
-#include "utils.h"
 #include "kernels.cuh"
 
 /**
@@ -71,6 +70,23 @@ toDeviceTensor(torch::Tensor x) {
     );
 }
 
+
+void check_cuda_error() {
+    cudaError err = cudaGetLastError();
+    if(err != cudaSuccess) {
+	AT_ERROR("Cuda error=", err, " : ", cudaGetErrorString(err));
+    }
+}
+
+/**
+   Computes ceil(a / b)
+*/
+template <typename T>
+__host__ __device__ __forceinline__ T CeilDiv(T a, T b) {
+  return (a + b - 1) / b;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //                        Convolution (no relu)                              //
 ///////////////////////////////////////////////////////////////////////////////
@@ -101,7 +117,7 @@ void conv_cuda_forward(torch::Tensor input_t,
 		    conv_both_forward<scalar_t, false><<<gridSize, blockSize, buffer_sz, stream>>>
 			(input_d, kernel_d, bias_d, out_d, dilation);
 
-		    CudaCheck(cudaGetLastError());
+		    check_cuda_error();
 		}));
     } else {
 	// 3D convolution
@@ -120,7 +136,7 @@ void conv_cuda_forward(torch::Tensor input_t,
 		    conv3d_forward<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
 			(input_d, kernel_d, bias_d, out_d, dilation);
 
-		    CudaCheck(cudaGetLastError());
+		    check_cuda_error();
 		}));
     }
 }
@@ -147,7 +163,7 @@ void conv_cuda_backward_x(torch::Tensor grad_output_t,
 		    conv_backward_x<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
 			(grad_output_d, kernel_d, grad_input_d, dilation);
 
-		    CudaCheck(cudaGetLastError());
+		    check_cuda_error();
 		}));
     } else {
 	AT_DISPATCH_FLOATING_TYPES(grad_output_t.scalar_type(), "conv3d_cuda_backward_x", ([&] {
@@ -163,7 +179,7 @@ void conv_cuda_backward_x(torch::Tensor grad_output_t,
 		    conv3d_backward_x<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
 			(grad_output_d, kernel_d, grad_input_d, dilation);
 
-		    CudaCheck(cudaGetLastError());
+		    check_cuda_error();
 		}));
     }
 }
@@ -187,7 +203,7 @@ void conv_cuda_backward_k(torch::Tensor grad_output, torch::Tensor input,
 		    conv_backward_k<scalar_t><<<gridSize, blockSize, 0, stream>>>
 			(grad_output_d, input_d, grad_kernel_d, dilation);
 
-		    CudaCheck(cudaGetLastError());
+		    check_cuda_error();
 		}));
     } else {
 	AT_DISPATCH_FLOATING_TYPES(grad_output.scalar_type(), "conv3d_cuda_backward_k", ([&] {
@@ -202,7 +218,7 @@ void conv_cuda_backward_k(torch::Tensor grad_output, torch::Tensor input,
 		    conv3d_backward_k<scalar_t><<<gridSize, blockSize, 0, stream>>>
 			(grad_output_d, input_d, grad_kernel_d, dilation);
 
-		    CudaCheck(cudaGetLastError());
+		    check_cuda_error();
 		}));
     }
 }
@@ -235,7 +251,7 @@ void conv_relu_cuda_forward(torch::Tensor input_t,
 		    conv_both_forward<scalar_t, true><<<gridSize, blockSize, buffer_sz, stream>>>
 			(input_d, kernel_d, bias_d, out_d, dilation);
 
-		    CudaCheck(cudaGetLastError());
+		    check_cuda_error();
 		}));
     } else {
 	AT_DISPATCH_FLOATING_TYPES(input_t.scalar_type(), "conv3d_relu_cuda_forward", ([&] {
@@ -253,7 +269,7 @@ void conv_relu_cuda_forward(torch::Tensor input_t,
 		    conv3d_relu_forward<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
 			(input_d, kernel_d, bias_d, out_d, dilation);
 
-		    CudaCheck(cudaGetLastError());
+		    check_cuda_error();
 		}));
     }
 }
@@ -281,7 +297,7 @@ void conv_relu_cuda_backward_x(torch::Tensor output_t,
 		    conv_relu_backward_x<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
 			(output_d, grad_output_d, kernel_d, grad_input_d, dilation);
 
-		    CudaCheck(cudaGetLastError());
+		    check_cuda_error();
 		}));
     } else {
 	AT_DISPATCH_FLOATING_TYPES(output_t.scalar_type(), "conv3d_relu_cuda_backward_x", ([&] {
@@ -298,7 +314,7 @@ void conv_relu_cuda_backward_x(torch::Tensor output_t,
 		    conv3d_relu_backward_x<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
 			(output_d, grad_output_d, kernel_d, grad_input_d, dilation);
 
-		    CudaCheck(cudaGetLastError());
+		    check_cuda_error();
 		}));
     }
 }
@@ -323,7 +339,7 @@ void conv_relu_cuda_backward_k(torch::Tensor output, torch::Tensor grad_output, 
 		    conv_relu_backward_k<scalar_t><<<gridSize, blockSize, 0, stream>>>
 			(output_d, grad_output_d, input_d, grad_kernel_d, dilation);
 
-		    CudaCheck(cudaGetLastError());
+		    check_cuda_error();
 		}));
     } else {
 	AT_DISPATCH_FLOATING_TYPES(grad_output.scalar_type(), "conv3d_relu_cuda_backward_k", ([&] {
@@ -339,7 +355,7 @@ void conv_relu_cuda_backward_k(torch::Tensor output, torch::Tensor grad_output, 
 		    conv3d_relu_backward_k<scalar_t><<<gridSize, blockSize, 0, stream>>>
 			(output_d, grad_output_d, input_d, grad_kernel_d, dilation);
 
-		    CudaCheck(cudaGetLastError());
+		    check_cuda_error();
 		}));
     }
 }
@@ -364,7 +380,7 @@ void conv_relu_cuda_backward_bias(torch::Tensor output,
 		    conv_relu_backward_bias<scalar_t><<<gridSize, blockSize, 0, stream>>>
 			(output_d, grad_output_d, grad_bias_d);
 
-		    CudaCheck(cudaGetLastError());
+		    check_cuda_error();
 		}));
     } else {
 	AT_DISPATCH_FLOATING_TYPES(grad_output.scalar_type(), "conv3d_relu_cuda_backward_bias", ([&] {
@@ -379,7 +395,7 @@ void conv_relu_cuda_backward_bias(torch::Tensor output,
 		    conv3d_relu_backward_bias<scalar_t><<<gridSize, blockSize, 0, stream>>>
 			(output_d, grad_output_d, grad_bias_d);
 
-		    CudaCheck(cudaGetLastError());
+		    check_cuda_error();
 		}));
     }
 }
