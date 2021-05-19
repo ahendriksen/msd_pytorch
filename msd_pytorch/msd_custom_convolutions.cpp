@@ -39,6 +39,21 @@ void checkKernel3x3(CheckedFrom c, torch::Tensor kernel) {
     }
 }
 
+void checkDilation(CheckedFrom c, const torch::TensorGeometryArg& tensor, int dilation) {
+    AT_CHECK(dilation > 0,
+	     c, ": Dilation must be 1 or greater");
+    if (tensor->dim() == 4) {
+	AT_CHECK(dilation <= tensor->size(2) && dilation <= tensor->size(3),
+		 c, ": Dilation cannot be greater than size of image. ");
+    } else if (tensor->dim() == 5) {
+	AT_CHECK(dilation <= tensor->size(2) && dilation <= tensor->size(3) && dilation <= tensor->size(4),
+		 c, ": Dilation cannot be greater than size of image. ");
+    } else {
+	// unreachable arm.
+	AT_CHECK(false, c, ": checkDilation got unsupported tensor dimension. Expected 4 or 5. Got: ", tensor->dim());
+    }
+}
+
 void checkOutputChannels(CheckedFrom c, const torch::TensorGeometryArg& k, const torch::TensorGeometryArg& output) {
     AT_CHECK(k->size(0) == output->size(1),
 	     c, ": Kernel shape does not match output channels. ");
@@ -99,6 +114,7 @@ void conv_forward(torch::Tensor input,
     checkInputChannels(c, arg_input, arg_kernel);
     checkOutputChannels(c, arg_kernel, arg_output);
     checkBiasShape(c, arg_bias, arg_output);
+    checkDilation(c, arg_input, dilation);
 
     conv_cuda_forward(input, kernel, bias, output, dilation, block_size);
 }
@@ -129,6 +145,7 @@ void conv_backward_x(torch::Tensor grad_output,
 
     checkInputChannels(c, arg_input, arg_kernel);
     checkOutputChannels(c, arg_kernel, arg_output);
+    checkDilation(c, arg_input, dilation);
 
     conv_cuda_backward_x(grad_output, kernel, grad_input, dilation, block_size);
 }
@@ -158,6 +175,7 @@ void conv_backward_k(torch::Tensor grad_output,
 
     checkInputChannels(c, arg_input, arg_kernel);
     checkOutputChannels(c, arg_kernel, arg_output);
+    checkDilation(c, arg_input, dilation);
 
     conv_cuda_backward_k(grad_output, input, grad_kernel, dilation, block_size);
 }
@@ -224,6 +242,7 @@ void conv_relu_forward(torch::Tensor input,
     checkInputChannels(c, arg_input, arg_kernel);
     checkOutputChannels(c, arg_kernel, arg_output);
     checkBiasShape(c, arg_bias, arg_output);
+    checkDilation(c, arg_input, dilation);
 
     conv_relu_cuda_forward(input, kernel, bias, output, dilation, block_size);
 }
@@ -255,6 +274,7 @@ void conv_relu_backward_x(torch::Tensor output,
     torch::checkDim(c, arg_kernel, data_dim);
     torch::checkDim(c, arg_output, data_dim);
     torch::checkDim(c, arg_grad_output, data_dim);
+    checkDilation(c, arg_input, dilation);
 
     checkInputChannels(c, arg_input, arg_kernel);
     checkOutputChannels(c, arg_kernel, arg_output);
@@ -293,6 +313,7 @@ void conv_relu_backward_k(torch::Tensor output,
     checkInputChannels(c, arg_input, arg_kernel);
     checkOutputChannels(c, arg_kernel, arg_output);
     checkOutputChannels(c, arg_kernel, arg_grad_output);
+    checkDilation(c, arg_input, dilation);
 
     conv_relu_cuda_backward_k(output, grad_output, input, grad_kernel, dilation, block_size);
 }

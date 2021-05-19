@@ -15,7 +15,7 @@ def test_params_change_3d():
     model = MSDRegressionModel(
         c_in, c_out, depth, width, loss="L1", dilations=[1, 2, 4, 8], ndim=3,
     )
-    shape = (7, 11, 13)
+    shape = (17, 11, 13)
 
     input = torch.randn(1, c_in, *shape)  # batch size is one.
     target = torch.randn(1, c_out, *shape)

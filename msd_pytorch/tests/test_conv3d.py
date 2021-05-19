@@ -12,6 +12,7 @@ from msd_pytorch.conv3d import (
     conv3d_backward_x,
     conv3d_backward_k,
     conv3d_backward_bias,
+    conv3d_relu_forward,
 )
 import torch
 from torch.autograd import Variable
@@ -67,6 +68,24 @@ def test_conv3d():
     # Check that pytorch and own convolution agree in the center:
     assert torch_equal(yi_, yc_)
     assert torch_equal(yi.data, output)
+
+
+def test_conv3d_dilation_error():
+    x = torch.ones(1, 1, 2, 2, 2).cuda()
+    y = torch.ones(1, 1, 2, 2, 2).cuda()
+    w = torch.ones(1, 1, 3, 3, 3).cuda()
+    b = torch.ones(1).cuda()
+
+    conv3d_forward(x, w, b, y, 1)
+    conv3d_forward(x, w, b, y, 2)
+
+    with pytest.raises(RuntimeError):
+        conv3d_forward(x, w, b, y, 3)
+
+    conv3d_relu_forward(x, w, b, y, 1)
+    conv3d_relu_forward(x, w, b, y, 2)
+    with pytest.raises(RuntimeError):
+        conv3d_relu_forward(x, w, b, y, 3)
 
 
 def test_conv3d_zeros():
@@ -160,7 +179,7 @@ def test_conv3d_backward_k():
     D = 129                 # Depth
     H = 11                  # Height
     W = 7                   # Width
-    dilation = 20           # Dilation
+    dilation = 4            # Dilation
 
     # Define operators
     def A(k, x):

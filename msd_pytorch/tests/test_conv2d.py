@@ -73,6 +73,23 @@ def test_conv2d():
     assert torch_equal(yi.data, output)
 
 
+def test_conv2d_dilation_error():
+    x = torch.ones(1, 1, 2, 2).cuda()
+    y = torch.ones(1, 1, 2, 2).cuda()
+    w = torch.ones(1, 1, 3, 3).cuda()
+    b = torch.ones(1).cuda()
+
+    conv2d_forward(x, w, b, y, 1)
+    conv2d_forward(x, w, b, y, 2)
+    with pytest.raises(RuntimeError):
+        conv2d_forward(x, w, b, y, 3)
+
+    conv2d_relu_forward(x, w, b, y, 1)
+    conv2d_relu_forward(x, w, b, y, 2)
+    with pytest.raises(RuntimeError):
+        conv2d_relu_forward(x, w, b, y, 3)
+
+
 def test_dtype_check():
     """Test if dtype checks are performed correctly
     """
