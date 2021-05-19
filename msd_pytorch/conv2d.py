@@ -5,35 +5,35 @@ from torch.nn import Parameter
 import msd_custom_convolutions as cc
 
 
-def conv2d_forward(input, weight, bias, output, dilation, block_size=16):
+def conv2d_forward(input, weight, bias, output, dilation, block_size=(0, 16, 16)):
     cc.conv_forward(input, weight, bias, output, dilation, block_size=block_size)
 
 
-def conv2d_backward_x(grad_output, weight, grad_input, dilation, block_size=16):
+def conv2d_backward_x(grad_output, weight, grad_input, dilation, block_size=(0, 16, 16)):
     cc.conv_backward_x(grad_output, weight, grad_input, dilation, block_size=block_size)
 
 
-def conv2d_backward_k(grad_output, input, grad_weight, dilation, block_size=16):
+def conv2d_backward_k(grad_output, input, grad_weight, dilation, block_size=(0, 16, 16)):
     cc.conv_backward_k(grad_output, input, grad_weight, dilation, block_size=block_size)
 
 
-def conv2d_backward_bias(grad_output, grad_bias, block_size=16):
+def conv2d_backward_bias(grad_output, grad_bias, block_size=(0, 16, 16)):
     cc.conv_backward_bias(grad_output, grad_bias, block_size=block_size)
 
 
-def conv2d_relu_forward(input, weight, bias, output, dilation, block_size=16):
+def conv2d_relu_forward(input, weight, bias, output, dilation, block_size=(0, 16, 16)):
     cc.conv_relu_forward(input, weight, bias, output, dilation, block_size=block_size)
 
 
-def conv2d_relu_backward_x(output, grad_output, weight, grad_input, dilation, block_size=16):
+def conv2d_relu_backward_x(output, grad_output, weight, grad_input, dilation, block_size=(0, 16, 16)):
     cc.conv_relu_backward_x(output, grad_output, weight, grad_input, dilation, block_size=block_size)
 
 
-def conv2d_relu_backward_k(output, grad_output, input, grad_weight, dilation, block_size=16):
+def conv2d_relu_backward_k(output, grad_output, input, grad_weight, dilation, block_size=(0, 16, 16)):
     cc.conv_relu_backward_k(output, grad_output, input, grad_weight, dilation, block_size=block_size)
 
 
-def conv2d_relu_backward_bias(output, grad_output, grad_bias, block_size=16):
+def conv2d_relu_backward_bias(output, grad_output, grad_bias, block_size=(0, 16, 16)):
     cc.conv_relu_backward_bias(output, grad_output, grad_bias, block_size=block_size)
 
 

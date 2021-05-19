@@ -5,35 +5,35 @@ from torch.autograd import Function
 import msd_custom_convolutions as cc
 
 
-def conv3d_forward(input, weight, bias, output, dilation, block_size=8):
+def conv3d_forward(input, weight, bias, output, dilation, block_size=(8, 8, 8)):
     cc.conv_forward(input, weight, bias, output, dilation, block_size=block_size)
 
 
-def conv3d_backward_x(grad_output, weight, grad_input, dilation, block_size=4):
-    cc.conv_backward_x(grad_output, weight, grad_input, dilation, block_size=block_size)
+def conv3d_backward_x(grad_output, weight, grad_input, dilation, block_size=(4, 4, 4)):
+    cc.conv_backward_x(grad_output, weight, grad_input, dilation, block_size=tuple(block_size))
 
 
-def conv3d_backward_k(grad_output, input, grad_weight, dilation, block_size=8):
+def conv3d_backward_k(grad_output, input, grad_weight, dilation, block_size=(8, 8, 8)):
     cc.conv_backward_k(grad_output, input, grad_weight, dilation, block_size=block_size)
 
 
-def conv3d_backward_bias(grad_output, grad_bias, block_size=8):
+def conv3d_backward_bias(grad_output, grad_bias, block_size=(8, 8, 8)):
     cc.conv_backward_bias(grad_output, grad_bias, block_size=block_size)
 
 
-def conv3d_relu_forward(input, weight, bias, output, dilation, block_size=8):
+def conv3d_relu_forward(input, weight, bias, output, dilation, block_size=(8, 8, 8)):
     cc.conv_relu_forward(input, weight, bias, output, dilation, block_size=block_size)
 
 
-def conv3d_relu_backward_x(output, grad_output, weight, grad_input, dilation, block_size=4):
-    cc.conv_relu_backward_x(output, grad_output, weight, grad_input, dilation, block_size=block_size)
+def conv3d_relu_backward_x(output, grad_output, weight, grad_input, dilation, block_size=(4, 4, 4)):
+    cc.conv_relu_backward_x(output, grad_output, weight, grad_input, dilation, block_size=tuple(block_size))
 
 
-def conv3d_relu_backward_k(output, grad_output, input, grad_weight, dilation, block_size=8):
+def conv3d_relu_backward_k(output, grad_output, input, grad_weight, dilation, block_size=(8, 8, 8)):
     cc.conv_relu_backward_k(output, grad_output, input, grad_weight, dilation, block_size=block_size)
 
 
-def conv3d_relu_backward_bias(output, grad_output, grad_bias, block_size=8):
+def conv3d_relu_backward_bias(output, grad_output, grad_bias, block_size=(8, 8, 8)):
     cc.conv_relu_backward_bias(output, grad_output, grad_bias, block_size=block_size)
 
 

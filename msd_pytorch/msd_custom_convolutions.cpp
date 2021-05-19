@@ -1,3 +1,4 @@
+#include <tuple>
 #include <torch/extension.h>
 #include <pybind11/pybind11.h>
 #include "msd_custom_convolutions/torch_cuda_dispatch.h"
@@ -74,7 +75,7 @@ void conv_forward(torch::Tensor input,
 		  torch::Tensor bias,
 		  torch::Tensor output,
 		  int dilation,
-		  int block_size) {
+		  std::tuple<int, int, int> block_size) {
     auto c = "conv_forward";
 
     torch::TensorArg arg_input(input, "input", 0);
@@ -106,7 +107,7 @@ void conv_backward_x(torch::Tensor grad_output,
                      torch::Tensor kernel,
                      torch::Tensor grad_input,
                      int dilation,
-                     int block_size) {
+		     std::tuple<int, int, int> block_size) {
     auto c = "conv_backward_x";
 
     torch::TensorArg arg_output(grad_output, "grad_output", 0);
@@ -136,7 +137,7 @@ void conv_backward_k(torch::Tensor grad_output,
                      torch::Tensor input,
                      torch::Tensor grad_kernel,
                      int dilation,
-                     int block_size) {
+                     std::tuple<int, int, int> block_size) {
     auto c = "conv_backward_k";
 
     torch::TensorArg arg_output(grad_output, "grad_output", 0);
@@ -163,7 +164,7 @@ void conv_backward_k(torch::Tensor grad_output,
 
 void conv_backward_bias(torch::Tensor grad_output,
                         torch::Tensor grad_bias,
-                        int block_size) {
+                        std::tuple<int, int, int> block_size) {
 
     auto c = "conv_backward_bias";
 
@@ -199,7 +200,7 @@ void conv_relu_forward(torch::Tensor input,
 		       torch::Tensor bias,
 		       torch::Tensor output,
 		       int dilation,
-		       int block_size) {
+		       std::tuple<int, int, int> block_size) {
     auto c = "conv_relu_forward";
 
     torch::TensorArg arg_input(input, "input", 0);
@@ -232,7 +233,7 @@ void conv_relu_backward_x(torch::Tensor output,
                           torch::Tensor kernel,
                           torch::Tensor grad_input,
                           int dilation,
-                          int block_size) {
+                          std::tuple<int, int, int> block_size) {
     auto c = "conv_relu_backward_x";
 
     torch::TensorArg arg_output(output, "output", 0);
@@ -267,7 +268,7 @@ void conv_relu_backward_k(torch::Tensor output,
                           torch::Tensor input,
                           torch::Tensor grad_kernel,
                           int dilation,
-                          int block_size) {
+                          std::tuple<int, int, int> block_size) {
     auto c = "conv_relu_backward_k";
 
     torch::TensorArg arg_output(output, "output", 0);
@@ -299,7 +300,7 @@ void conv_relu_backward_k(torch::Tensor output,
 void conv_relu_backward_bias(torch::Tensor output,
                              torch::Tensor grad_output,
                              torch::Tensor grad_bias,
-                             int block_size) {
+                             std::tuple<int, int, int> block_size) {
     auto c = "conv_relu_backward_bias";
 
     torch::TensorArg arg_output(output, "output", 0);
@@ -324,27 +325,27 @@ void conv_relu_backward_bias(torch::Tensor output,
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
     m.def("conv_forward", &conv_forward, "Forward convolution"
           "input"_a, "kernel"_a, "bias"_a, "output"_a, "dilation"_a,
-          "block_size"_a=16);
+          "block_size"_a);
     m.def("conv_backward_x", &conv_backward_x, "Transpose of the forward convolution",
           "grad_output"_a, "kernel"_a, "grad_input"_a, "dilation"_a,
-          "block_size"_a=16);
+          "block_size"_a);
     m.def("conv_backward_k", &conv_backward_k, "Transpose of the forward convolution",
           "grad_output"_a, "input"_a, "grad_kernel"_a, "dilation"_a,
-          "block_size"_a=16);
+          "block_size"_a);
     m.def("conv_backward_bias", &conv_backward_bias, "Backward bias",
           "grad_output"_a, "grad_bias"_a,
-          "block_size"_a=16);
+          "block_size"_a);
 
     m.def("conv_relu_forward", &conv_relu_forward, "Forward convolution"
           "input"_a, "kernel"_a, "bias"_a, "output"_a, "dilation"_a,
-          "block_size"_a=16);
+          "block_size"_a);
     m.def("conv_relu_backward_x", &conv_relu_backward_x, "Transpose of the forward convolution",
           "output"_a, "grad_output"_a, "kernel"_a, "grad_input"_a, "dilation"_a,
-          "block_size"_a=16);
+          "block_size"_a);
     m.def("conv_relu_backward_k", &conv_relu_backward_k, "Transpose of the forward convolution",
           "output"_a, "grad_output"_a, "input"_a, "grad_kernel"_a, "dilation"_a,
-          "block_size"_a=16);
+          "block_size"_a);
     m.def("conv_relu_backward_bias", &conv_relu_backward_bias, "Backward bias",
           "output"_a, "grad_output"_a, "grad_bias"_a,
-          "block_size"_a=16);
+          "block_size"_a);
 }
