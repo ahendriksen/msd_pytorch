@@ -2,10 +2,13 @@
 
 Pytorch has a complex compatibility table:
 
-|           | Pytorch |     |     |   | Python |     |     |
-|           | 1.4     | 1.5 | 1.6 |   | 3.6    | 3.7 | 3.8 |
-|-----------+---------+-----+-----+---+--------+-----+-----|
-| CUDA 9.2  | x       | x   | x   |   | x      | x   | x   |
-| CUDA 10.0 | x       |     |     |   | x      | x   | x   |
-| CUDA 10.1 | x       | x   | x   |   | x      | x   | x   |
-| CUDA 10.2 |         | x   | x   |   | x      | x   | x   |
+| Pytorch version | Compatible CUDA versions | Python versions    |
+|-----------------+--------------------------+--------------------|
+|             1.4 | 9.2, 10.1                | 2.7, 3.5 -- 3.8    |
+|             1.5 | 9.2, 10.1, 10.2          | 2.7, 3.5 -- 3.8    |
+|             1.6 | 9.2, 10.1, 10.2          | 3.6, 3.7, 3.8      |
+|             1.7 | 9.2, 10.1, 10.2, 11.0    | 3.6, 3.7, 3.8      |
+|             1.8 | 10.1, 10.2, 11.1         | 3.6, 3.7, 3.8, 3.9 |
+
+Check https://download.pytorch.com/whl/torch_stable.html to see all installable
+versions.
