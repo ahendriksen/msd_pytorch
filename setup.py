@@ -71,16 +71,27 @@ class EmitNinjaCommand(Command):
 
     def run(self):
         """Run command."""
-        from torch.utils.cpp_extension import _write_ninja_file_and_build
+        try:
+            from torch.utils.cpp_extension import _write_ninja_file_and_build
+            emit_ninja = _write_ninja_file_and_build
+        except ImportError:
+            from torch.utils.cpp_extension import _write_ninja_file_and_build_library
+            emit_ninja = _write_ninja_file_and_build_library
+
         for e in self.distribution.ext_modules:
             output_dir = f"./ninja_{e.name}"
             os.makedirs(output_dir, exist_ok=True)
 
-            _write_ninja_file_and_build(
+            nvcc_flags = e.extra_compile_args['nvcc']
+            # Using these flags, ninja can detect changes in included header files.
+            # This makes incremental builds substantially faster.
+            nvcc_flags = nvcc_flags + ["-MMD", "-MF", "$out.d"]
+
+            emit_ninja(
                 name=e.name,
                 sources=e.sources,
                 extra_cflags=None,       # TODO:
-                extra_cuda_cflags=e.extra_compile_args['nvcc'],
+                extra_cuda_cflags=nvcc_flags,
                 extra_ldflags=e.extra_link_args,
                 extra_include_paths=e.include_dirs,
                 build_directory=output_dir,

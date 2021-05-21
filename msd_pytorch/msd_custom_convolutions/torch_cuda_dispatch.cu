@@ -54,7 +54,7 @@ template <typename T, int Dim>
 mcc::UnpackableTensorAccessor<T, Dim, mcc::RestrictPtrTraits, DT_INDEX>
 toDeviceTensorR(torch::Tensor x) {
     return mcc::UnpackableTensorAccessor<T, Dim,mcc::RestrictPtrTraits,DT_INDEX>(
-         x.data<T>(),
+         x.data_ptr<T>(),
          x.sizes().data(),
          x.strides().data()
     );
@@ -65,7 +65,7 @@ template <typename T, int Dim>
 mcc::UnpackableTensorAccessor<T, Dim, mcc::DefaultPtrTraits, DT_INDEX>
 toDeviceTensor(torch::Tensor x) {
     return mcc::UnpackableTensorAccessor<T, Dim,mcc::DefaultPtrTraits,DT_INDEX>(
-         x.data<T>(),
+         x.data_ptr<T>(),
          x.sizes().data(),
          x.strides().data()
     );

@@ -10,9 +10,6 @@ using at::CheckedFrom;
 ///////////////////////////////////////////////////////////////////////////////
 //                                  Macros                                   //
 ///////////////////////////////////////////////////////////////////////////////
-#define CHECK_CUDA(x) AT_ASSERTM(x.type().is_cuda(), #x " must be a CUDA tensor")
-#define CHECK_CONTIGUOUS(x) AT_ASSERTM(x.is_contiguous(), #x " must be contiguous")
-#define CHECK_INPUT(x) CHECK_CUDA(x); CHECK_CONTIGUOUS(x)
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                 Functions                                 //
@@ -28,44 +25,44 @@ bool is_kernel_3d(torch::Tensor kernel){
 void checkKernel3x3(CheckedFrom c, torch::Tensor kernel) {
     if (is_kernel_2d(kernel)) {
         // Check that kernel is 3x3:
-        AT_ASSERTM(kernel.size(2) == 3, "Kernel shape must be 3x3");
-        AT_ASSERTM(kernel.size(3) == 3, "Kernel shape must be 3x3");
+        TORCH_CHECK(kernel.size(2) == 3, "Kernel shape must be 3x3");
+        TORCH_CHECK(kernel.size(3) == 3, "Kernel shape must be 3x3");
     } else if (is_kernel_3d(kernel)){
-        AT_ASSERTM(kernel.size(2) == 3, "Kernel shape must be 3x3x3");
-        AT_ASSERTM(kernel.size(3) == 3, "Kernel shape must be 3x3x3");
-        AT_ASSERTM(kernel.size(4) == 3, "Kernel shape must be 3x3x3");
+        TORCH_CHECK(kernel.size(2) == 3, "Kernel shape must be 3x3x3");
+        TORCH_CHECK(kernel.size(3) == 3, "Kernel shape must be 3x3x3");
+        TORCH_CHECK(kernel.size(4) == 3, "Kernel shape must be 3x3x3");
     } else {
-        AT_ASSERTM(false, "Expected 4 or 5 dimensional kernel.")
+        TORCH_CHECK(false, "Expected 4 or 5 dimensional kernel.")
     }
 }
 
 void checkDilation(CheckedFrom c, const torch::TensorGeometryArg& tensor, int dilation) {
-    AT_CHECK(dilation > 0,
+    TORCH_CHECK(dilation > 0,
 	     c, ": Dilation must be 1 or greater");
     if (tensor->dim() == 4) {
-	AT_CHECK(dilation <= tensor->size(2) && dilation <= tensor->size(3),
+	TORCH_CHECK(dilation <= tensor->size(2) && dilation <= tensor->size(3),
 		 c, ": Dilation cannot be greater than size of image. ");
     } else if (tensor->dim() == 5) {
-	AT_CHECK(dilation <= tensor->size(2) && dilation <= tensor->size(3) && dilation <= tensor->size(4),
+	TORCH_CHECK(dilation <= tensor->size(2) && dilation <= tensor->size(3) && dilation <= tensor->size(4),
 		 c, ": Dilation cannot be greater than size of image. ");
     } else {
 	// unreachable arm.
-	AT_CHECK(false, c, ": checkDilation got unsupported tensor dimension. Expected 4 or 5. Got: ", tensor->dim());
+	TORCH_CHECK(false, c, ": checkDilation got unsupported tensor dimension. Expected 4 or 5. Got: ", tensor->dim());
     }
 }
 
 void checkOutputChannels(CheckedFrom c, const torch::TensorGeometryArg& k, const torch::TensorGeometryArg& output) {
-    AT_CHECK(k->size(0) == output->size(1),
+    TORCH_CHECK(k->size(0) == output->size(1),
 	     c, ": Kernel shape does not match output channels. ");
 }
 
 void checkBiasShape(CheckedFrom c, const torch::TensorGeometryArg& bias, const torch::TensorGeometryArg& output) {
-    AT_CHECK(bias->size(0) == output->size(1),
+    TORCH_CHECK(bias->size(0) == output->size(1),
 	     c, ": Bias shape does not match output channels. ");
 }
 
 void checkInputChannels(CheckedFrom c, const torch::TensorGeometryArg& input, const torch::TensorGeometryArg& k) {
-    AT_CHECK(k->size(1) == input->size(1),
+    TORCH_CHECK(k->size(1) == input->size(1),
 	     c, ": Kernel shape does not match input channels. ");
 }
 
@@ -73,14 +70,14 @@ void checkInOutShape(CheckedFrom c, const torch::TensorGeometryArg& input, const
     torch::checkSameDim(c, input, output);
     torch::checkDimRange(c, input, 4, 6);
     torch::checkDimRange(c, output, 4, 6);
-    AT_CHECK(input->size(0) == output->size(0),
+    TORCH_CHECK(input->size(0) == output->size(0),
 	     c, ": Input batch dimension does not match output batch dimension. ");
-    AT_CHECK(input->size(2) == output->size(2),
+    TORCH_CHECK(input->size(2) == output->size(2),
 	     c, ": Input shape does not match output shape. ");
-    AT_CHECK(input->size(3) == output->size(3),
+    TORCH_CHECK(input->size(3) == output->size(3),
 	     c, ": Input shape does not match output shape. ");
     if (input->dim() == 5) {
-	AT_CHECK(input->size(4) == output->size(4),
+	TORCH_CHECK(input->size(4) == output->size(4),
 		 c, ": Input shape does not match output shape. ");
     }
 }
@@ -209,7 +206,7 @@ void conv_backward_bias(torch::Tensor grad_output,
 	auto g = grad_output.sum(dims);
 	grad_bias += g;
     } else {
-	AT_ASSERTM(false, "Unreachable code: grad_output has wrong dimension");
+	TORCH_CHECK(false, "Unreachable code: grad_output has wrong dimension");
     }
 }
 
