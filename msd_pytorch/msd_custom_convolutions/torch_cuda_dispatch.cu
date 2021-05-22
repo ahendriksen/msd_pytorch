@@ -118,7 +118,7 @@ void conv_cuda_forward(torch::Tensor input_t,
 		    dim3 blockSize(block_x, block_y);
 		    auto buffer_sz = kernel_t.numel() * sizeof(scalar_t);
 
-		    conv_both_forward<scalar_t, false><<<gridSize, blockSize, buffer_sz, stream>>>
+		    conv_forward<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
 			(input_d, kernel_d, bias_d, out_d, dilation);
 
 		    check_cuda_error();
@@ -267,7 +267,7 @@ void conv_relu_cuda_forward(torch::Tensor input_t,
 		    dim3 blockSize(block_x, block_y);
 
 		    auto buffer_sz = kernel_t.numel() * sizeof(scalar_t);
-		    conv_both_forward<scalar_t, true><<<gridSize, blockSize, buffer_sz, stream>>>
+		    conv_relu_forward<scalar_t><<<gridSize, blockSize, buffer_sz, stream>>>
 			(input_d, kernel_d, bias_d, out_d, dilation);
 
 		    check_cuda_error();
