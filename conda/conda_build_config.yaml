@@ -9,3 +9,4 @@ python:
 pytorch:
   - 1.4
   - 1.5
+ccache_method: "mklink"

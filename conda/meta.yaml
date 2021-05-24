@@ -29,6 +29,8 @@ requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
+    # https://github.com/conda/conda-build/issues/4047
+    - ccache
   host:
     - python
     - setuptools
