@@ -10,3 +10,4 @@ __pycache__
 *.doctree
 /docs/doctrees/*.pickle
 /ninja_msd_custom_convolutions
+/conda_docker_build/cuda_*_linux*
