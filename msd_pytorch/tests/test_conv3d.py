@@ -388,7 +388,7 @@ def test_grad_check():
     C_OUT = 2               # Output channels
     D = 11                  # Depth
     H = 13                  # Height
-    W = 21                  # Width
+    W = 7                   # Width
     dilation = 3            # Dilation
 
     x = torch.randn(B, C_IN, D, H, W, dtype=dtype, requires_grad=True).cuda()
