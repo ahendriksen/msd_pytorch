@@ -5,6 +5,8 @@
 
 from distutils.core import Command
 from setuptools import setup, find_packages
+from packaging import version
+import torch
 from torch.utils.cpp_extension import BuildExtension, CUDAExtension
 import os.path
 import os
@@ -102,8 +104,12 @@ class EmitNinjaCommand(Command):
 
 
 def __nvcc_args():
+    return []
     gxx = os.environ.get('GXX')
-    if gxx is not None:
+    recent_torch_version = version.parse("1.7") <= version.parse(torch.__version__)
+    # Old versions of pytorch did not add the -ccbin command-line option.
+    if gxx is not None and not recent_torch_version:
+        print("AAH: Added ccbin command-line argument")
         return ['-ccbin', gxx]
     else:
         return []

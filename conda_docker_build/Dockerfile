@@ -2,45 +2,30 @@ FROM debian:buster-slim AS build-base
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update -q && apt-get install -q -y libxml2 build-essential
 
-FROM build-base AS cuda-110
-RUN touch /root/cuda110
-COPY cuda_11.0.3_450.51.06_linux.run /root
-RUN /bin/bash /root/cuda_11.0.3_450.51.06_linux.run --toolkit --silent --installpath=/usr/local/cuda-11.0 && \
-	rm -f /root/cuda_11.0.3_450.51.06_linux.run
-
-
 FROM build-base AS cuda-102
 RUN touch /root/cuda102
 COPY cuda_10.2.89_440.33.01_linux.run /root
 RUN /bin/bash /root/cuda_10.2.89_440.33.01_linux.run --toolkit --silent --installpath=/usr/local/cuda-10.2 && \
 	rm -f /root/cuda_10.2.89_440.33.01_linux.run
 
-FROM build-base AS cuda-101
-RUN touch /root/cuda101
-COPY cuda_10.1.243_418.87.00_linux.run  /root
-RUN /bin/bash /root/cuda_10.1.243_418.87.00_linux.run --toolkit --silent --installpath=/usr/local/cuda-10.1 && \
-	rm -f /root/cuda_10.1.243_418.87.00_linux.run
+FROM build-base AS cuda-111
+RUN touch /root/cuda111
+COPY cuda_11.1.1_455.32.00_linux.run /root
+RUN /bin/bash /root/cuda_11.1.1_455.32.00_linux.run --toolkit --silent --installpath=/usr/local/cuda-11.1 && \
+	rm -f /root/cuda_*_linux.run
 
-FROM build-base AS cuda-100
-RUN touch /root/cuda100
-COPY cuda_10.0.130_410.48_linux /root
-RUN /bin/bash /root/cuda_10.0.130_410.48_linux --toolkit --silent --override && \
-	rm -f /root/cuda_10.0.130_410.48_linux
+FROM build-base AS cuda-113
+RUN touch /root/cuda111
+COPY cuda_11.3.1_465.19.01_linux.run /root
+RUN /bin/bash /root/cuda_11.3.1_465.19.01_linux.run --toolkit --silent --installpath=/usr/local/cuda-11.3 && \
+	rm -f /root/cuda_*_linux.run
 
-FROM build-base AS cuda-92
-RUN touch /root/cuda92
-COPY cuda_9.2.148_396.37_linux /root
-RUN /bin/bash /root/cuda_9.2.148_396.37_linux --toolkit --silent --override && \
-	rm -f /root/cuda_9.2.148_396.37_linux
 
 FROM build-base AS cuda-base
 RUN touch /root/cuda
-COPY --from=cuda-110 /usr/local/cuda-11.0 /usr/local/cuda-11.0
 COPY --from=cuda-102 /usr/local/cuda-10.2 /usr/local/cuda-10.2
-COPY --from=cuda-101 /usr/local/cuda-10.1 /usr/local/cuda-10.1
-COPY --from=cuda-100 /usr/local/cuda-10.0 /usr/local/cuda-10.0
-COPY --from=cuda-92 /usr/local/cuda-9.2 /usr/local/cuda-9.2
-
+COPY --from=cuda-111 /usr/local/cuda-11.1 /usr/local/cuda-11.1
+COPY --from=cuda-113 /usr/local/cuda-11.3 /usr/local/cuda-11.3
 
 FROM debian:buster-slim AS mamba-base
 ARG VERSION=0.11.3

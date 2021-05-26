@@ -1,4 +1,0 @@
-cudatoolkit:
-  - 10.0
-pytorch:
-  - 1.4

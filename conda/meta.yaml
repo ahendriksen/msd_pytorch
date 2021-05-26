@@ -24,6 +24,11 @@ build:
     # Used to store multiple versions of the CUDA architecture;
     # Is used by torch from version 1.3 onwards..
     - TORCH_CUDA_ARCH_LIST
+    # Used to select the right version of nvcc
+    - CUDA_HOME
+    # Used to increase the number of concurrent compilations in the ninja build
+    # step.
+    - MAX_JOBS
 
 requirements:
   build:

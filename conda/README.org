@@ -30,15 +30,44 @@ versions.
 From the project root directory execute:
 
 #+begin_src bash
-mkdir -p conda/build_out
+mkdir -p build/out
 
-MOUNTS="-v ${PWD}/conda/build_out/:/opt/conda/conda-bld/linux-64/ -v ${PWD}/:/build/ -v pkgs:/opt/conda/pkgs"
-export CUDA_HOME=/usr/local/cuda-10.2/
+MOUNTS="-v ${PWD}/build/out/:/opt/conda/conda-bld/linux-64/ -v ${PWD}/:/msd_build_dir/ -v pkgs:/opt/conda/pkgs"
+export CUDA_HOME=/usr/local/cuda-9.2/
 export TORCH_CUDA_ARCH_LIST="3.5 5.2 6.0 6.1 7.0+PTX"
-export cudatoolkit=10.2
+export cudatoolkit=9.2
 
-sudo docker run -e CUDA_HOME=${CUDA_HOME} -e TORCH_CUDA_ARCH_LIST="${TORCH_CUDA_ARCH_LIST}" -e cudatoolkit=${cudatoolkit} $MOUNTS -w /build/ msd-build-env /opt/conda/bin/conda mambabuild conda/ -c aahendriksen -c pytorch -c defaults -c conda-forge -m conda/torch-1.6.yaml
+sudo docker run -e CUDA_HOME=${CUDA_HOME} -e TORCH_CUDA_ARCH_LIST="${TORCH_CUDA_ARCH_LIST}" -e cudatoolkit=${cudatoolkit} $MOUNTS -w /msd_build_dir/ msd-build-env /opt/conda/bin/conda mambabuild conda/ -c aahendriksen -c pytorch -c defaults -c conda-forge -m conda/cuda-9.2.yaml
 #+end_src
+** For testing
+Using ~test.yaml~
+#+begin_src bash
+mkdir -p conda_docker_out
+
+export cudatoolkit=10.2
+export CUDA_HOME=/usr/local/cuda-${cudatoolkit}/
+export TORCH_CUDA_ARCH_LIST="3.5 5.2 6.0 6.1 7.0+PTX"
+export MAX_JOBS=4
+
+MOUNTS="-v ${PWD}/conda_docker_out/:/opt/conda/conda-bld/linux-64/ -v ${PWD}/:/msd_build_dir/ -v pkgs:/opt/conda/pkgs"
+
+sudo docker run -e CUDA_HOME=${CUDA_HOME} -e TORCH_CUDA_ARCH_LIST="${TORCH_CUDA_ARCH_LIST}" -e cudatoolkit=${cudatoolkit} -e MAX_JOBS=${MAX_JOBS} $MOUNTS -w /msd_build_dir/ msd-build-env /opt/conda/bin/conda mambabuild conda/ -c aahendriksen -c pytorch -c defaults -c conda-forge -m conda/test.yaml
+#+end_src
+
+
+
+#+begin_src bash
+mkdir -p conda_docker_out
+
+MOUNTS="-v ${PWD}/conda_docker_out/:/opt/conda/conda-bld/linux-64/ -v ${PWD}/:/msd_build_dir/ -v pkgs:/opt/conda/pkgs"
+export cudatoolkit=9.2
+export CUDA_HOME=/usr/local/cuda-${cudatoolkit}/
+export TORCH_CUDA_ARCH_LIST="3.5 5.2 6.0 6.1 7.0+PTX"
+
+sudo docker run -e CUDA_HOME=${CUDA_HOME} -e TORCH_CUDA_ARCH_LIST="${TORCH_CUDA_ARCH_LIST}" -e cudatoolkit=${cudatoolkit} $MOUNTS -w /msd_build_dir/ msd-build-env /opt/conda/bin/conda mambabuild conda/ -c aahendriksen -c pytorch -c defaults -c conda-forge -m conda/cuda-9.2.yaml
+#+end_src
+
+
 
 * How to create the docker container
 First, download all versions of the cuda toolkit:
@@ -48,10 +77,14 @@ cd conda/build_env
 bash ./download_cuda_environments.sh
 #+end_src
 
-Then, build the docker container:
+Then, build the docker container. This can take a while.. The final image will
+be roughly 25GB.
 #+begin_src bash
 cd conda/build_env
-sudo docker build -t msd-build-env ./
+sudo DOCKER_BUILDKIT=1 docker build -t msd-build-env ./
 #+end_src
 
-This can take a while.. The final image will be roughly 25GB.
+If you are on a recent version of Docker (> 18.9), then you can use the buildkit
+backend which is considerably more efficient. See
+- [[https://www.cloudsavvyit.com/10271/understanding-the-docker-build-context-why-you-should-use-dockerignore/][Understanding the Docker Build Context (Why You Should Use Dockerignore) – CloudSavvy IT]]
+- [[https://docs.docker.com/engine/reference/builder/#buildkit][Dockerfile reference | Docker Documentation]]
