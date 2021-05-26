@@ -27,8 +27,8 @@ This package is compatible with python 3.7, 3.8, and 3.9.
 
 The following instructions install msd_pytorch with pytorch version 1.8.1:
 ```
-conda install msd_pytorch=0.10.0 cudatoolkit=11.1 -c aahendriksen -c pytorch -c defaults -c conda-forge
-conda install msd_pytorch=0.10.0 cudatoolkit=10.2 -c aahendriksen -c pytorch -c defaults -c conda-forge
+conda install msd_pytorch=0.10.1 cudatoolkit=11.1 -c aahendriksen -c pytorch -c defaults -c conda-forge
+conda install msd_pytorch=0.10.1 cudatoolkit=10.2 -c aahendriksen -c pytorch -c defaults -c conda-forge
 ```
 
 **Note**: The order of the channels is important. If you install pytorch from

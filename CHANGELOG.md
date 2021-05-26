@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 
+## [0.10.1] - 2021-05-26
+### Fixed
+- Replace outdated import from setup.py
+
 ## [0.10.0] - 2021-05-26
 ### Added
 - 3D convolution support.
@@ -69,7 +73,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release.
 
-[Unreleased]: https://www.github.com/ahendriksen/msd_pytorch/compare/v0.10.0...master
+[Unreleased]: https://www.github.com/ahendriksen/msd_pytorch/compare/v0.10.1...master
+[0.10.1]: https://www.github.com/ahendriksen/msd_pytorch/compare/v0.10.0...v0.10.1
 [0.10.0]: https://www.github.com/ahendriksen/msd_pytorch/compare/v0.9.1...v0.10.0
 [0.9.1]: https://www.github.com/ahendriksen/msd_pytorch/compare/v0.9.0...v0.9.1
 [0.9.0]: https://www.github.com/ahendriksen/msd_pytorch/compare/v0.8.0...v0.9.0
