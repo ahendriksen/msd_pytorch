@@ -18,18 +18,17 @@ manager](https://www.anaconda.com/download/) for Python 3.
 This package requires
 
 - Linux x64
-- CUDA 9.0 and/or 10.0 compatible graphics card
+- CUDA 10.0 and/or 11.0 compatible graphics card
 - [Anaconda package manager](https://www.anaconda.com/download/)
 
-This package is compatible with python 3.6 and 3.7.
+This package is compatible with python 3.7, 3.8, and 3.9.
 
 ### Installing with Conda
 
-Simply install with either CUDA version 9.2, 10.0, or 10.1:
+The following instructions install msd_pytorch with pytorch version 1.8.1:
 ```
-conda install msd_pytorch=0.9.0 cudatoolkit=9.2 -c aahendriksen -c pytorch -c defaults -c conda-forge
-conda install msd_pytorch=0.9.0 cudatoolkit=10.0 -c aahendriksen -c pytorch -c defaults -c conda-forge
-conda install msd_pytorch=0.9.0 cudatoolkit=10.1 -c aahendriksen -c pytorch -c defaults -c conda-forge
+conda install msd_pytorch=0.10.0 cudatoolkit=11.1 -c aahendriksen -c pytorch -c defaults -c conda-forge
+conda install msd_pytorch=0.10.0 cudatoolkit=10.2 -c aahendriksen -c pytorch -c defaults -c conda-forge
 ```
 
 **Note**: The order of the channels is important. If you install pytorch from
@@ -42,13 +41,6 @@ installed. Specifically, you need `nvcc` and a compatible C++
 compiler. Moreover, you need to have a working installation of
 PyTorch.
 
-To install PyTorch, we recommend using conda. Install PyTorch with
-either of these versions of cudatoolkit:
-``` shell
-conda install pytorch=1.1.0 cudatoolkit=10.0 -c pytorch
-conda install pytorch=1.1.0 cudatoolkit=9.0  -c pytorch
-```
-
 To get the source code, simply clone this GitHub project.
 ``` shell
 git clone https://github.com/ahendriksen/msd_pytorch.git
@@ -59,7 +51,7 @@ Using pip to install the package automatically triggers the
 compilation of the native C++ and CUDA code. So you need to direct the
 installer to a CUDA-compatible C++ compiler in this way:
 ``` shell
-GXX=/path/to/compatible/cpp/compiler pip install -e .[dev]
+CC=/path/to/compatible/cpp/compiler pip install -e .[dev]
 ```
 Or, if the standard C++ compiler is compatible with CUDA:
 ``` shell
@@ -99,7 +91,7 @@ See also the list of [contributors](https://github.com/ahendriksen/msd_pytorch/c
 
 ## How to contribute
 
-Contributions are always welcome. Please submit pull requests against the `master` branch.
+Contributions are always welcome. Please submit pull requests against the `dev` branch.
 
 If you have any issues, questions, or remarks, then please open an issue on GitHub.
 
