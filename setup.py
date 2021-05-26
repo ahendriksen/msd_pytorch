@@ -5,7 +5,7 @@
 
 from distutils.core import Command
 from setuptools import setup, find_packages
-from packaging import version
+from distutils import version
 import torch
 from torch.utils.cpp_extension import BuildExtension, CUDAExtension
 import os.path
