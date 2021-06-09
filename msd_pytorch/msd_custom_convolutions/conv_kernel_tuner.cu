@@ -123,11 +123,11 @@ conv_forward<double>(dTensor4Rdouble input,
 #include <initializer_list>
 #include <type_traits>
 
-__global__ void conv_forward_tuner(float* __restrict__ input, float* __restrict__ kernel, float* __restrict__ bias, float* __restrict__ output, int dilation) {
+extern "C" __global__ void conv_forward_tuner(float* __restrict__ input, float* __restrict__ kernel, float* __restrict__ bias, float* __restrict__ output, int dilation) {
 
     // TODO: Do not hard code sizes and strides...
     auto input_size = {1, 1, 10, 10};
-    auto input_strides = {100, 100, 10, 1};
+    auto input_strides = {INPUT_STRIDES};
     auto kernel_size = {1, 1, 3, 3};
     auto kernel_strides = {9, 9, 3, 1};
     auto bias_size = {1};
@@ -150,7 +150,11 @@ __global__ void conv_forward_tuner(float* __restrict__ input, float* __restrict_
     conv_forward(input_tensor, kernel_tensor, bias_tensor, output_tensor, dilation);
 }
 
-extern "C" __global__ void conv_forward_wrapper(dTensor4Rfloat input, dTensor4Rfloat kernel, dTensor1Rfloat bias, dTensor4Rfloat output, int dilation) {
-  conv_forward<float>(input, kernel, bias, output, dilation);
-}
+// extern "C" __global__ void conv_forward_tuner_wrapper(float* __restrict__ input, float* __restrict__ kernel, float* __restrict__ bias, float* __restrict__ output, int dilation) {
+//     conv_forward_tuner(input, kernel, bias, output, dilation);
+// }
+
+// extern "C" __global__ void conv_forward_wrapper(dTensor4Rfloat input, dTensor4Rfloat kernel, dTensor1Rfloat bias, dTensor4Rfloat output, int dilation) {
+//   conv_forward<float>(input, kernel, bias, output, dilation);
+// }
 #endif
