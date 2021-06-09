@@ -125,13 +125,16 @@ conv_forward<double>(dTensor4Rdouble input,
 
 extern "C" __global__ void conv_forward_tuner(float* __restrict__ input, float* __restrict__ kernel, float* __restrict__ bias, float* __restrict__ output, int dilation) {
 
-    // TODO: Do not hard code sizes and strides...
-    auto input_size = {1, 1, 10, 10};
+    // The shapes and strides are defined by kernel_tuner as
+    // preprocessor directives.
+    auto input_size = {INPUT_SHAPE};
     auto input_strides = {INPUT_STRIDES};
-    auto kernel_size = {1, 1, 3, 3};
-    auto kernel_strides = {9, 9, 3, 1};
-    auto bias_size = {1};
-    auto bias_strides = {1};
+    auto kernel_size = {KERNEL_SHAPE};
+    auto kernel_strides = {KERNEL_STRIDES};
+    auto bias_size = {BIAS_SHAPE};
+    auto bias_strides = {BIAS_STRIDES};
+    auto output_size = {OUTPUT_SHAPE};
+    auto output_strides = {OUTPUT_STRIDES};
 
     // 1) type of the data in array
     // 2) dimensions of array (4-dimensional in this case)
@@ -141,20 +144,12 @@ extern "C" __global__ void conv_forward_tuner(float* __restrict__ input, float* 
     // 6) Size of array
     // 7) Strides of array
     //                                                 (1)  (2) (3)                     (4)       (5)      (6)              (7)
-
     auto input_tensor = mcc::UnpackableTensorAccessor<float, 4, mcc::RestrictPtrTraits, int32_t>(input, input_size.begin(), input_strides.begin());
     auto kernel_tensor = mcc::UnpackableTensorAccessor<float, 4, mcc::RestrictPtrTraits, int32_t>(kernel, kernel_size.begin(), kernel_strides.begin());
     auto bias_tensor = mcc::UnpackableTensorAccessor<float, 1, mcc::RestrictPtrTraits, int32_t>(bias, bias_size.begin(), bias_strides.begin());
-    auto output_tensor = mcc::UnpackableTensorAccessor<float, 4, mcc::RestrictPtrTraits, int32_t>(output, input_size.begin(), input_strides.begin());
+    auto output_tensor = mcc::UnpackableTensorAccessor<float, 4, mcc::RestrictPtrTraits, int32_t>(output, output_size.begin(), output_strides.begin());
 
     conv_forward(input_tensor, kernel_tensor, bias_tensor, output_tensor, dilation);
 }
 
-// extern "C" __global__ void conv_forward_tuner_wrapper(float* __restrict__ input, float* __restrict__ kernel, float* __restrict__ bias, float* __restrict__ output, int dilation) {
-//     conv_forward_tuner(input, kernel, bias, output, dilation);
-// }
-
-// extern "C" __global__ void conv_forward_wrapper(dTensor4Rfloat input, dTensor4Rfloat kernel, dTensor1Rfloat bias, dTensor4Rfloat output, int dilation) {
-//   conv_forward<float>(input, kernel, bias, output, dilation);
-// }
 #endif
