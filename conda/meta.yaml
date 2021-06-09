@@ -29,6 +29,11 @@ build:
     # Used to increase the number of concurrent compilations in the ninja build
     # step.
     - MAX_JOBS
+  missing_dso_whitelist:
+    - "*/libc10.so"             # This library is part of pytorch
+    - "*/libtorch_cpu.so"       # This library is part of pytorch
+    - "*/libtorch_python.so"    # This library is part of pytorch
+    - "*/libc10_cuda.so"        # This library is part of pytorch
 
 requirements:
   build:
