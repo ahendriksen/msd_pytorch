@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <type_traits>
 #include <algorithm>
+#include <initializer_list>
 
 #define DT_INDEX int
 
@@ -170,18 +171,20 @@ namespace mcc {
     class GenericPackedTensorAccessorBase {
     public:
 	typedef typename PtrTraits<T>::PtrType PtrType;
-	MMC_HOST GenericPackedTensorAccessorBase(
+	MMC_HOST_DEVICE GenericPackedTensorAccessorBase(
 						 PtrType data_,
 						 const index_t* sizes_,
 						 const index_t* strides_)
 	    : data_(data_) {
-	    std::copy(sizes_, sizes_ + N, std::begin(this->sizes_));
-	    std::copy(strides_, strides_ + N, std::begin(this->strides_));
+	    for (int i = 0; i < N; i++) {
+		this->sizes_[i] = sizes_[i];
+		this->strides_[i] = strides_[i];
+	    }
 	}
 
 	// // if index_t is not int64_t, we want to have an int64_t constructor
 	template <typename source_index_t, class = typename std::enable_if<std::is_same<source_index_t, int64_t>::value>::type>
-	MMC_HOST GenericPackedTensorAccessorBase(
+	MMC_HOST_DEVICE GenericPackedTensorAccessorBase(
 						 PtrType data_,
 						 const source_index_t* sizes_,
 						 const source_index_t* strides_)
@@ -215,7 +218,7 @@ namespace mcc {
     public:
 	typedef typename PtrTraits<T>::PtrType PtrType;
 
-	MMC_HOST GenericPackedTensorAccessor(
+	MMC_HOST_DEVICE GenericPackedTensorAccessor(
 					     PtrType data_,
 					     const index_t* sizes_,
 					     const index_t* strides_)
@@ -223,7 +226,7 @@ namespace mcc {
 
 	// if index_t is not int64_t, we want to have an int64_t constructor
 	template <typename source_index_t, class = typename std::enable_if<std::is_same<source_index_t, int64_t>::value>::type>
-	MMC_HOST GenericPackedTensorAccessor(
+	MMC_HOST_DEVICE GenericPackedTensorAccessor(
 					     PtrType data_,
 					     const source_index_t* sizes_,
 					     const source_index_t* strides_)
@@ -246,7 +249,7 @@ namespace mcc {
     class GenericPackedTensorAccessor<T,1,PtrTraits,index_t> : public GenericPackedTensorAccessorBase<T,1,PtrTraits,index_t> {
     public:
 	typedef typename PtrTraits<T>::PtrType PtrType;
-	MMC_HOST GenericPackedTensorAccessor(
+	MMC_HOST_DEVICE GenericPackedTensorAccessor(
 					     PtrType data_,
 					     const index_t* sizes_,
 					     const index_t* strides_)
@@ -254,7 +257,7 @@ namespace mcc {
 
 	// if index_t is not int64_t, we want to have an int64_t constructor
 	template <typename source_index_t, class = typename std::enable_if<std::is_same<source_index_t, int64_t>::value>::type>
-	MMC_HOST GenericPackedTensorAccessor(
+	MMC_HOST_DEVICE GenericPackedTensorAccessor(
 					     PtrType data_,
 					     const source_index_t* sizes_,
 					     const source_index_t* strides_)
@@ -274,14 +277,22 @@ namespace mcc {
 	typedef typename PtrTraits<T>::PtrType PtrType;
 
 
-	MMC_HOST UnpackableTensorAccessor(PtrType data_,
+	MMC_HOST_DEVICE UnpackableTensorAccessor(PtrType data_,
 					  const index_t* sizes_,
 					  const index_t* strides_)
 	    : GenericPackedTensorAccessor<T, N, PtrTraits, index_t>(data_, sizes_, strides_) {}
 
+	// MMC_HOST_DEVICE UnpackableTensorAccessor(PtrType data_,
+	// 					 std::initializer_list<index_t> sizes_,
+	// 					 std::intializer_list<index_t> strides_)
+	// {
+	//     GenericPackedTensorAccessor<T, N, PtrTraits, index_t>(data_, sizes_.begin(), strides_.begin());
+	// }
+
+
 	// if index_t is not int64_t, we want to have an int64_t constructor
 	template <typename source_index_t, class = typename std::enable_if<std::is_same<source_index_t, int64_t>::value>::type>
-	MMC_HOST UnpackableTensorAccessor(PtrType data_,
+	MMC_HOST_DEVICE UnpackableTensorAccessor(PtrType data_,
 					  const source_index_t* sizes_,
 					  const source_index_t* strides_)
 	    : GenericPackedTensorAccessor<T, N, PtrTraits, index_t>(data_, sizes_, strides_) {}
