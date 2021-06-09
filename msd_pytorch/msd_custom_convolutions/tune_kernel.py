@@ -71,7 +71,11 @@ def tune():
         args,
         tune_params,
         smem_args=smem_args,
-        compiler_options=["-I" + os.getcwd()]
+        compiler_options=[
+            "-I" + os.getcwd(),
+            # Generate code that is compatible with Geforce 10XX and up.
+            "-gencode=arch=compute_61,code=sm_61",
+        ]
     )
 
 
