@@ -25,6 +25,29 @@ Check https://download.pytorch.com/whl/torch_stable.html to see all installable
 versions.
 
 
+* How to build locally
+As of 2023-02-23, the most recent version of cudatoolkit-dev on conda-forge is 
+11.6.0. It would not compile, with more recent versions of gcc. Version 11.6.2
+or later would solve the problem, but none of them is available.
+Moreover, PyTorch 1.13 was compiled against cuda 11.2. Thus, we prefer to stick
+to this version for the moment.
+Some of these steps could be automated, but for now they are simple enough.
+
+#+begin_src bash
+conda create -n compile_msd python=3.9 conda-build anaconda-client
+conda activate compile_msd
+conda install cudatoolkit-dev=11.2
+
+export CUDA_HOME=<your_env_path>
+export cudatoolkit=11.2
+export MAX_JOBS=<your_CPU_count>
+export TORCH_CUDA_ARCH_LIST="5.0 6.0 7.0 7.5 8.0 8.6+PTX"
+
+conda build .
+#+end_src
+
+
+
 * How to build using docker
 
 From the project root directory execute:
