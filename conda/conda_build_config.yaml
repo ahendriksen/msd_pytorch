@@ -1,11 +1,12 @@
 c_compiler_version:    # [linux]
-  - 7.3                # [linux]
+  - 9.5                # [linux]
 cxx_compiler_version:  # [linux]
-  - 7.3                # [linux]
+  - 9.5                # [linux]
 pytorch:
-  - 1.8
+  - 1.13
 python:
   - 3.7
   - 3.8
   - 3.9
+  - 3.10
 ccache_method: "mklink"

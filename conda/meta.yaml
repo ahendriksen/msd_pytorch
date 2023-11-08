@@ -29,6 +29,8 @@ build:
     # Used to increase the number of concurrent compilations in the ninja build
     # step.
     - MAX_JOBS
+    # Used to select the cuda version
+    - cudatoolkit
 
 requirements:
   build:
